@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { playSfx } from "@/lib/sfx";
 
 const GAP = 20; // space between the character's head and the box (room for the tail)
 const MARGIN = 12; // minimum distance from the viewport edges
@@ -28,6 +29,10 @@ export default function DialogueBox({
   const [boxHeight, setBoxHeight] = useState<number | null>(null);
   const [isExiting, setIsExiting] = useState(false);
 
+  useEffect(() => {
+    playSfx("dialogueOpen");
+  }, []);
+
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
@@ -51,6 +56,7 @@ export default function DialogueBox({
 
   function handleTapDismiss() {
     if (!onTapDismiss || isExiting) return;
+    playSfx("dialogueClose");
     setIsExiting(true);
     setTimeout(onTapDismiss, EXIT_DURATION_MS);
   }

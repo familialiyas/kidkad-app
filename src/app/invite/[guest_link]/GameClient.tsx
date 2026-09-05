@@ -21,6 +21,7 @@ import ReturnVisitScreen from "./ReturnVisitScreen";
 import TitleScreen from "./TitleScreen";
 import AudioToggle, { AudioToggleHandle } from "./AudioToggle";
 import { THEME_CONFIG } from "@/lib/theme-config";
+import { playSfx } from "@/lib/sfx";
 
 type Screen =
   | { kind: "title" }
@@ -184,6 +185,7 @@ function Game({
       if (id !== collectedCount + 1) return;
       if (animatingCoinId !== null) return;
 
+      playSfx("coinCollect");
       setAnimatingCoinId(id);
       setCharacterState("victory");
       setAnimPhase("burst");
@@ -205,6 +207,7 @@ function Game({
       // the player already is. Lock scrolling for this automatic beat (warp,
       // then the capsule spawning in) instead of leaving it free-roam.
       const WARP_MS = 800;
+      playSfx("warp");
       setScreen({ kind: "reward" });
       setWarping(true);
       setTimeout(() => {
@@ -219,6 +222,7 @@ function Game({
   function handleRewardTap() {
     if (rewardPhase !== "idle") return;
     const OPEN_DISPLAY_MS = 350; // gift-opened art shown briefly before the dialogue takes over
+    playSfx("giftOpen");
     setRewardPhase("opened");
     setCharacterState("victory");
     setShowConfetti(true);
@@ -246,6 +250,7 @@ function Game({
         guestName: values.guestName,
         paxCount: values.paxCount,
       });
+      playSfx("rsvpSuccess");
       onRsvpSuccess(data.rsvp);
     } catch (e) {
       setRsvpError(e instanceof Error ? e.message : "Something went wrong");

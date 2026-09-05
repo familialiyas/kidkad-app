@@ -6,6 +6,7 @@ import { formatFriendlyDate, isPastDeadline } from "@/lib/date";
 import { buildGoogleCalendarUrl, buildIcsContent, downloadIcs } from "@/lib/calendar";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { clearStoredRsvp, setStoredRsvp } from "@/lib/rsvp-storage";
+import { playSfx } from "@/lib/sfx";
 import RsvpForm, { RsvpFormValues } from "./RsvpForm";
 import DialogueButton from "./DialogueButton";
 
@@ -51,6 +52,7 @@ export default function ReturnVisitScreen({
         guestName: values.guestName,
         paxCount: values.paxCount,
       });
+      playSfx("rsvpSuccess");
       setMode("view");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -210,7 +212,10 @@ export default function ReturnVisitScreen({
                     </DialogueButton>
                     <button
                       type="button"
-                      onClick={() => setMode("confirmCancel")}
+                      onClick={() => {
+                        playSfx("buttonTap");
+                        setMode("confirmCancel");
+                      }}
                       className="mt-1 text-xs text-cyan-300/70 underline"
                     >
                       Can&apos;t make it anymore?

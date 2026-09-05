@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CHARACTER_WIDTH, CHARACTER_HEIGHT } from "@/lib/game-constants";
 import { THEME_CONFIG } from "@/lib/theme-config";
+import { playSfx } from "@/lib/sfx";
 import type { Character } from "@/lib/types";
 
 export default function TitleScreen({
@@ -22,6 +23,7 @@ export default function TitleScreen({
 
   function handleStart() {
     if (starting) return;
+    playSfx("buttonTap");
     setStarting(true);
     setTimeout(onStart, 200);
   }

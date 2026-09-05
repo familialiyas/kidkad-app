@@ -1,11 +1,13 @@
 "use client";
 
 import { ButtonHTMLAttributes } from "react";
+import { playSfx } from "@/lib/sfx";
 
 export default function DialogueButton({
   variant = "primary",
   theme = "amber",
   className = "",
+  onClick,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary";
@@ -22,5 +24,14 @@ export default function DialogueButton({
       : variant === "primary"
         ? "bg-amber-600 text-white hover:bg-amber-700"
         : "bg-white text-amber-800 border-2 border-amber-600 hover:bg-amber-100";
-  return <button className={`${base} ${styles} ${className}`} {...props} />;
+  return (
+    <button
+      className={`${base} ${styles} ${className}`}
+      onClick={(e) => {
+        playSfx("buttonTap");
+        onClick?.(e);
+      }}
+      {...props}
+    />
+  );
 }
