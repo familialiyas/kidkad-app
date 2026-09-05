@@ -1,5 +1,8 @@
+import type { DialogueTone } from "./dialogue-tones";
+
 export type PaymentStatus = "draft" | "paid" | "failed";
 export type Character = "boy" | "girl";
+export type { DialogueTone };
 
 export interface Order {
   id: string;
@@ -8,11 +11,14 @@ export interface Order {
   admin_link: string;
   template: string | null;
   character: Character | null;
+  dialogue_tone: DialogueTone | null;
   payment_status: PaymentStatus;
   child_name: string | null;
   child_age: number | null;
   child_photo_url: string | null;
   personal_message: string | null;
+  parent_name: string | null;
+  parent_email: string | null;
   party_date: string | null;
   party_time: string | null;
   party_venue: string | null;
@@ -40,6 +46,7 @@ export type PublicOrder = Pick<
   | "guest_link"
   | "template"
   | "character"
+  | "dialogue_tone"
   | "child_name"
   | "child_age"
   | "child_photo_url"
