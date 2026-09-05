@@ -2,35 +2,84 @@
 
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { playSfx } from "@/lib/sfx";
+import { DialogueSegment, segmentsFullLength, sliceSegments } from "@/lib/typewriter";
 
 const GAP = 20; // space between the character's head and the box (room for the tail)
 const MARGIN = 12; // minimum distance from the viewport edges
 const EXIT_DURATION_MS = 150;
+const TYPE_SPEED_MS = 24;
 
 export default function DialogueBox({
   photoUrl,
   name,
   children,
+  segments,
+  icon,
   footer,
   onTapDismiss,
+  onTalkingChange,
   anchorY,
 }: {
   photoUrl: string | null;
   name: string;
-  children: ReactNode;
+  /** Rendered as-is, immediately, with no typewriter (e.g. the RSVP form). Ignored when `segments` is set. */
+  children?: ReactNode;
+  /** Typed conversational text, revealed character-by-character. Highlighted segments get the accent treatment + pop. */
+  segments?: DialogueSegment[];
+  /** Small icon shown beside the typed text (e.g. a calendar icon for the date/time dialogue). */
+  icon?: string;
   /** Ignored when onTapDismiss is set — tap-anywhere dialogues show a hint instead of buttons. */
   footer?: ReactNode;
   /** For single-action "read this and continue" dialogues: the whole screen dismisses it, no button. */
   onTapDismiss?: () => void;
+  /** Reports whether text is actively typing, so the character sprite can play a talking loop. */
+  onTalkingChange?: (talking: boolean) => void;
   /** Viewport-relative Y coordinate of the character's head — the box floats just above this, tail pointing down at it. */
   anchorY: number;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [boxHeight, setBoxHeight] = useState<number | null>(null);
   const [isExiting, setIsExiting] = useState(false);
+  const [revealedCount, setRevealedCount] = useState(0);
+  const completedRef = useRef(false);
+
+  const fullLength = segments ? segmentsFullLength(segments) : 0;
+  const isComplete = !segments || revealedCount >= fullLength;
+
+  function finishTyping() {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    onTalkingChange?.(false);
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate([15, 30, 15]);
+    }
+  }
 
   useEffect(() => {
     playSfx("dialogueOpen");
+  }, []);
+
+  useEffect(() => {
+    if (!segments || fullLength === 0) {
+      finishTyping();
+      return;
+    }
+    onTalkingChange?.(true);
+    const id = setInterval(() => {
+      setRevealedCount((c) => {
+        const next = c + 1;
+        if (next >= fullLength) {
+          clearInterval(id);
+          finishTyping();
+        }
+        return next;
+      });
+    }, TYPE_SPEED_MS);
+    return () => clearInterval(id);
+    // Mount-only: this dialogue's text never changes mid-instance (a new
+    // screen mounts a whole new DialogueBox), so the typing loop should
+    // start exactly once against the props it was given at mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useLayoutEffect(() => {
@@ -55,7 +104,14 @@ export default function DialogueBox({
   const top = Math.min(Math.max(desiredTop, MARGIN), maxTop);
 
   function handleTapDismiss() {
-    if (!onTapDismiss || isExiting) return;
+    if (isExiting) return;
+    if (!isComplete) {
+      // First tap while typing: snap to the full sentence instead of dismissing.
+      setRevealedCount(fullLength);
+      finishTyping();
+      return;
+    }
+    if (!onTapDismiss) return;
     playSfx("dialogueClose");
     setIsExiting(true);
     setTimeout(onTapDismiss, EXIT_DURATION_MS);
@@ -92,10 +148,12 @@ export default function DialogueBox({
           visibility: boxHeight === null ? "hidden" : "visible",
         }}
       >
-        <div
-          ref={boxRef}
-          className="dialogue-box dialogue-space-bg dialogue-space-glow relative rounded-2xl border-4 border-cyan-400/80 p-4"
-        >
+        <div ref={boxRef} className="dialogue-box relative p-5">
+          {/* Paper-cutout background pane: jagged torn-edge silhouette, grain
+              texture, border and glow all live here (not on this element's
+              parent) so the ragged edge never eats into the text padding. */}
+          <div className="dialogue-paper-bg" aria-hidden />
+
           {/* Speech-bubble tail, pointing down toward the character below */}
           <div
             className="dialogue-space-bg absolute bottom-0 left-1/2 z-0 h-5 w-5 translate-x-[-50%] translate-y-1/2 rotate-45 border-r-4 border-b-4 border-cyan-400/80"
@@ -111,8 +169,36 @@ export default function DialogueBox({
               </div>
               <div className="font-bold text-cyan-300">{name}</div>
             </div>
-            <div className="mt-3 min-h-[3rem] text-sm leading-relaxed text-slate-100">
-              {children}
+            <div className="mt-3 min-h-[3rem] text-[16.5px] leading-relaxed text-slate-100">
+              {segments ? (
+                <div className="flex items-start gap-2">
+                  {icon && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={icon}
+                      alt=""
+                      className="mt-0.5 h-6 w-6 shrink-0 object-contain"
+                      aria-hidden
+                    />
+                  )}
+                  <p>
+                    {sliceSegments(segments, revealedCount).map((seg, i) =>
+                      seg.highlight ? (
+                        <span
+                          key={i}
+                          className={`dialogue-highlight ${isComplete ? "dialogue-highlight-pop" : ""}`}
+                        >
+                          {seg.text}
+                        </span>
+                      ) : (
+                        <span key={i}>{seg.text}</span>
+                      )
+                    )}
+                  </p>
+                </div>
+              ) : (
+                children
+              )}
             </div>
             {onTapDismiss ? (
               <p className="mt-4 animate-pulse text-center text-xs text-cyan-300/70">

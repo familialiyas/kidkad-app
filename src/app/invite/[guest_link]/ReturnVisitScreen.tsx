@@ -87,8 +87,19 @@ export default function ReturnVisitScreen({
     <div className="space-y-4 text-sm text-slate-100">
       {(order.party_date || order.party_time) && (
         <div className="space-y-2">
-          {order.party_date && <p>{formatFriendlyDate(order.party_date)}</p>}
-          {order.party_time && <p>{order.party_time}</p>}
+          <div className="flex items-start gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/theme/space/icons/icon-calendar.png"
+              alt=""
+              className="mt-0.5 h-6 w-6 shrink-0 object-contain"
+              aria-hidden
+            />
+            <div className="space-y-1">
+              {order.party_date && <p>{formatFriendlyDate(order.party_date)}</p>}
+              {order.party_time && <p>{order.party_time}</p>}
+            </div>
+          </div>
           {order.party_date && (
             <div className="flex flex-col gap-2">
               <a
@@ -130,7 +141,16 @@ export default function ReturnVisitScreen({
 
       {order.party_venue && (
         <div className="space-y-2">
-          <p>{order.party_venue}</p>
+          <div className="flex items-start gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/theme/space/icons/icon-location.png"
+              alt=""
+              className="mt-0.5 h-6 w-6 shrink-0 object-contain"
+              aria-hidden
+            />
+            <p>{order.party_venue}</p>
+          </div>
           {order.maps_link && (
             <a href={order.maps_link} target="_blank" rel="noopener noreferrer">
               <DialogueButton type="button" theme="space" className="w-full">
@@ -141,7 +161,18 @@ export default function ReturnVisitScreen({
         </div>
       )}
 
-      {order.dress_code && <p>{order.dress_code}</p>}
+      {order.dress_code && (
+        <div className="flex items-start gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/theme/space/icons/icon-dresscode.png"
+            alt=""
+            className="mt-0.5 h-6 w-6 shrink-0 object-contain"
+            aria-hidden
+          />
+          <p>{order.dress_code}</p>
+        </div>
+      )}
     </div>
   );
 
@@ -163,9 +194,18 @@ export default function ReturnVisitScreen({
           </>
         ) : (
           <>
-            <h1 className="font-display text-lg font-bold text-cyan-300">
-              You&apos;re in! See you at {order.child_name}&apos;s party!
-            </h1>
+            <div className="flex items-center gap-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/theme/space/icons/icon-celebration.png"
+                alt=""
+                className="h-8 w-8 shrink-0 object-contain"
+                aria-hidden
+              />
+              <h1 className="font-display text-lg font-bold text-cyan-300">
+                You&apos;re in! See you at {order.child_name}&apos;s party!
+              </h1>
+            </div>
             <div className="mt-3">{eventDetails}</div>
 
             <a

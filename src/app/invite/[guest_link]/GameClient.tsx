@@ -22,6 +22,14 @@ import TitleScreen from "./TitleScreen";
 import AudioToggle, { AudioToggleHandle } from "./AudioToggle";
 import { THEME_CONFIG } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
+import { DialogueSegment } from "@/lib/typewriter";
+
+const ICONS = {
+  calendar: "/assets/theme/space/icons/icon-calendar.png",
+  location: "/assets/theme/space/icons/icon-location.png",
+  dresscode: "/assets/theme/space/icons/icon-dresscode.png",
+  celebration: "/assets/theme/space/icons/icon-celebration.png",
+};
 
 type Screen =
   | { kind: "title" }
@@ -125,6 +133,7 @@ function Game({
   const [screen, setScreen] = useState<Screen>({ kind: "title" });
   const [collectedCount, setCollectedCount] = useState(0);
   const [characterState, setCharacterState] = useState<"idle" | "victory">("idle");
+  const [isDialogueTyping, setIsDialogueTyping] = useState(false);
   const [characterTop, setCharacterTop] = useState(200);
   const [scrollY, setScrollY] = useState(0);
   const [animatingCoinId, setAnimatingCoinId] = useState<number | null>(null);
@@ -266,6 +275,47 @@ function Game({
   // some fixed far-off world position.
   const rewardTop = characterTop + REWARD_OFFSET_FROM_CHARACTER;
 
+  const openingSegments: DialogueSegment[] = [{ text: order.personal_message ?? "" }];
+
+  const coin1Segments: DialogueSegment[] = [];
+  if (order.party_date) {
+    coin1Segments.push({ text: "My party is on " });
+    coin1Segments.push({ text: formatConversationalDate(order.party_date), highlight: true });
+    coin1Segments.push({ text: "! " });
+  }
+  if (order.party_time) {
+    coin1Segments.push({ text: "It starts at " });
+    coin1Segments.push({ text: order.party_time, highlight: true });
+    coin1Segments.push({ text: " — don't be late, okay?" });
+  }
+
+  const coin2Segments: DialogueSegment[] = [
+    { text: "We're having it at " },
+    { text: `${order.party_venue}`, highlight: true },
+    { text: "! It's gonna be so fun — see you there!" },
+  ];
+
+  const coin3Segments: DialogueSegment[] = [
+    { text: "Oh and guess what? Come dressed in " },
+    { text: `${order.dress_code}`, highlight: true },
+    { text: "!" },
+  ];
+
+  const missionCompleteSegments: DialogueSegment[] =
+    gameMode === "replay"
+      ? [{ text: "Yay, you found all the coins again! Thanks for playing!" }]
+      : deadlinePassed
+        ? [{ text: "RSVP is now closed. Please contact the host directly." }]
+        : [
+            {
+              text: "Yay, you found all the coins! Here's your reward — a special invitation to my birthday party! Will you come?",
+            },
+          ];
+
+  const rsvpNoSegments: DialogueSegment[] = [
+    { text: "Aw, we'll miss you! Hope to celebrate with you next time." },
+  ];
+
   return (
     <div className="relative">
       <AudioToggle ref={audioToggleRef} src={THEME_CONFIG.backgroundMusicSrc} />
@@ -284,6 +334,7 @@ function Game({
         rewardTop={rewardTop}
         showGameplayChrome={screen.kind !== "title"}
         warping={warping}
+        talking={isDialogueTyping}
       />
 
       {showConfetti &&
@@ -310,9 +361,9 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={() => setScreen({ kind: "none" })}
-        >
-          {order.personal_message}
-        </DialogueBox>
+          segments={openingSegments}
+          onTalkingChange={setIsDialogueTyping}
+        />
       )}
 
       {screen.kind === "coin" && screen.coinId === 1 && (
@@ -321,12 +372,10 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={dismissCoinDialogue}
-        >
-          <p>
-            {order.party_date && `My party is on ${formatConversationalDate(order.party_date)}! `}
-            {order.party_time && `It starts at ${order.party_time} — don't be late, okay?`}
-          </p>
-        </DialogueBox>
+          segments={coin1Segments}
+          icon={ICONS.calendar}
+          onTalkingChange={setIsDialogueTyping}
+        />
       )}
 
       {screen.kind === "coin" && screen.coinId === 2 && (
@@ -335,9 +384,10 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={dismissCoinDialogue}
-        >
-          <p>{`We're having it at ${order.party_venue}! It's gonna be so fun — see you there!`}</p>
-        </DialogueBox>
+          segments={coin2Segments}
+          icon={ICONS.location}
+          onTalkingChange={setIsDialogueTyping}
+        />
       )}
 
       {screen.kind === "coin" && screen.coinId === 3 && (
@@ -346,9 +396,10 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={dismissCoinDialogue}
-        >
-          <p>{`Oh and guess what? Come dressed in ${order.dress_code}!`}</p>
-        </DialogueBox>
+          segments={coin3Segments}
+          icon={ICONS.dresscode}
+          onTalkingChange={setIsDialogueTyping}
+        />
       )}
 
       {screen.kind === "missionComplete" && (
@@ -356,6 +407,9 @@ function Game({
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
+          segments={missionCompleteSegments}
+          icon={ICONS.celebration}
+          onTalkingChange={setIsDialogueTyping}
           footer={
             gameMode === "replay" ? (
               <DialogueButton theme="space" onClick={onReplayDone}>
@@ -389,18 +443,7 @@ function Game({
               </>
             )
           }
-        >
-          {gameMode === "replay" ? (
-            <p>Yay, you found all the coins again! Thanks for playing!</p>
-          ) : deadlinePassed ? (
-            <p>RSVP is now closed. Please contact the host directly.</p>
-          ) : (
-            <p>
-              Yay, you found all the coins! Here&apos;s your reward — a special invitation to
-              my birthday party! Will you come?
-            </p>
-          )}
-        </DialogueBox>
+        />
       )}
 
       {screen.kind === "rsvpYes" && (
@@ -424,14 +467,14 @@ function Game({
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
+          segments={rsvpNoSegments}
+          onTalkingChange={setIsDialogueTyping}
           footer={
             <DialogueButton theme="space" onClick={() => setScreen({ kind: "rsvpYes" })}>
               Changed your mind? RSVP
             </DialogueButton>
           }
-        >
-          <p>Aw, we&apos;ll miss you! Hope to celebrate with you next time.</p>
-        </DialogueBox>
+        />
       )}
     </div>
   );

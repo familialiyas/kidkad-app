@@ -315,3 +315,120 @@ body {
     50px 50px,
     70px 70px;
 }
+
+/* Typewriter: highlighted data values (date/time/venue/dress code) get the
+   accent treatment immediately, then a delayed "pop" once the sentence
+   finishes typing so the reveal draws a second glance. */
+.dialogue-highlight {
+  font-weight: 800;
+  color: #67e8f9;
+}
+@keyframes dialogue-highlight-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.dialogue-highlight-pop {
+  display: inline-block;
+  animation: dialogue-highlight-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+/* Character "talking" loop — a quick, small wiggle distinct from the slow
+   idle float, active only while dialogue text is typing. Bakes in the same
+   translateX(-50%) centering as character-float/character-victory since an
+   active animation replaces the element's transform entirely. */
+@keyframes character-talk {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px) rotate(1.5deg);
+  }
+}
+.character-talk {
+  animation: character-talk 0.5s ease-in-out infinite;
+}
+
+/* Paper-cutout dialogue box: a jagged, hand-torn silhouette + faint grain,
+   matching the felt/paper-craft art style of the character and decoration
+   sprites. Applied to a background pane behind the text content (not the
+   content wrapper itself) so the ragged edge and the border it creates
+   never eat into padding text needs to stay legible. filter: drop-shadow
+   (not box-shadow) is used for the glow since only drop-shadow follows the
+   clipped silhouette instead of the box's original rectangular bounds. */
+.dialogue-paper-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: #0f1442;
+  border: 4px solid rgba(34, 211, 238, 0.8);
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    radial-gradient(circle at 45% 85%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 90% 15%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='grain'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23grain)'/></svg>");
+  background-size:
+    60px 60px,
+    80px 80px,
+    50px 50px,
+    70px 70px,
+    120px 120px;
+  clip-path: polygon(
+    1% 4%,
+    7% 0%,
+    15% 2%,
+    24% 0%,
+    33% 2%,
+    42% 0%,
+    51% 1.5%,
+    60% 0%,
+    69% 2%,
+    78% 0%,
+    87% 1.5%,
+    95% 0%,
+    100% 5%,
+    98.5% 13%,
+    100% 21%,
+    98% 30%,
+    100% 39%,
+    98.5% 48%,
+    100% 57%,
+    98% 66%,
+    100% 75%,
+    98.5% 84%,
+    100% 93%,
+    94% 100%,
+    86% 98%,
+    77% 100%,
+    68% 98.5%,
+    59% 100%,
+    50% 98%,
+    41% 100%,
+    32% 98.5%,
+    23% 100%,
+    14% 98%,
+    6% 100%,
+    0% 95%,
+    1.5% 87%,
+    0% 78%,
+    2% 69%,
+    0% 60%,
+    1.5% 51%,
+    0% 42%,
+    2% 33%,
+    0% 24%,
+    1.5% 15%,
+    0% 6%
+  );
+  filter:
+    drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))
+    drop-shadow(0 4px 0 rgba(0, 0, 0, 0.25));
+}

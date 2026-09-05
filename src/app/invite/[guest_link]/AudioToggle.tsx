@@ -67,9 +67,18 @@ const AudioToggle = forwardRef<AudioToggleHandle, { src: string }>(function Audi
         type="button"
         onClick={toggle}
         aria-label={muted ? "Unmute music" : "Mute music"}
-        className="font-display fixed top-4 left-4 z-[60] flex h-9 items-center justify-center rounded-full bg-black/60 px-3 text-xs font-bold text-white shadow-lg"
+        className="fixed top-4 left-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 shadow-lg"
       >
-        {muted ? "Unmute" : "Mute"}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={
+            muted
+              ? "/assets/theme/space/icons/icon-sound-off.png"
+              : "/assets/theme/space/icons/icon-sound-on.png"
+          }
+          alt=""
+          className="h-6 w-6 object-contain"
+        />
       </button>
     </>
   );

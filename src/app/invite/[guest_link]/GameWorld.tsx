@@ -31,6 +31,7 @@ export default function GameWorld({
   starSeed,
   showGameplayChrome = true,
   warping = false,
+  talking = false,
 }: {
   character: Character | null;
   characterState: "idle" | "victory";
@@ -51,6 +52,8 @@ export default function GameWorld({
   showGameplayChrome?: boolean;
   /** Briefly stretches the stars into streaks (warp speed) on the way to mission complete. */
   warping?: boolean;
+  /** True while dialogue text is actively typing — plays a talking loop instead of the idle float. */
+  talking?: boolean;
 }) {
   const sprites =
     character === "girl" ? THEME_CONFIG.characterSprites.girl : THEME_CONFIG.characterSprites.boy;
@@ -175,8 +178,11 @@ export default function GameWorld({
           ref={hudRef}
           className="fixed top-4 right-4 z-30 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-white shadow-lg"
         >
-          <span
-            className="inline-block h-5 w-5 rounded-full border-2 border-yellow-200 bg-yellow-400"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={THEME_CONFIG.coinSprites.glow}
+            alt=""
+            className="h-6 w-6 object-contain"
             aria-hidden
           />
           <span className="font-display text-sm font-bold tabular-nums">{collectedCount} / 3</span>
@@ -282,7 +288,11 @@ export default function GameWorld({
           src={spriteSrc}
           alt=""
           className={`absolute z-20 select-none ${
-            characterState === "victory" ? "character-victory" : "character-float"
+            characterState === "victory"
+              ? "character-victory"
+              : talking
+                ? "character-talk"
+                : "character-float"
           }`}
           style={{
             top: characterTop,
