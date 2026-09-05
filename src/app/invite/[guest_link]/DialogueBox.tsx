@@ -65,15 +65,22 @@ export default function DialogueBox({
       return;
     }
     onTalkingChange?.(true);
+    // Tracks the count in a plain local variable rather than a
+    // setState(c => ...) functional updater — React can invoke that updater
+    // during its own render/reducer evaluation (not only after the interval
+    // tick), so a side effect nested inside it (finishTyping, which calls
+    // back up to the parent's setState) could fire mid-render and trip
+    // "setState while rendering a different component". Calling finishTyping
+    // here instead, as a plain statement in the interval's callback, keeps
+    // it a normal async event — genuinely outside any render pass.
+    let count = 0;
     const id = setInterval(() => {
-      setRevealedCount((c) => {
-        const next = c + 1;
-        if (next >= fullLength) {
-          clearInterval(id);
-          finishTyping();
-        }
-        return next;
-      });
+      count += 1;
+      setRevealedCount(count);
+      if (count >= fullLength) {
+        clearInterval(id);
+        finishTyping();
+      }
     }, TYPE_SPEED_MS);
     return () => clearInterval(id);
     // Mount-only: this dialogue's text never changes mid-instance (a new
