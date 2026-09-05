@@ -8,8 +8,16 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Nunito as Tailwind's own default sans stack too — this is what
+     Preflight uses for --default-font-family on <html>, so anything that
+     doesn't explicitly request Baloo 2 falls back to Nunito, never the
+     browser's generic system font. */
+  --font-sans: var(--font-nunito);
+  /* Baloo 2 — playful/rounded, for game UI (dialogue, buttons, titles, HUD). */
+  --font-display: var(--font-baloo);
+  /* Nunito — same as --font-sans, kept as its own semantic name for the
+     explicit .font-body class used on form fields/dashboard/fine print. */
+  --font-body: var(--font-nunito);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +30,288 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+}
+
+/* --- KidKad game animations --- */
+
+@keyframes coin-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 8px 4px rgba(250, 204, 21, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 22px 10px rgba(250, 204, 21, 0.95);
+  }
+}
+.coin-glow {
+  animation: coin-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes coin-burst {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.coin-burst {
+  animation: coin-burst 0.28s ease-out forwards;
+}
+
+@keyframes coin-fly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    /* --fly-dx/--fly-dy are measured at runtime from the coin's actual
+       position to the HUD counter's actual position (see GameWorld.tsx) —
+       the vw/vh values are just a fallback if that measurement ever fails. */
+    transform: translate(var(--fly-dx, 65vw), var(--fly-dy, -58vh)) scale(0.1);
+    opacity: 0;
+  }
+}
+.coin-fly {
+  animation: coin-fly 0.5s ease-in forwards;
+}
+
+@keyframes victory-bounce {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.25);
+  }
+}
+.character-victory {
+  animation: victory-bounce 0.4s ease-in-out;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+.confetti-piece {
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes dialogue-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.dialogue-backdrop-enter {
+  animation: dialogue-backdrop-in 0.2s ease-out forwards;
+}
+
+@keyframes dialogue-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.dialogue-backdrop-exit {
+  animation: dialogue-backdrop-out 0.15s ease-in forwards;
+}
+
+@keyframes dialogue-spring-in {
+  0% {
+    transform: translateX(-50%) translateY(40px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-50%) translateY(-6px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+.dialogue-box-enter {
+  animation: dialogue-spring-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes dialogue-slide-out {
+  0% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(30px);
+    opacity: 0;
+  }
+}
+.dialogue-box-exit {
+  animation: dialogue-slide-out 0.15s ease-in forwards;
+}
+
+@keyframes star-warp {
+  0% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  40% {
+    transform: scaleY(10);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+.star-warp {
+  animation: star-warp 0.8s ease-in-out;
+}
+
+/* Reward gift — sealed state: scale/fade entrance layered with a looping
+   glow (drop-shadow, not box-shadow, so it hugs the gift's actual silhouette
+   through all the transparent padding in the source art) to invite a tap.
+   Different properties (transform+opacity vs filter), so both run at once
+   with no conflict; "forwards" on the entrance holds its rest state after. */
+@keyframes gift-spawn-in {
+  0% {
+    transform: translateX(-50%) scale(0.3);
+    opacity: 0;
+  }
+  70% {
+    transform: translateX(-50%) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes gift-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(250, 204, 21, 0.95));
+  }
+}
+.gift-idle {
+  animation:
+    gift-spawn-in 0.5s ease-out forwards,
+    gift-glow-pulse 1.6s ease-in-out infinite;
+}
+
+/* On tap: a bit of extra CSS "pop" beyond what swapping to the opened
+   artwork alone gives. */
+@keyframes gift-pop {
+  0% {
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    transform: translateX(-50%) scale(1.2);
+  }
+  100% {
+    transform: translateX(-50%) scale(1.1);
+  }
+}
+.gift-pop {
+  animation: gift-pop 0.35s ease-out forwards;
+}
+
+@keyframes title-float-in {
+  0% {
+    transform: translateY(140px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes title-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.title-character {
+  animation:
+    title-float-in 0.6s ease-out forwards,
+    title-bob 2.4s ease-in-out 0.6s infinite;
+}
+
+.start-mission-btn {
+  box-shadow:
+    0 0 18px 4px rgba(147, 197, 253, 0.45),
+    0 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Gentle zero-gravity tumble — duration/delay are randomized per element
+   inline so decorations don't all bob in sync. --deco-rot and --deco-scale
+   are also set per element, so repeats of the same asset don't look like
+   identical copy-pasted duplicates. */
+@keyframes decoration-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--deco-rot, 0deg)) scale(var(--deco-scale, 1));
+  }
+  50% {
+    transform: translateY(-6px) rotate(calc(var(--deco-rot, 0deg) + 3deg)) scale(var(--deco-scale, 1));
+  }
+}
+.decoration-float {
+  animation-name: decoration-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes character-float {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-8px) rotate(-2deg);
+  }
+}
+.character-float {
+  animation: character-float 3.2s ease-in-out infinite;
+}
+
+/* Space-themed dialogue box: glowing cyan border + a faint star-fleck texture. */
+.dialogue-space-glow {
+  box-shadow:
+    0 0 24px 4px rgba(34, 211, 238, 0.35),
+    0 0 0 1px rgba(34, 211, 238, 0.15) inset;
+}
+.dialogue-space-bg {
+  background-color: #0f1442;
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+    radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    radial-gradient(circle at 45% 85%, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 90% 15%, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size:
+    60px 60px,
+    80px 80px,
+    50px 50px,
+    70px 70px;
 }
