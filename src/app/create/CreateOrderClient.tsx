@@ -4,24 +4,57 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/lib/types";
 import type { DialogueTone } from "@/lib/dialogue-tones";
+import WelcomeStep from "./WelcomeStep";
+import ChildInfoStep from "./ChildInfoStep";
 import CharacterSelectStep from "./CharacterSelectStep";
 import ToneSelectStep from "./ToneSelectStep";
-import DetailsFormStep, { DEFAULT_DETAILS_FIELDS, DetailsFields } from "./DetailsFormStep";
+import ThemeSelectStep from "./ThemeSelectStep";
+import PhotoUploadStep from "./PhotoUploadStep";
+import EventDetailsStep, { EventDetailsFields } from "./EventDetailsStep";
+import ParentDetailsStep, { ParentDetailsFields } from "./ParentDetailsStep";
+import PreviewStep from "./PreviewStep";
 
-type Step = 1 | 2 | 3;
+type Step =
+  | "welcome"
+  | "childInfo"
+  | "character"
+  | "tone"
+  | "theme"
+  | "photo"
+  | "eventDetails"
+  | "parentDetails"
+  | "preview";
+
+const DEFAULT_EVENT: EventDetailsFields = {
+  partyDate: "",
+  partyTime: "",
+  partyVenue: "",
+  dressCode: "",
+  rsvpDeadline: "",
+  rsvpDeadlineTouched: false,
+  personalMessage: "",
+};
+
+const DEFAULT_PARENT: ParentDetailsFields = {
+  parentName: "",
+  parentEmail: "",
+  rsvpPhoneContact: "",
+};
 
 export default function CreateOrderClient() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>(1);
+  const [step, setStep] = useState<Step>("welcome");
+
+  const [childName, setChildName] = useState("");
+  const [childAge, setChildAge] = useState("");
   const [character, setCharacter] = useState<Character | null>(null);
   const [tone, setTone] = useState<DialogueTone | null>(null);
-  const [fields, setFields] = useState<DetailsFields>(DEFAULT_DETAILS_FIELDS);
+  const [childPhotoUrl, setChildPhotoUrl] = useState("");
+  const [event, setEvent] = useState<EventDetailsFields>(DEFAULT_EVENT);
+  const [parent, setParent] = useState<ParentDetailsFields>(DEFAULT_PARENT);
+
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  function handleFieldsChange(patch: Partial<DetailsFields>) {
-    setFields((prev) => ({ ...prev, ...patch }));
-  }
 
   async function handleSubmit() {
     if (!character || !tone) return;
@@ -34,18 +67,18 @@ export default function CreateOrderClient() {
         body: JSON.stringify({
           character,
           dialogueTone: tone,
-          childName: fields.childName.trim(),
-          childAge: Number(fields.childAge),
-          childPhotoUrl: fields.childPhotoUrl,
-          personalMessage: fields.personalMessage.trim(),
-          parentName: fields.parentName.trim(),
-          parentEmail: fields.parentEmail.trim(),
-          partyDate: fields.partyDate,
-          partyTime: fields.partyTime,
-          partyVenue: fields.partyVenue.trim(),
-          dressCode: fields.dressCode.trim(),
-          rsvpDeadline: fields.rsvpDeadline,
-          rsvpPhoneContact: fields.rsvpPhoneContact.trim(),
+          childName: childName.trim(),
+          childAge: Number(childAge),
+          childPhotoUrl,
+          personalMessage: event.personalMessage.trim(),
+          parentName: parent.parentName.trim(),
+          parentEmail: parent.parentEmail.trim(),
+          partyDate: event.partyDate,
+          partyTime: event.partyTime,
+          partyVenue: event.partyVenue.trim(),
+          dressCode: event.dressCode.trim(),
+          rsvpDeadline: event.rsvpDeadline,
+          rsvpPhoneContact: parent.rsvpPhoneContact.trim(),
         }),
       });
       const data = await res.json();
@@ -57,46 +90,109 @@ export default function CreateOrderClient() {
     }
   }
 
-  if (step === 1) {
-    return (
-      <CharacterSelectStep
-        selected={character}
-        onSelect={setCharacter}
-        onContinue={() => setStep(2)}
-      />
-    );
-  }
+  switch (step) {
+    case "welcome":
+      return <WelcomeStep onStart={() => setStep("childInfo")} />;
 
-  if (step === 2) {
-    if (!character) {
-      setStep(1);
-      return null;
-    }
-    return (
-      <ToneSelectStep
-        character={character}
-        selected={tone}
-        onSelect={setTone}
-        onBack={() => setStep(1)}
-        onContinue={() => setStep(3)}
-      />
-    );
-  }
+    case "childInfo":
+      return (
+        <ChildInfoStep
+          childName={childName}
+          childAge={childAge}
+          onChange={(patch) => {
+            if (patch.childName !== undefined) setChildName(patch.childName);
+            if (patch.childAge !== undefined) setChildAge(patch.childAge);
+          }}
+          onContinue={() => setStep("character")}
+        />
+      );
 
-  if (!tone) {
-    setStep(2);
-    return null;
-  }
+    case "character":
+      return (
+        <CharacterSelectStep
+          selected={character}
+          onSelect={setCharacter}
+          onBack={() => setStep("childInfo")}
+          onContinue={() => setStep("tone")}
+        />
+      );
 
-  return (
-    <DetailsFormStep
-      tone={tone}
-      fields={fields}
-      onChange={handleFieldsChange}
-      onBack={() => setStep(2)}
-      onSubmit={handleSubmit}
-      submitting={submitting}
-      submitError={submitError}
-    />
-  );
+    case "tone":
+      if (!character) {
+        setStep("character");
+        return null;
+      }
+      return (
+        <ToneSelectStep
+          character={character}
+          childName={childName}
+          childAge={childAge}
+          selected={tone}
+          onSelect={setTone}
+          onBack={() => setStep("character")}
+          onContinue={() => setStep("theme")}
+        />
+      );
+
+    case "theme":
+      return (
+        <ThemeSelectStep onBack={() => setStep("tone")} onContinue={() => setStep("photo")} />
+      );
+
+    case "photo":
+      return (
+        <PhotoUploadStep
+          childPhotoUrl={childPhotoUrl}
+          onChange={setChildPhotoUrl}
+          onBack={() => setStep("theme")}
+          onContinue={() => setStep("eventDetails")}
+        />
+      );
+
+    case "eventDetails":
+      if (!tone) {
+        setStep("tone");
+        return null;
+      }
+      return (
+        <EventDetailsStep
+          tone={tone}
+          fields={event}
+          onChange={(patch) => setEvent((prev) => ({ ...prev, ...patch }))}
+          onBack={() => setStep("photo")}
+          onContinue={() => setStep("parentDetails")}
+        />
+      );
+
+    case "parentDetails":
+      return (
+        <ParentDetailsStep
+          fields={parent}
+          onChange={(patch) => setParent((prev) => ({ ...prev, ...patch }))}
+          onBack={() => setStep("eventDetails")}
+          onContinue={() => setStep("preview")}
+        />
+      );
+
+    case "preview":
+      if (!character || !tone) {
+        setStep("character");
+        return null;
+      }
+      return (
+        <PreviewStep
+          character={character}
+          tone={tone}
+          childName={childName}
+          childAge={childAge}
+          childPhotoUrl={childPhotoUrl}
+          event={event}
+          parent={parent}
+          onBack={() => setStep("parentDetails")}
+          onSubmit={handleSubmit}
+          submitting={submitting}
+          submitError={submitError}
+        />
+      );
+  }
 }

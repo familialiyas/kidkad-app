@@ -7,19 +7,22 @@ import { playSfx } from "@/lib/sfx";
 import DialogueBox from "../invite/[guest_link]/DialogueBox";
 import StarfieldBackground from "./StarfieldBackground";
 
-const PREVIEW_VARS = { name: "Alex", age: "5" };
 const PREVIEW_ANCHOR_Y = 430;
 
 const TONE_ORDER: DialogueTone[] = ["excited", "sweet", "silly"];
 
 export default function ToneSelectStep({
   character,
+  childName,
+  childAge,
   selected,
   onSelect,
   onBack,
   onContinue,
 }: {
   character: Character;
+  childName: string;
+  childAge: string;
   selected: DialogueTone | null;
   onSelect: (tone: DialogueTone) => void;
   onBack: () => void;
@@ -27,7 +30,10 @@ export default function ToneSelectStep({
 }) {
   const sprite = THEME_CONFIG.characterSprites[character].idle;
   const previewTone = selected ?? "excited";
-  const previewLine = fillTemplate(DIALOGUE_TONES[previewTone].opening, PREVIEW_VARS);
+  const previewLine = fillTemplate(DIALOGUE_TONES[previewTone].opening, {
+    name: childName,
+    age: childAge,
+  });
 
   return (
     <div className="relative min-h-screen">
@@ -45,17 +51,17 @@ export default function ToneSelectStep({
       <DialogueBox
         key={previewTone}
         photoUrl={null}
-        name={PREVIEW_VARS.name}
+        name={childName}
         anchorY={PREVIEW_ANCHOR_Y}
         segments={[{ text: previewLine }]}
       />
 
       <div className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t-4 border-cyan-400/40 bg-[#0a0e27] px-4 pt-4 pb-6 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]">
         <p className="font-display text-center text-xs font-bold tracking-widest text-cyan-300/70 uppercase">
-          Step 2 of 3
+          Step 3 of 8
         </p>
         <h2 className="font-display mt-1 text-center text-lg font-bold text-white">
-          Pick a voice for {PREVIEW_VARS.name}
+          Pick a voice for {childName}
         </h2>
 
         <div className="mt-4 flex flex-col gap-2">

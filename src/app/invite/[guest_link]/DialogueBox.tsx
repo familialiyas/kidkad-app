@@ -42,6 +42,7 @@ export default function DialogueBox({
   const [isExiting, setIsExiting] = useState(false);
   const [revealedCount, setRevealedCount] = useState(0);
   const completedRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fullLength = segments ? segmentsFullLength(segments) : 0;
   const isComplete = !segments || revealedCount >= fullLength;
@@ -79,10 +80,15 @@ export default function DialogueBox({
       setRevealedCount(count);
       if (count >= fullLength) {
         clearInterval(id);
+        intervalRef.current = null;
         finishTyping();
       }
     }, TYPE_SPEED_MS);
-    return () => clearInterval(id);
+    intervalRef.current = id;
+    return () => {
+      clearInterval(id);
+      intervalRef.current = null;
+    };
     // Mount-only: this dialogue's text never changes mid-instance (a new
     // screen mounts a whole new DialogueBox), so the typing loop should
     // start exactly once against the props it was given at mount.
@@ -113,7 +119,14 @@ export default function DialogueBox({
   function handleTapDismiss() {
     if (isExiting) return;
     if (!isComplete) {
-      // First tap while typing: snap to the full sentence instead of dismissing.
+      // First tap while typing: snap to the full sentence instead of
+      // dismissing. The interval must be stopped here — otherwise its next
+      // tick (running independently of this click) overwrites the jump
+      // back down to its own smaller internal counter a moment later.
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setRevealedCount(fullLength);
       finishTyping();
       return;

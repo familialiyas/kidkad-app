@@ -23,6 +23,7 @@ import AudioToggle, { AudioToggleHandle } from "./AudioToggle";
 import { THEME_CONFIG } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment } from "@/lib/typewriter";
+import { DIALOGUE_TONES, fillTemplate } from "@/lib/dialogue-tones";
 
 const ICONS = {
   calendar: "/assets/theme/space/icons/icon-calendar.png",
@@ -275,7 +276,15 @@ function Game({
   // some fixed far-off world position.
   const rewardTop = characterTop + REWARD_OFFSET_FROM_CHARACTER;
 
-  const openingSegments: DialogueSegment[] = [{ text: order.personal_message ?? "" }];
+  const tone = order.dialogue_tone ?? "excited";
+  const openingSegments: DialogueSegment[] = [
+    {
+      text: fillTemplate(DIALOGUE_TONES[tone].opening, {
+        name: childName,
+        age: String(order.child_age ?? ""),
+      }),
+    },
+  ];
 
   const coin1Segments: DialogueSegment[] = [];
   if (order.party_date) {
@@ -315,6 +324,16 @@ function Game({
   const rsvpNoSegments: DialogueSegment[] = [
     { text: "Aw, we'll miss you! Hope to celebrate with you next time." },
   ];
+
+  // Plain, non-typewritten, no highlighting/icon — deliberately distinct
+  // from the structured tone-driven dialogue text around it, since this is
+  // the parent's own verbatim words, not game copy.
+  const personalMessageBlock = order.personal_message ? (
+    <div className="mb-1 rounded-lg bg-black/20 p-3 text-left">
+      <p className="font-display text-xs font-bold text-cyan-300/80">{childName} says</p>
+      <p className="font-body mt-1 text-sm text-slate-100">{order.personal_message}</p>
+    </div>
+  ) : null;
 
   return (
     <div className="relative">
@@ -411,37 +430,40 @@ function Game({
           icon={ICONS.celebration}
           onTalkingChange={setIsDialogueTyping}
           footer={
-            gameMode === "replay" ? (
-              <DialogueButton theme="space" onClick={onReplayDone}>
-                Back to my invite
-              </DialogueButton>
-            ) : deadlinePassed ? (
-              <a
-                href={buildWhatsAppLink(
-                  order.rsvp_phone_contact,
-                  `Hi! Regarding ${childName}'s party...`
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <DialogueButton type="button" theme="space" className="w-full">
-                  WhatsApp the host
+            <>
+              {personalMessageBlock}
+              {gameMode === "replay" ? (
+                <DialogueButton theme="space" onClick={onReplayDone}>
+                  Back to my invite
                 </DialogueButton>
-              </a>
-            ) : (
-              <>
-                <DialogueButton theme="space" onClick={() => setScreen({ kind: "rsvpYes" })}>
-                  Accept Invitation
-                </DialogueButton>
-                <DialogueButton
-                  variant="secondary"
-                  theme="space"
-                  onClick={() => setScreen({ kind: "rsvpNo" })}
+              ) : deadlinePassed ? (
+                <a
+                  href={buildWhatsAppLink(
+                    order.rsvp_phone_contact,
+                    `Hi! Regarding ${childName}'s party...`
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Maybe Next Time
-                </DialogueButton>
-              </>
-            )
+                  <DialogueButton type="button" theme="space" className="w-full">
+                    WhatsApp the host
+                  </DialogueButton>
+                </a>
+              ) : (
+                <>
+                  <DialogueButton theme="space" onClick={() => setScreen({ kind: "rsvpYes" })}>
+                    Accept Invitation
+                  </DialogueButton>
+                  <DialogueButton
+                    variant="secondary"
+                    theme="space"
+                    onClick={() => setScreen({ kind: "rsvpNo" })}
+                  >
+                    Maybe Next Time
+                  </DialogueButton>
+                </>
+              )}
+            </>
           }
         />
       )}

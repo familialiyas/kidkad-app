@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import StarfieldBackground from "../../StarfieldBackground";
+import CopyLinkRow from "../CopyLinkRow";
 
 export default async function CreateSuccessPage({
   params,
@@ -17,6 +20,13 @@ export default async function CreateSuccessPage({
     .maybeSingle();
 
   if (!order) notFound();
+
+  const headerList = await headers();
+  const host = headerList.get("host") ?? "";
+  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
+  const origin = host ? `${protocol}://${host}` : "";
+  const guestUrl = `${origin}/invite/${order.guest_link}`;
+  const adminUrl = `${origin}/dashboard/${order.admin_link}`;
 
   const rows: [string, string | number | null][] = [
     ["order_token", order.order_token],
@@ -41,34 +51,44 @@ export default async function CreateSuccessPage({
   ];
 
   return (
-    <div className="font-body min-h-screen bg-gray-50 px-4 py-10">
-      <div className="mx-auto max-w-lg">
-        <h1 className="text-xl font-bold text-gray-900">Draft order created</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          This confirms the draft row in Supabase. Payment/preview comes next.
+    <div className="relative min-h-screen px-4 py-10">
+      <StarfieldBackground seed={`kidkad-success-${order.order_token}`} />
+      <div className="mx-auto max-w-md text-center">
+        <h1 className="font-display text-2xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
+          Your invitation is ready!
+        </h1>
+        <p className="font-body mt-2 text-sm text-cyan-100/70">
+          Payment isn&apos;t wired up yet, so this link is live right away — share it with your
+          guests whenever you&apos;re ready.
         </p>
 
-        <div className="mt-4 rounded-xl border-2 border-gray-900 bg-white p-4">
-          <p className="text-xs font-bold tracking-widest text-gray-400 uppercase">Order token</p>
-          <p className="mt-1 font-mono text-lg font-bold text-gray-900 break-all">
-            {order.order_token}
-          </p>
+        <div className="mt-6 flex flex-col gap-3">
+          <CopyLinkRow label="Guest game link" url={guestUrl} />
+          <CopyLinkRow label="Your dashboard link (see RSVPs)" url={adminUrl} />
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white">
-          {rows.map(([key, value]) => (
-            <div key={key} className="flex flex-col gap-0.5 border-b border-gray-100 px-4 py-3 last:border-0">
-              <span className="text-xs font-bold text-gray-400">{key}</span>
-              <span className="text-sm break-all text-gray-900">
-                {value === null || value === "" ? (
-                  <span className="text-red-600">— empty —</span>
-                ) : (
-                  String(value)
-                )}
-              </span>
-            </div>
-          ))}
-        </div>
+        <details className="font-body mt-8 text-left text-xs text-cyan-100/60">
+          <summary className="cursor-pointer font-bold text-cyan-300/70">
+            Full order details (verification)
+          </summary>
+          <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
+            {rows.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex flex-col gap-0.5 border-b border-white/10 px-4 py-2.5 last:border-0"
+              >
+                <span className="font-bold text-cyan-300/50">{key}</span>
+                <span className="text-white/80 break-all">
+                  {value === null || value === "" ? (
+                    <span className="text-red-400">— empty —</span>
+                  ) : (
+                    String(value)
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        </details>
       </div>
     </div>
   );

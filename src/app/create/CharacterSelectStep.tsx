@@ -8,10 +8,12 @@ import StarfieldBackground from "./StarfieldBackground";
 export default function CharacterSelectStep({
   selected,
   onSelect,
+  onBack,
   onContinue,
 }: {
   selected: Character | null;
   onSelect: (character: Character) => void;
+  onBack: () => void;
   onContinue: () => void;
 }) {
   const cards: { key: Character; label: string }[] = [
@@ -25,7 +27,7 @@ export default function CharacterSelectStep({
 
       <div>
         <p className="font-display text-xs font-bold tracking-widest text-cyan-300/70 uppercase">
-          Step 1 of 3
+          Step 2 of 8
         </p>
         <h1 className="font-display mt-2 text-2xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
           Who&apos;s celebrating?
@@ -64,17 +66,29 @@ export default function CharacterSelectStep({
         })}
       </div>
 
-      <button
-        type="button"
-        disabled={!selected}
-        onClick={() => {
-          playSfx("buttonTap");
-          onContinue();
-        }}
-        className="font-display w-full max-w-md rounded-xl bg-cyan-400 px-6 py-3.5 text-base font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-30 disabled:active:scale-100"
-      >
-        Continue
-      </button>
+      <div className="flex w-full max-w-md gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            playSfx("buttonTap");
+            onBack();
+          }}
+          className="font-display rounded-xl border-2 border-cyan-400/40 px-5 py-3.5 text-sm font-bold text-cyan-300"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          disabled={!selected}
+          onClick={() => {
+            playSfx("buttonTap");
+            onContinue();
+          }}
+          className="font-display flex-1 rounded-xl bg-cyan-400 px-6 py-3.5 text-base font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-30 disabled:active:scale-100"
+        >
+          Continue
+        </button>
+      </div>
     </div>
   );
 }
