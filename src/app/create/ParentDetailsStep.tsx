@@ -75,7 +75,6 @@ export default function ParentDetailsStep({
               className={darkInputClass}
               value={fields.parentName}
               onChange={(e) => onChange({ parentName: e.target.value })}
-              placeholder="e.g. Aliya"
             />
           </label>
           <FieldError message={errors.parentName} />
@@ -90,7 +89,6 @@ export default function ParentDetailsStep({
               value={fields.parentEmail}
               onChange={(e) => onChange({ parentEmail: e.target.value })}
               onBlur={handleEmailBlur}
-              placeholder="you@example.com"
             />
           </label>
           <p className="font-body mt-1 text-xs text-cyan-100/60">
@@ -106,7 +104,7 @@ export default function ParentDetailsStep({
               className={darkInputClass}
               value={fields.rsvpPhoneContact}
               onChange={(e) => onChange({ rsvpPhoneContact: e.target.value })}
-              placeholder="60123456789"
+              placeholder="e.g. 0123456789"
               inputMode="tel"
             />
           </label>
