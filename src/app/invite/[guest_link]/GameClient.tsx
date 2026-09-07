@@ -40,6 +40,7 @@ type Screen =
   | { kind: "none" }
   | { kind: "coin"; coinId: 1 | 2 | 3 }
   | { kind: "reward" }
+  | { kind: "missionCompleteIntro" }
   | { kind: "missionComplete" }
   | { kind: "rsvpYes" }
   | { kind: "rsvpNo" };
@@ -224,7 +225,9 @@ function Game({
       setWarping(true);
       setTimeout(() => {
         setWarping(false);
-        setRewardSpawned(true); // now the gift mounts and plays its entrance animation
+        // Ceremony beat before the gift — its onTalkingChange callback
+        // below spawns the gift once this dialogue finishes typing out.
+        setScreen({ kind: "missionCompleteIntro" });
       }, WARP_MS);
     } else {
       setScreen({ kind: "none" });
@@ -317,11 +320,7 @@ function Game({
       ? [{ text: "Yay, you found all the coins again! Thanks for playing!" }]
       : deadlinePassed
         ? [{ text: "RSVP is now closed. Please contact the host directly." }]
-        : [
-            {
-              text: "Yay, you found all the coins! Here's your reward — a special invitation to my birthday party! Will you come?",
-            },
-          ];
+        : [{ text: DIALOGUE_TONES[tone].missionComplete }];
 
   const rsvpNoSegments: DialogueSegment[] = [
     { text: "Aw, we'll miss you! Hope to celebrate with you next time." },
@@ -420,6 +419,27 @@ function Game({
           segments={coin3Segments}
           icon={ICONS.dresscode}
           onTalkingChange={setIsDialogueTyping}
+        />
+      )}
+
+      {screen.kind === "missionCompleteIntro" && (
+        <DialogueBox
+          photoUrl={order.child_photo_url}
+          name={childName}
+          anchorY={dialogueAnchorY}
+          segments={missionCompleteSegments}
+          icon={ICONS.celebration}
+          onTapDismiss={() => {}}
+          onTalkingChange={(typing) => {
+            setIsDialogueTyping(typing);
+            if (typing) return;
+            // Typing just finished (naturally or via skip-tap either way) —
+            // a short beat, then the gift spawns and takes over the screen.
+            setTimeout(() => {
+              setRewardSpawned(true);
+              setScreen({ kind: "reward" });
+            }, 500);
+          }}
         />
       )}
 

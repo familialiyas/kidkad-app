@@ -11,6 +11,18 @@ export function parsePartyTime(partyTime: string | null): { hours: number; minut
   return { hours, minutes };
 }
 
+/** Converts a native <input type="time"> 24h value ("15:00") into the
+ * friendly "H:MM AM/PM" string ("3:00 PM") this app stores/displays
+ * party_time as everywhere else (coin dialogue text, return-visit screen). */
+export function formatTimeForStorage(hhmm: string): string {
+  if (!hhmm) return "";
+  const [h, m] = hhmm.split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return hhmm;
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
 /** Combines an ISO date ("2026-09-18") and a free-text time into a local Date. */
 export function partyDateTime(partyDate: string, partyTime: string | null): Date {
   const [year, month, day] = partyDate.split("-").map(Number);

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/lib/types";
 import type { DialogueTone } from "@/lib/dialogue-tones";
+import { formatTimeForStorage } from "@/lib/date";
 import WelcomeStep from "./WelcomeStep";
 import ChildInfoStep from "./ChildInfoStep";
 import CharacterSelectStep from "./CharacterSelectStep";
@@ -74,7 +75,7 @@ export default function CreateOrderClient() {
           parentName: parent.parentName.trim(),
           parentEmail: parent.parentEmail.trim(),
           partyDate: event.partyDate,
-          partyTime: event.partyTime,
+          partyTime: formatTimeForStorage(event.partyTime),
           partyVenue: event.partyVenue.trim(),
           dressCode: event.dressCode.trim(),
           rsvpDeadline: event.rsvpDeadline,

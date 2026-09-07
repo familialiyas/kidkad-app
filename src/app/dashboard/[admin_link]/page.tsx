@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import type { Rsvp } from "@/lib/types";
+import { isPastDeadline } from "@/lib/date";
+import type { Order, Rsvp } from "@/lib/types";
 import DashboardClient from "./DashboardClient";
+import EditInvitationSection from "./EditInvitationSection";
 
 export default async function DashboardPage({
   params,
@@ -12,7 +14,7 @@ export default async function DashboardPage({
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, child_name")
+    .select("*")
     .eq("admin_link", admin_link)
     .maybeSingle();
 
@@ -24,5 +26,17 @@ export default async function DashboardPage({
     .eq("order_id", order.id)
     .order("created_at", { ascending: true });
 
-  return <DashboardClient childName={order.child_name} rsvps={(rsvps ?? []) as Rsvp[]} />;
+  // isPastDeadline is a generic "has this date fully passed" check — reused
+  // here for the party date itself rather than the RSVP deadline.
+  const isPastParty = isPastDeadline(order.party_date);
+
+  return (
+    <DashboardClient childName={order.child_name} rsvps={(rsvps ?? []) as Rsvp[]}>
+      <EditInvitationSection
+        adminLink={admin_link}
+        order={order as Order}
+        isPastParty={isPastParty}
+      />
+    </DashboardClient>
+  );
 }

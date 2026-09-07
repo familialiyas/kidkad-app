@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { Rsvp } from "@/lib/types";
 
 function toCsv(rsvps: Rsvp[]): string {
@@ -30,9 +31,11 @@ function downloadCsv(filename: string, content: string) {
 export default function DashboardClient({
   childName,
   rsvps,
+  children,
 }: {
   childName: string | null;
   rsvps: Rsvp[];
+  children?: ReactNode;
 }) {
   const totalPax = rsvps.reduce((sum, r) => sum + r.pax_count, 0);
 
@@ -92,6 +95,8 @@ export default function DashboardClient({
             </tbody>
           </table>
         </div>
+
+        {children}
       </div>
     </div>
   );
