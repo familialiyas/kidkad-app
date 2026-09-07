@@ -24,12 +24,14 @@ import { THEME_CONFIG } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment } from "@/lib/typewriter";
 import { DIALOGUE_TONES, fillTemplate } from "@/lib/dialogue-tones";
+import { CalendarIcon, LocationIcon, DressCodeIcon, CelebrationIcon } from "./PartyIcons";
 
+const ICON_CLASS = "h-6 w-6";
 const ICONS = {
-  calendar: "/assets/theme/space/icons/icon-calendar.png",
-  location: "/assets/theme/space/icons/icon-location.png",
-  dresscode: "/assets/theme/space/icons/icon-dresscode.png",
-  celebration: "/assets/theme/space/icons/icon-celebration.png",
+  calendar: <CalendarIcon className={ICON_CLASS} />,
+  location: <LocationIcon className={ICON_CLASS} />,
+  dresscode: <DressCodeIcon className={ICON_CLASS} />,
+  celebration: <CelebrationIcon className={ICON_CLASS} />,
 };
 
 type Screen =

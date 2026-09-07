@@ -27,7 +27,7 @@ export default function DialogueBox({
   /** Typed conversational text, revealed character-by-character. Highlighted segments get the accent treatment + pop. */
   segments?: DialogueSegment[];
   /** Small icon shown beside the typed text (e.g. a calendar icon for the date/time dialogue). */
-  icon?: string;
+  icon?: ReactNode;
   /** Ignored when onTapDismiss is set — tap-anywhere dialogues show a hint instead of buttons. */
   footer?: ReactNode;
   /** For single-action "read this and continue" dialogues: the whole screen dismisses it, no button. */
@@ -192,15 +192,7 @@ export default function DialogueBox({
             <div className="mt-3 min-h-[3rem] text-[16.5px] leading-relaxed text-slate-100">
               {segments ? (
                 <div className="flex items-start gap-2">
-                  {icon && (
-                    <span
-                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-400"
-                      aria-hidden
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={icon} alt="" className="h-5 w-5 object-contain" />
-                    </span>
-                  )}
+                  {icon && <span className="mt-0.5 shrink-0 text-cyan-400">{icon}</span>}
                   <p>
                     {sliceSegments(segments, revealedCount).map((seg, i) =>
                       seg.highlight ? (
