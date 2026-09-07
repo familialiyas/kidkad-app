@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import StepShell, { FieldError } from "./StepShell";
+import PhotoCropModal from "./PhotoCropModal";
 
 export default function PhotoUploadStep({
   childPhotoUrl,
@@ -18,18 +19,31 @@ export default function PhotoUploadStep({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [continueError, setContinueError] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(childPhotoUrl || null);
+  const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadError(null);
     setContinueError(null);
-    setPhotoPreview(URL.createObjectURL(file));
+    setRawImageSrc(URL.createObjectURL(file));
+    // Allow re-selecting the same file later without the browser treating it as unchanged.
+    e.target.value = "";
+  }
+
+  function closeCropModal() {
+    if (rawImageSrc) URL.revokeObjectURL(rawImageSrc);
+    setRawImageSrc(null);
+  }
+
+  async function handleCropConfirm(croppedBlob: Blob) {
+    closeCropModal();
+    setPhotoPreview(URL.createObjectURL(croppedBlob));
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", croppedBlob, "photo.png");
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
@@ -92,6 +106,14 @@ export default function PhotoUploadStep({
         {uploadError && <p className="text-xs font-semibold text-red-400">{uploadError}</p>}
         <FieldError message={continueError ?? undefined} />
       </div>
+
+      {rawImageSrc && (
+        <PhotoCropModal
+          imageSrc={rawImageSrc}
+          onCancel={closeCropModal}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </StepShell>
   );
 }

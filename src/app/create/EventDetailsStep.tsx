@@ -37,6 +37,8 @@ function validate(fields: EventDetailsFields): Errors {
   if (!fields.partyVenue.trim()) errors.partyVenue = "Enter the venue location";
   if (!fields.dressCode.trim()) errors.dressCode = "Enter a dress code";
   if (!fields.rsvpDeadline) errors.rsvpDeadline = "Pick an RSVP deadline";
+  else if (fields.partyDate && fields.rsvpDeadline > fields.partyDate)
+    errors.rsvpDeadline = "RSVP deadline can't be after the party date";
   if (!fields.personalMessage.trim()) errors.personalMessage = "Write a personal message";
   return errors;
 }
@@ -156,6 +158,7 @@ export default function EventDetailsStep({
               type="date"
               className={darkInputClass}
               value={fields.rsvpDeadline}
+              max={fields.partyDate || undefined}
               onChange={(e) => onChange({ rsvpDeadline: e.target.value, rsvpDeadlineTouched: true })}
             />
           </label>
