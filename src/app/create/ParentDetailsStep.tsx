@@ -61,7 +61,7 @@ export default function ParentDetailsStep({
   return (
     <StepShell
       stepLabel="Step 7 of 8"
-      title="Your details"
+      title="Share Your Details"
       subtitle="This is how guests can reach you, and how we'll send your links."
       onBack={onBack}
       onContinue={handleContinue}

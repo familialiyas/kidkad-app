@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { DialogueTone } from "@/lib/dialogue-tones";
 import { PERSONAL_MESSAGE_SAMPLES } from "@/lib/dialogue-tones";
 import { playSfx } from "@/lib/sfx";
@@ -58,8 +58,6 @@ export default function EventDetailsStep({
 }) {
   const [errors, setErrors] = useState<Errors>({});
   const [sampleIndex, setSampleIndex] = useState(0);
-  const partyDateRef = useRef<HTMLInputElement>(null);
-  const partyTimeRef = useRef<HTMLInputElement>(null);
 
   function handlePartyDateChange(value: string) {
     const patch: Partial<EventDetailsFields> = { partyDate: value };
@@ -95,7 +93,7 @@ export default function EventDetailsStep({
   return (
     <StepShell
       stepLabel="Step 6 of 8"
-      title="Party details"
+      title="Share Your Party Details"
       onBack={onBack}
       onContinue={handleContinue}
       starSeed="kidkad-create-form-event"
@@ -104,22 +102,12 @@ export default function EventDetailsStep({
         <div data-field="partyDate">
           <label className={darkLabelClass}>
             Party date
-            <div className="mt-1 flex gap-2">
-              <input
-                ref={partyDateRef}
-                type="date"
-                className={`${darkInputClass} mt-0 flex-1`}
-                value={fields.partyDate}
-                onChange={(e) => handlePartyDateChange(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => partyDateRef.current?.blur()}
-                className="font-display shrink-0 rounded-lg bg-cyan-400 px-4 text-sm font-bold text-slate-900 active:scale-95"
-              >
-                OK
-              </button>
-            </div>
+            <input
+              type="date"
+              className={darkInputClass}
+              value={fields.partyDate}
+              onChange={(e) => handlePartyDateChange(e.target.value)}
+            />
           </label>
           <FieldError message={errors.partyDate} />
         </div>
@@ -127,22 +115,12 @@ export default function EventDetailsStep({
         <div data-field="partyTime">
           <label className={darkLabelClass}>
             Party time
-            <div className="mt-1 flex gap-2">
-              <input
-                ref={partyTimeRef}
-                type="time"
-                className={`${darkInputClass} mt-0 flex-1`}
-                value={fields.partyTime}
-                onChange={(e) => onChange({ partyTime: e.target.value })}
-              />
-              <button
-                type="button"
-                onClick={() => partyTimeRef.current?.blur()}
-                className="font-display shrink-0 rounded-lg bg-cyan-400 px-4 text-sm font-bold text-slate-900 active:scale-95"
-              >
-                OK
-              </button>
-            </div>
+            <input
+              type="time"
+              className={darkInputClass}
+              value={fields.partyTime}
+              onChange={(e) => onChange({ partyTime: e.target.value })}
+            />
           </label>
           <FieldError message={errors.partyTime} />
         </div>

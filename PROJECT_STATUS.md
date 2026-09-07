@@ -215,3 +215,6 @@ implemented in this codebase yet.
   exist, nothing branches on the value yet.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
+- Brand identity not finalized — the "KidKad" text on the `/create` welcome
+  screen is a placeholder wordmark (no logo asset yet), and the navy/cyan
+  palette used throughout is not confirmed as final brand colors.

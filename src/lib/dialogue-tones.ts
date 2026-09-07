@@ -8,33 +8,29 @@ export const TONE_LABELS: Record<DialogueTone, string> = {
 
 export const DIALOGUE_TONES = {
   excited: {
-    opening:
-      "Hi hi! I'm {name} and I'm turning {age} this time! I am SO excited, come help me collect all my mission coins so you can come to my party!",
-    dateTime:
-      "My party is happening on {date} at {time} — I cannot wait, mark your calendar right now!",
-    location: "We're partying at {venue}! It's going to be SO much fun, get ready!",
-    dressCode: "Oh and guess what, everyone's coming dressed {dresscode}! How cool is that?!",
+    opening: "Hi hi! I'm {name} and I'm turning {age}! Help me collect all my mission coins!",
+    dateTime: "Mark your calendars — my mission happens on {date} at {time}!",
+    location: "The mission takes place at {venue} — see you there!",
+    dressCode: "Oh and wear {dresscode} — gotta look the part!",
     missionComplete:
-      "YOU DID IT! You found every single coin! Here's your reward, come celebrate with me at my party!",
+      "Woohoo, you did it! Mission complete — can't wait to see you at my party!",
   },
   sweet: {
     opening:
-      "Hello, I'm {name}, and I'm turning {age} soon. I'd love for you to join me, will you help me find my mission coins?",
-    dateTime: "My special day is {date}, starting at {time}. I do hope you can make it.",
-    location: "We'll be celebrating at {venue}. I can't wait to see you there.",
-    dressCode: "It would make me so happy if you came dressed {dresscode}.",
-    missionComplete:
-      "Thank you so much for finding all my coins. Here is my gift to you, an invitation to my birthday.",
+      "Hello, I'm {name}, and I'm turning {age} soon. Would you help me find my coins?",
+    dateTime: "My special day is on {date}, starting at {time}.",
+    location: "It will take place at {venue}.",
+    dressCode: "It would mean a lot if you wore {dresscode}.",
+    missionComplete: "Thank you so much for helping me. I really hope to see you there.",
   },
   silly: {
     opening:
-      "Heyyy, it's me, {name}! I'm turning {age}, which basically makes me a wizard now. Help me grab my coins so you can come to my party, please and thank you!",
-    dateTime:
-      "Party alert! It's happening {date} at {time}. Set a bunch of alarms if you have to, just don't be late!",
-    location: "The party zone is at {venue}. Bring snacks, that part isn't a joke.",
-    dressCode: "Dress code is {dresscode}, no excuses, even the cat has an outfit ready.",
+      "Psst, it's me, {name}! I'm turning {age}, which is basically ancient in kid years! Help me grab my coins, quick quick!",
+    dateTime: "Circle this on your calendar with a giant marker: {date} at {time}!",
+    location: "The party HQ is located at {venue}. Don't get lost, I need you there!",
+    dressCode: "Wear {dresscode} or the space cats will be very confused.",
     missionComplete:
-      "WHOA. You actually found them all. I'm shook. Here's your reward, human, my birthday invitation!",
+      "BOOM! Mission complete! You're basically a superhero now, see you at the party!",
   },
 } as const;
 

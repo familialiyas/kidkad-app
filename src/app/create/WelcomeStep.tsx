@@ -1,6 +1,5 @@
 "use client";
 
-import { THEME_CONFIG } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import StarfieldBackground from "./StarfieldBackground";
 
@@ -9,30 +8,14 @@ export default function WelcomeStep({ onStart }: { onStart: () => void }) {
     <div className="relative flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-10 text-center">
       <StarfieldBackground />
 
-      <div className="flex items-end justify-center gap-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={THEME_CONFIG.characterSprites.girl.idle}
-          alt=""
-          className="h-32 w-auto object-contain sm:h-40"
-          draggable={false}
-          aria-hidden
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={THEME_CONFIG.characterSprites.boy.idle}
-          alt=""
-          className="h-32 w-auto object-contain sm:h-40"
-          draggable={false}
-          aria-hidden
-        />
-      </div>
-
       <div>
-        <h1 className="font-display text-3xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
-          KidKad
+        {/* Placeholder text wordmark until a real logo asset exists. The
+            navy/cyan palette isn't finalized either — both are known
+            pending items, tracked in PROJECT_STATUS.md. */}
+        <h1 className="font-display text-5xl font-bold tracking-wide text-white drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]">
+          Kid<span className="text-cyan-400">Kad</span>
         </h1>
-        <p className="font-display mt-3 max-w-xs text-lg font-bold text-cyan-300">
+        <p className="font-display mt-4 max-w-xs text-lg font-bold text-cyan-300">
           give your birthday invite main character energy
         </p>
       </div>

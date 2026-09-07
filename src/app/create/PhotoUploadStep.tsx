@@ -67,7 +67,7 @@ export default function PhotoUploadStep({
   return (
     <StepShell
       stepLabel="Step 5 of 8"
-      title="Add a photo"
+      title="Add A Photo"
       onBack={onBack}
       onContinue={handleContinue}
       continueDisabled={uploading}

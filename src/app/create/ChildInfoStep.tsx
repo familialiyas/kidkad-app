@@ -28,7 +28,7 @@ export default function ChildInfoStep({
   return (
     <StepShell
       stepLabel="Step 1 of 8"
-      title="Who's the star of the show?"
+      title="Meet Your Star"
       subtitle="We'll use this to personalize everything from here on."
       onContinue={handleContinue}
       starSeed="kidkad-create-form"

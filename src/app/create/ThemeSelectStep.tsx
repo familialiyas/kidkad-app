@@ -12,7 +12,7 @@ export default function ThemeSelectStep({
   return (
     <StepShell
       stepLabel="Step 4 of 8"
-      title="Pick a theme"
+      title="Pick A Theme"
       subtitle="More themes are on the way — space is ready to go now."
       onBack={onBack}
       onContinue={onContinue}

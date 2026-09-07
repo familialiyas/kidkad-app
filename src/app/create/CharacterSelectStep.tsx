@@ -3,7 +3,7 @@
 import { THEME_CONFIG } from "@/lib/theme-config";
 import type { Character } from "@/lib/types";
 import { playSfx } from "@/lib/sfx";
-import StarfieldBackground from "./StarfieldBackground";
+import StepShell from "./StepShell";
 
 export default function CharacterSelectStep({
   selected,
@@ -22,22 +22,17 @@ export default function CharacterSelectStep({
   ];
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-10 text-center">
-      <StarfieldBackground />
-
-      <div>
-        <p className="font-display text-xs font-bold tracking-widest text-cyan-300/70 uppercase">
-          Step 2 of 8
-        </p>
-        <h1 className="font-display mt-2 text-2xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
-          Choose Your Character
-        </h1>
-      </div>
-
-      <div className="flex w-full max-w-md items-stretch justify-center gap-4">
+    <StepShell
+      stepLabel="Step 2 of 8"
+      title="Pick Your Character"
+      onBack={onBack}
+      onContinue={onContinue}
+      continueDisabled={!selected}
+      starSeed="kidkad-create-form"
+    >
+      <div className="flex flex-col gap-3">
         {cards.map((card) => {
           const isSelected = selected === card.key;
-          const isDimmed = selected !== null && !isSelected;
           const sprite = THEME_CONFIG.characterSprites[card.key].idle;
           return (
             <button
@@ -47,48 +42,50 @@ export default function CharacterSelectStep({
                 playSfx("buttonTap");
                 onSelect(card.key);
               }}
-              className={`flex flex-1 flex-col items-center gap-3 rounded-2xl border-4 p-4 transition-all duration-200 ${
+              className={`flex items-center gap-4 rounded-2xl border-4 p-4 text-left transition-all duration-200 ${
                 isSelected
-                  ? "scale-105 border-cyan-400 bg-cyan-400/10 shadow-[0_0_28px_6px_rgba(34,211,238,0.5)]"
-                  : "border-cyan-400/20 bg-white/5"
-              } ${isDimmed ? "opacity-40" : "opacity-100"}`}
+                  ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_24px_4px_rgba(34,211,238,0.35)]"
+                  : "border-white/10 bg-white/5"
+              }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={sprite}
-                alt={card.label}
-                className="h-36 w-full object-contain sm:h-44"
-                draggable={false}
-              />
-              <span className="font-display text-sm font-bold text-white">{card.label}</span>
+              {/* Headshot crop of the full-body sprite — scales better as a
+                  list than the previous large full-body cards, especially
+                  once more characters are added. */}
+              <span className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-slate-800">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={sprite}
+                  alt={card.label}
+                  className="h-full w-full object-cover object-top"
+                  draggable={false}
+                />
+              </span>
+              <span className="font-display flex-1 text-base font-bold text-white">
+                {card.label}
+              </span>
+              <span
+                className={`font-display shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                  isSelected
+                    ? "bg-cyan-400 text-slate-900"
+                    : "border-2 border-white/20 text-white/50"
+                }`}
+              >
+                {isSelected ? "Selected" : "Select"}
+              </span>
             </button>
           );
         })}
-      </div>
 
-      <div className="flex w-full max-w-md gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            playSfx("buttonTap");
-            onBack();
-          }}
-          className="font-display rounded-xl border-2 border-cyan-400/40 px-5 py-3.5 text-sm font-bold text-cyan-300"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          disabled={!selected}
-          onClick={() => {
-            playSfx("buttonTap");
-            onContinue();
-          }}
-          className="font-display flex-1 rounded-xl bg-cyan-400 px-6 py-3.5 text-base font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-30 disabled:active:scale-100"
-        >
-          Continue
-        </button>
+        <div className="flex items-center gap-4 rounded-2xl border-4 border-white/10 bg-white/5 p-4 opacity-60">
+          <span className="h-16 w-16 shrink-0 rounded-full bg-white/10" aria-hidden />
+          <span className="font-display flex-1 text-base font-bold text-white/70">
+            More coming soon
+          </span>
+          <span className="font-display shrink-0 rounded-full border-2 border-white/20 px-3 py-1 text-xs font-bold text-white/50">
+            Locked
+          </span>
+        </div>
       </div>
-    </div>
+    </StepShell>
   );
 }

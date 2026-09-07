@@ -61,7 +61,7 @@ export default function ToneSelectStep({
           Step 3 of 8
         </p>
         <h2 className="font-display mt-1 text-center text-lg font-bold text-white">
-          Pick a voice for {childName}
+          Pick A Voice
         </h2>
 
         <div className="mt-4 flex flex-col gap-2">
