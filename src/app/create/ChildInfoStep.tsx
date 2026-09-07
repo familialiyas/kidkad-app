@@ -41,7 +41,6 @@ export default function ChildInfoStep({
               className={darkInputClass}
               value={childName}
               onChange={(e) => onChange({ childName: e.target.value })}
-              placeholder="e.g. Ziyad"
             />
           </label>
           <FieldError message={errors.childName} />
@@ -57,7 +56,6 @@ export default function ChildInfoStep({
               className={darkInputClass}
               value={childAge}
               onChange={(e) => onChange({ childAge: e.target.value.replace(/\D/g, "") })}
-              placeholder="e.g. 5"
             />
           </label>
           <FieldError message={errors.childAge} />
