@@ -193,13 +193,13 @@ export default function DialogueBox({
               {segments ? (
                 <div className="flex items-start gap-2">
                   {icon && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={icon}
-                      alt=""
-                      className="mt-0.5 h-6 w-6 shrink-0 object-contain"
+                    <span
+                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-400"
                       aria-hidden
-                    />
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={icon} alt="" className="h-5 w-5 object-contain" />
+                    </span>
                   )}
                   <p>
                     {sliceSegments(segments, revealedCount).map((seg, i) =>
