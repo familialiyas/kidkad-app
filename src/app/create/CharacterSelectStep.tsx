@@ -30,7 +30,7 @@ export default function CharacterSelectStep({
           Step 2 of 8
         </p>
         <h1 className="font-display mt-2 text-2xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
-          Who&apos;s celebrating?
+          Choose Your Character
         </h1>
       </div>
 
