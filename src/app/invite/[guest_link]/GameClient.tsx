@@ -44,7 +44,9 @@ type Screen =
   | { kind: "missionCompleteIntro" }
   | { kind: "missionComplete" }
   | { kind: "rsvpYes" }
-  | { kind: "rsvpNo" };
+  | { kind: "rsvpNo" }
+  | { kind: "menu" }
+  | { kind: "eventDetails" };
 
 export default function GameClient({ order }: { order: PublicOrder }) {
   // Must start at "checking" on both server and client — the server has no
@@ -160,6 +162,10 @@ function Game({
   const [showConfetti, setShowConfetti] = useState(false);
   const [rsvpSubmitting, setRsvpSubmitting] = useState(false);
   const [rsvpError, setRsvpError] = useState<string | null>(null);
+  const [payingFromMenu, setPayingFromMenu] = useState(false);
+  const [menuPayError, setMenuPayError] = useState<string | null>(null);
+
+  const isPreview = order.payment_status !== "paid";
 
   const deadlinePassed = useMemo(
     () => isPastDeadline(order.rsvp_deadline),
@@ -168,13 +174,28 @@ function Game({
 
   // Locked for every dialogue (not just modal-style ones): the dialogue box
   // now anchors its position to the character's current on-screen spot, so
-  // the world underneath needs to hold still while it's showing.
+  // the world underneath needs to hold still while it's showing. This also
+  // covers the title screen itself (the initial state), so the tall world
+  // underneath can't be dragged into view before "Start Mission" is pressed.
   const scrollLocked = screen.kind !== "none";
 
   useEffect(() => {
-    document.body.style.overflow = scrollLocked ? "hidden" : "";
-    return () => {
+    if (!scrollLocked) {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      return;
+    }
+    // Setting overflow:hidden on body alone doesn't reliably stop touch
+    // rubber-band scrolling on mobile Safari/Chrome — lock the root element
+    // too and swallow touchmove outright while locked.
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    const preventTouchMove = (e: TouchEvent) => e.preventDefault();
+    document.addEventListener("touchmove", preventTouchMove, { passive: false });
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.removeEventListener("touchmove", preventTouchMove);
     };
   }, [scrollLocked]);
 
@@ -283,6 +304,28 @@ function Game({
     }
   }
 
+  // Same create-payment flow as the "Create e-card" button in /create's
+  // review step, just reached from inside the game via the menu instead —
+  // looked up by guest_link since that's the only identifier this
+  // guest-facing client ever has (order_token stays server-side).
+  async function handleProceedToPayment() {
+    setPayingFromMenu(true);
+    setMenuPayError(null);
+    try {
+      const res = await fetch("/api/create-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guest_link: order.guest_link }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      window.location.href = `https://toyyibpay.com/${data.billCode}`;
+    } catch (err) {
+      setMenuPayError(err instanceof Error ? err.message : "Something went wrong");
+      setPayingFromMenu(false);
+    }
+  }
+
   const childName = order.child_name ?? "me";
   // Character's current viewport-relative head position — dialogues anchor just above this.
   const dialogueAnchorY = characterTop - scrollY + CHARACTER_HEIGHT * CHARACTER_HEAD_Y_RATIO;
@@ -348,6 +391,23 @@ function Game({
   return (
     <div className="relative">
       <AudioToggle ref={audioToggleRef} src={THEME_CONFIG.backgroundMusicSrc} />
+
+      {/* Positioned below the coin-count HUD (also top-right, z-30) rather
+          than overlapping it — opposite the mute button, same size/style. */}
+      {screen.kind !== "title" && (
+        <button
+          type="button"
+          onClick={() => {
+            playSfx("buttonTap");
+            setScreen({ kind: "menu" });
+          }}
+          aria-label="Menu"
+          className="fixed top-16 right-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-xl leading-none text-white shadow-lg"
+        >
+          ☰
+        </button>
+      )}
+
       <GameWorld
         character={order.character}
         characterState={characterState}
@@ -511,6 +571,7 @@ function Game({
             submitting={rsvpSubmitting}
             error={rsvpError}
             onSubmit={handleRsvpSubmit}
+            previewLocked={isPreview}
           />
         </DialogueBox>
       )}
@@ -528,6 +589,113 @@ function Game({
             </DialogueButton>
           }
         />
+      )}
+
+      {screen.kind === "menu" && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          onClick={() => setScreen({ kind: "none" })}
+          role="button"
+          tabIndex={0}
+        >
+          <div className="absolute inset-0 bg-black/50" aria-hidden />
+          {/* Same paper-cutout card DialogueBox itself renders behind its text —
+              reused directly here rather than a plain rectangle, so the menu
+              still looks like it belongs to the rest of the game's UI. */}
+          <div
+            className="relative z-10 w-full max-w-xs p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="dialogue-paper-bg" aria-hidden />
+            <div className="font-display relative z-10 flex flex-col gap-2.5">
+              <h2 className="mb-1 text-center text-base font-bold text-cyan-300">Menu</h2>
+              <DialogueButton
+                theme="space"
+                onClick={() => {
+                  setMenuPayError(null);
+                  setScreen({ kind: "eventDetails" });
+                }}
+              >
+                View Event Details
+              </DialogueButton>
+              {isPreview && (
+                <DialogueButton theme="space" disabled={payingFromMenu} onClick={handleProceedToPayment}>
+                  {payingFromMenu ? "Redirecting…" : "Happy with it? Proceed to Payment"}
+                </DialogueButton>
+              )}
+              {menuPayError && (
+                <p className="text-center text-xs font-semibold text-red-400">{menuPayError}</p>
+              )}
+              <DialogueButton
+                variant="secondary"
+                theme="space"
+                onClick={() => setScreen({ kind: "none" })}
+              >
+                Close
+              </DialogueButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {screen.kind === "eventDetails" && (
+        <DialogueBox
+          photoUrl={order.child_photo_url}
+          name={childName}
+          anchorY={dialogueAnchorY}
+          onTapDismiss={() => setScreen({ kind: "none" })}
+        >
+          {/* Static (no typewriter) — jumps straight to the info instead of
+              replaying the coin-collection sequence, reusing the same
+              icon+highlight rows the coin dialogues use. */}
+          <div className="flex flex-col gap-3 text-left">
+            {(order.party_date || order.party_time) && (
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 shrink-0 text-cyan-400">{ICONS.calendar}</span>
+                <p>
+                  {order.party_date && (
+                    <>
+                      My party is on{" "}
+                      <span className="dialogue-highlight">
+                        {formatConversationalDate(order.party_date)}
+                      </span>
+                      !{" "}
+                    </>
+                  )}
+                  {order.party_time && (
+                    <>
+                      It starts at{" "}
+                      <span className="dialogue-highlight">
+                        {order.party_time}
+                      </span>
+                      .
+                    </>
+                  )}
+                </p>
+              </div>
+            )}
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5 shrink-0 text-cyan-400">{ICONS.location}</span>
+              <p>
+                We&apos;re having it at{" "}
+                <span className="dialogue-highlight">
+                  {order.party_venue}
+                </span>
+                !
+              </p>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="mt-0.5 shrink-0 text-cyan-400">{ICONS.dresscode}</span>
+              <p>
+                Come dressed in{" "}
+                <span className="dialogue-highlight">
+                  {order.dress_code}
+                </span>
+                !
+              </p>
+            </div>
+          </div>
+        </DialogueBox>
       )}
     </div>
   );

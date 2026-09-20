@@ -14,6 +14,7 @@ import PhotoUploadStep from "./PhotoUploadStep";
 import EventDetailsStep, { EventDetailsFields } from "./EventDetailsStep";
 import ParentDetailsStep, { ParentDetailsFields } from "./ParentDetailsStep";
 import PreviewStep from "./PreviewStep";
+import { getCreateDraft, setCreateDraft, clearCreateDraft } from "@/lib/create-draft-storage";
 
 type Step =
   | "welcome"
@@ -73,6 +74,38 @@ export default function CreateOrderClient() {
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
+  // Restores an in-progress draft from localStorage on first mount — only
+  // relevant here, since the draft is cleared the moment a draft order is
+  // successfully created below. A brief flash of the "welcome" step before
+  // this lands is an accepted tradeoff, same as the mute-preference restore
+  // in AudioToggle elsewhere in this app.
+  useEffect(() => {
+    // Deferred via a microtask (not a bare synchronous call), matching the
+    // same localStorage-restore pattern AudioToggle uses elsewhere in this app.
+    Promise.resolve().then(() => {
+      const draft = getCreateDraft();
+      if (!draft) return;
+      setStep(draft.step as Step);
+      setChildName(draft.childName);
+      setChildAge(draft.childAge);
+      setCharacter(draft.character);
+      setTone(draft.tone);
+      setChildPhotoUrl(draft.childPhotoUrl);
+      setEvent(draft.event);
+      setParent(draft.parent);
+    });
+  }, []);
+
+  // Debounced draft auto-save — stops once a real order exists (the draft
+  // is explicitly cleared then, so there's nothing left to keep saving).
+  useEffect(() => {
+    if (order) return;
+    const id = setTimeout(() => {
+      setCreateDraft({ step, childName, childAge, character, tone, childPhotoUrl, event, parent });
+    }, 500);
+    return () => clearTimeout(id);
+  }, [step, childName, childAge, character, tone, childPhotoUrl, event, parent, order]);
+
   useEffect(() => {
     if (step !== "preview" || order || createError) return;
     if (orderRequestedRef.current) return;
@@ -103,6 +136,7 @@ export default function CreateOrderClient() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Something went wrong");
         setOrder({ order_token: data.order.order_token, guest_link: data.order.guest_link });
+        clearCreateDraft();
       } catch (err) {
         orderRequestedRef.current = false;
         setCreateError(err instanceof Error ? err.message : "Something went wrong");

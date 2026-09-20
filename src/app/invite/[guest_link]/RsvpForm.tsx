@@ -17,6 +17,7 @@ export default function RsvpForm({
   onSubmit,
   onCancel,
   theme = "amber",
+  previewLocked = false,
 }: {
   initialValues?: Partial<RsvpFormValues>;
   submitLabel?: string;
@@ -26,6 +27,10 @@ export default function RsvpForm({
   onCancel?: () => void;
   /** "space" for the in-game (dark, cyan-bordered) dialogue; "amber" for the return-visit screen's own cream card. */
   theme?: "space" | "amber";
+  /** True on an unpaid order — the form still renders (so the guest can see
+   * what RSVPing looks like), but submission is disabled. The server also
+   * independently rejects unpaid writes, this is just the UI reflection. */
+  previewLocked?: boolean;
 }) {
   const [guestName, setGuestName] = useState(initialValues?.guestName ?? "");
   const [guestPhone, setGuestPhone] = useState(initialValues?.guestPhone ?? "");
@@ -41,6 +46,7 @@ export default function RsvpForm({
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (previewLocked) return;
     const paxCount = parseInt(paxText, 10);
     if (!guestName.trim() || !guestPhone.trim() || !paxCount || paxCount < 1) return;
     onSubmit({ guestName: guestName.trim(), guestPhone: guestPhone.trim(), paxCount });
@@ -85,10 +91,15 @@ export default function RsvpForm({
           className={inputClass}
         />
       </label>
+      {previewLocked && (
+        <p className={errorClass}>
+          This is a preview — RSVP will open once the invitation is live.
+        </p>
+      )}
       {error && <p className={errorClass}>{error}</p>}
       <div className="mt-1 flex flex-col gap-2">
-        <DialogueButton type="submit" theme={theme} disabled={submitting}>
-          {submitting ? "Submitting..." : submitLabel}
+        <DialogueButton type="submit" theme={theme} disabled={submitting || previewLocked}>
+          {submitting ? "Submitting..." : previewLocked ? "Not available in preview" : submitLabel}
         </DialogueButton>
         {onCancel && (
           <DialogueButton

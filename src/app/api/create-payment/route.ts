@@ -17,16 +17,24 @@ function sanitizeForBill(value: string, maxLength: number): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { order_token } = (await req.json()) as { order_token?: string };
-  if (!order_token) {
-    return NextResponse.json({ error: "Missing order_token" }, { status: 400 });
+  // order_token is used from /create's review step (fresh order, not yet
+  // exposed to any client bundle beyond this one); guest_link is used from
+  // inside the game's menu, since the guest-facing client never receives
+  // order_token at all.
+  const { order_token, guest_link } = (await req.json()) as {
+    order_token?: string;
+    guest_link?: string;
+  };
+  if (!order_token && !guest_link) {
+    return NextResponse.json({ error: "Missing order_token or guest_link" }, { status: 400 });
   }
 
-  const { data: order, error: fetchError } = await supabaseAdmin
+  const lookup = supabaseAdmin
     .from("orders")
-    .select("order_token, child_name, parent_name, parent_email, rsvp_phone_contact, payment_status")
-    .eq("order_token", order_token)
-    .maybeSingle();
+    .select("order_token, child_name, parent_name, parent_email, rsvp_phone_contact, payment_status");
+  const { data: order, error: fetchError } = await (
+    order_token ? lookup.eq("order_token", order_token) : lookup.eq("guest_link", guest_link!)
+  ).maybeSingle();
 
   if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });

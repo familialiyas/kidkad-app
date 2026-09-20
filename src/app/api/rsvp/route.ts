@@ -7,7 +7,7 @@ const PARENT_NOTIFICATION_EMAIL = "parent-placeholder@kidkad.app";
 async function getOrderByGuestLink(guestLink: string) {
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .select("id, child_name, rsvp_deadline")
+    .select("id, child_name, rsvp_deadline, payment_status")
     .eq("guest_link", guestLink)
     .maybeSingle();
   if (error) throw error;
@@ -50,6 +50,16 @@ export async function POST(req: NextRequest) {
 
   const order = await getOrderByGuestLink(guestLink);
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
+  // Preview links (payment not yet completed) must never be able to write a
+  // real RSVP row — enforced here independent of the client's own disabled
+  // button, since that's only a UI hint.
+  if (order.payment_status !== "paid") {
+    return NextResponse.json(
+      { error: "RSVP isn't available yet — this invitation is still in preview" },
+      { status: 403 }
+    );
+  }
 
   if (isPastDeadline(order.rsvp_deadline)) {
     return NextResponse.json({ error: "RSVP deadline has passed" }, { status: 403 });
