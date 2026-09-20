@@ -44,6 +44,7 @@ export interface Rsvp {
 export type PublicOrder = Pick<
   Order,
   | "guest_link"
+  | "payment_status"
   | "template"
   | "character"
   | "dialogue_tone"

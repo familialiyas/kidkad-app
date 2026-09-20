@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import StarfieldBackground from "../../StarfieldBackground";
 import CopyLinkRow from "../CopyLinkRow";
+import PaymentPendingPanel from "../PaymentPendingPanel";
 
 export default async function CreateSuccessPage({
   params,
@@ -20,6 +21,8 @@ export default async function CreateSuccessPage({
     .maybeSingle();
 
   if (!order) notFound();
+
+  const isPaid = order.payment_status === "paid";
 
   const headerList = await headers();
   const host = headerList.get("host") ?? "";
@@ -55,40 +58,49 @@ export default async function CreateSuccessPage({
       <StarfieldBackground seed={`kidkad-success-${order.order_token}`} />
       <div className="mx-auto max-w-md text-center">
         <h1 className="font-display text-2xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
-          Your invitation is ready!
+          {isPaid ? "Your invitation is ready!" : "Almost there!"}
         </h1>
         <p className="font-body mt-2 text-sm text-cyan-100/70">
-          Payment isn&apos;t wired up yet, so this link is live right away — share it with your
-          guests whenever you&apos;re ready.
+          {isPaid
+            ? "Share these links with your guests whenever you're ready."
+            : "We're just waiting on payment confirmation before showing your links."}
         </p>
 
-        <div className="mt-6 flex flex-col gap-3">
-          <CopyLinkRow label="Guest game link" url={guestUrl} />
-          <CopyLinkRow label="Your dashboard link (see RSVPs)" url={adminUrl} />
-        </div>
+        {isPaid ? (
+          <>
+            <div className="mt-6 flex flex-col gap-3">
+              <CopyLinkRow label="Guest game link" url={guestUrl} />
+              <CopyLinkRow label="Your dashboard link (see RSVPs)" url={adminUrl} />
+            </div>
 
-        <details className="font-body mt-8 text-left text-xs text-cyan-100/60">
-          <summary className="cursor-pointer font-bold text-cyan-300/70">
-            Full order details (verification)
-          </summary>
-          <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
-            {rows.map(([key, value]) => (
-              <div
-                key={key}
-                className="flex flex-col gap-0.5 border-b border-white/10 px-4 py-2.5 last:border-0"
-              >
-                <span className="font-bold text-cyan-300/50">{key}</span>
-                <span className="text-white/80 break-all">
-                  {value === null || value === "" ? (
-                    <span className="text-red-400">— empty —</span>
-                  ) : (
-                    String(value)
-                  )}
-                </span>
+            <details className="font-body mt-8 text-left text-xs text-cyan-100/60">
+              <summary className="cursor-pointer font-bold text-cyan-300/70">
+                Full order details (verification)
+              </summary>
+              <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
+                {rows.map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex flex-col gap-0.5 border-b border-white/10 px-4 py-2.5 last:border-0"
+                  >
+                    <span className="font-bold text-cyan-300/50">{key}</span>
+                    <span className="text-white/80 break-all">
+                      {value === null || value === "" ? (
+                        <span className="text-red-400">— empty —</span>
+                      ) : (
+                        String(value)
+                      )}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </details>
+            </details>
+          </>
+        ) : (
+          // Guests can land here via toyyibPay's return URL before the
+          // callback has finished processing — poll rather than assume failure.
+          <PaymentPendingPanel />
+        )}
       </div>
     </div>
   );

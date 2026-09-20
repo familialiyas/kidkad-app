@@ -8,6 +8,11 @@ import StepShell from "./StepShell";
 import type { EventDetailsFields } from "./EventDetailsStep";
 import type { ParentDetailsFields } from "./ParentDetailsStep";
 
+export interface DraftOrder {
+  order_token: string;
+  guest_link: string;
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 border-b border-white/10 py-2.5 last:border-0">
@@ -26,9 +31,14 @@ export default function PreviewStep({
   event,
   parent,
   onBack,
-  onSubmit,
-  submitting,
-  submitError,
+  order,
+  creatingOrder,
+  createError,
+  onRetryCreate,
+  onPreview,
+  onPay,
+  paying,
+  payError,
 }: {
   character: Character;
   tone: DialogueTone;
@@ -38,9 +48,15 @@ export default function PreviewStep({
   event: EventDetailsFields;
   parent: ParentDetailsFields;
   onBack: () => void;
-  onSubmit: () => void;
-  submitting: boolean;
-  submitError: string | null;
+  /** The draft order created as soon as this step is reached — null while it's still being created. */
+  order: DraftOrder | null;
+  creatingOrder: boolean;
+  createError: string | null;
+  onRetryCreate: () => void;
+  onPreview: () => void;
+  onPay: () => void;
+  paying: boolean;
+  payError: string | null;
 }) {
   const sprite = THEME_CONFIG.characterSprites[character].idle;
 
@@ -79,23 +95,55 @@ export default function PreviewStep({
           <Row label="WhatsApp" value={parent.rsvpPhoneContact} />
         </div>
 
-        {submitError && (
-          <p className="w-full rounded-lg bg-red-500/10 p-3 text-sm font-semibold text-red-400">
-            {submitError}
+        {creatingOrder && (
+          <p className="font-body text-sm text-cyan-100/70">Setting up your invitation…</p>
+        )}
+
+        {createError && (
+          <div className="w-full rounded-lg bg-red-500/10 p-3 text-center">
+            <p className="text-sm font-semibold text-red-400">{createError}</p>
+            <button
+              type="button"
+              onClick={onRetryCreate}
+              className="font-display mt-2 text-sm font-bold text-cyan-300 underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {payError && (
+          <p className="w-full rounded-lg bg-red-500/10 p-3 text-center text-sm font-semibold text-red-400">
+            {payError}
           </p>
         )}
 
-        <button
-          type="button"
-          disabled={submitting}
-          onClick={() => {
-            playSfx("buttonTap");
-            onSubmit();
-          }}
-          className="font-display w-full rounded-xl bg-cyan-400 px-6 py-3.5 text-base font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-        >
-          {submitting ? "Creating..." : "Create my invitation"}
-        </button>
+        {order && (
+          <div className="flex w-full flex-col gap-2">
+            <button
+              type="button"
+              disabled={paying}
+              onClick={() => {
+                playSfx("buttonTap");
+                onPay();
+              }}
+              className="font-display w-full rounded-xl bg-cyan-400 px-6 py-3.5 text-base font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            >
+              {paying ? "Redirecting to payment…" : "Create e-card — RM19.90"}
+            </button>
+            <button
+              type="button"
+              disabled={paying}
+              onClick={() => {
+                playSfx("buttonTap");
+                onPreview();
+              }}
+              className="font-display w-full rounded-xl border-2 border-cyan-400/40 px-6 py-3 text-sm font-bold text-cyan-300 active:scale-95 disabled:opacity-50"
+            >
+              Preview e-card
+            </button>
+          </div>
+        )}
       </div>
     </StepShell>
   );

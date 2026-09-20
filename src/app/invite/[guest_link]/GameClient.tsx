@@ -13,6 +13,7 @@ import {
   RewardPhase,
 } from "@/lib/game-constants";
 import GameWorld from "./GameWorld";
+import PreviewWatermark from "./PreviewWatermark";
 import DialogueBox from "./DialogueBox";
 import DialogueButton from "./DialogueButton";
 import Confetti from "./Confetti";
@@ -91,16 +92,21 @@ export default function GameClient({ order }: { order: PublicOrder }) {
     );
   }
 
+  const showWatermark = order.payment_status !== "paid";
+
   if (mode === "returnVisit" && returnRsvp) {
     return (
-      <ReturnVisitScreen
-        order={order}
-        rsvp={returnRsvp}
-        onPlayAgain={() => {
-          setGameMode("replay");
-          setMode("game");
-        }}
-      />
+      <>
+        {showWatermark && <PreviewWatermark />}
+        <ReturnVisitScreen
+          order={order}
+          rsvp={returnRsvp}
+          onPlayAgain={() => {
+            setGameMode("replay");
+            setMode("game");
+          }}
+        />
+      </>
     );
   }
 
@@ -110,15 +116,18 @@ export default function GameClient({ order }: { order: PublicOrder }) {
   // Switching `mode` away from "game" unmounts <Game> entirely, so every
   // fresh mount (initial play or a replay) starts with clean state for free.
   return (
-    <Game
-      order={order}
-      mode={gameMode}
-      onRsvpSuccess={(rsvp) => {
-        setReturnRsvp(rsvp);
-        setMode("returnVisit");
-      }}
-      onReplayDone={() => setMode("returnVisit")}
-    />
+    <>
+      {showWatermark && <PreviewWatermark />}
+      <Game
+        order={order}
+        mode={gameMode}
+        onRsvpSuccess={(rsvp) => {
+          setReturnRsvp(rsvp);
+          setMode("returnVisit");
+        }}
+        onReplayDone={() => setMode("returnVisit")}
+      />
+    </>
   );
 }
 

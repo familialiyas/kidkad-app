@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/lib/types";
 import type { DialogueTone } from "@/lib/dialogue-tones";
@@ -42,6 +42,11 @@ const DEFAULT_PARENT: ParentDetailsFields = {
   rsvpPhoneContact: "",
 };
 
+interface DraftOrder {
+  order_token: string;
+  guest_link: string;
+}
+
 export default function CreateOrderClient() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("welcome");
@@ -54,40 +59,76 @@ export default function CreateOrderClient() {
   const [event, setEvent] = useState<EventDetailsFields>(DEFAULT_EVENT);
   const [parent, setParent] = useState<ParentDetailsFields>(DEFAULT_PARENT);
 
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  // The draft order is created as soon as the review step is reached (not
+  // on an explicit submit click anymore) — both "Preview e-card" and
+  // "Create e-card" act on this same order, one without touching payment.
+  const [order, setOrder] = useState<DraftOrder | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const orderRequestedRef = useRef(false);
+  // Fully derived from the state above rather than its own piece of state —
+  // true from the moment the review step is reached until the draft order
+  // (or an error) lands.
+  const creatingOrder = step === "preview" && !order && !createError;
 
-  async function handleSubmit() {
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (step !== "preview" || order || createError) return;
+    if (orderRequestedRef.current) return;
     if (!character || !tone) return;
-    setSubmitting(true);
-    setSubmitError(null);
+    orderRequestedRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            character,
+            dialogueTone: tone,
+            childName: childName.trim(),
+            childAge: Number(childAge),
+            childPhotoUrl,
+            personalMessage: event.personalMessage.trim(),
+            parentName: parent.parentName.trim(),
+            parentEmail: parent.parentEmail.trim(),
+            partyDate: event.partyDate,
+            partyTime: formatTimeForStorage(event.partyTime),
+            partyVenue: event.partyVenue.trim(),
+            dressCode: event.dressCode.trim(),
+            rsvpDeadline: event.rsvpDeadline,
+            rsvpPhoneContact: parent.rsvpPhoneContact.trim(),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        setOrder({ order_token: data.order.order_token, guest_link: data.order.guest_link });
+      } catch (err) {
+        orderRequestedRef.current = false;
+        setCreateError(err instanceof Error ? err.message : "Something went wrong");
+      }
+    })();
+    // Fires once on entering the review step; `order` staying set is what
+    // prevents re-creating a second draft on Back/Continue round-trips.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, order, createError]);
+
+  async function handlePay() {
+    if (!order) return;
+    setPaying(true);
+    setPayError(null);
     try {
-      const res = await fetch("/api/orders", {
+      const res = await fetch("/api/create-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          character,
-          dialogueTone: tone,
-          childName: childName.trim(),
-          childAge: Number(childAge),
-          childPhotoUrl,
-          personalMessage: event.personalMessage.trim(),
-          parentName: parent.parentName.trim(),
-          parentEmail: parent.parentEmail.trim(),
-          partyDate: event.partyDate,
-          partyTime: formatTimeForStorage(event.partyTime),
-          partyVenue: event.partyVenue.trim(),
-          dressCode: event.dressCode.trim(),
-          rsvpDeadline: event.rsvpDeadline,
-          rsvpPhoneContact: parent.rsvpPhoneContact.trim(),
-        }),
+        body: JSON.stringify({ order_token: order.order_token }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
-      router.push(`/create/success/${data.order.order_token}`);
+      window.location.href = `https://toyyibpay.com/${data.billCode}`;
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Something went wrong");
-      setSubmitting(false);
+      setPayError(err instanceof Error ? err.message : "Something went wrong");
+      setPaying(false);
     }
   }
 
@@ -190,9 +231,17 @@ export default function CreateOrderClient() {
           event={event}
           parent={parent}
           onBack={() => setStep("parentDetails")}
-          onSubmit={handleSubmit}
-          submitting={submitting}
-          submitError={submitError}
+          order={order}
+          creatingOrder={creatingOrder}
+          createError={createError}
+          onRetryCreate={() => {
+            orderRequestedRef.current = false;
+            setCreateError(null);
+          }}
+          onPreview={() => order && router.push(`/invite/${order.guest_link}`)}
+          onPay={handlePay}
+          paying={paying}
+          payError={payError}
         />
       );
   }
