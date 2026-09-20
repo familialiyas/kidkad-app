@@ -33,6 +33,24 @@ body {
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
 }
 
+/* Guards against any single element rendering wider than the viewport on
+   mobile (observed on /create's party-details step, which is the only step
+   using native date/time inputs — their picker widgets can render wider
+   than their own width:100% on some mobile browsers, a well-documented
+   iOS Safari / Android WebView quirk that doesn't reproduce in desktop
+   testing). Vertical scrolling is untouched. */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+input[type="date"],
+input[type="time"] {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* --- KidKad game animations --- */
 
 @keyframes coin-pulse {

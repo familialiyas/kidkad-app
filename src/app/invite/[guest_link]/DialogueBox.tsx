@@ -5,7 +5,12 @@ import { playSfx } from "@/lib/sfx";
 import { DialogueSegment, segmentsFullLength, sliceSegments } from "@/lib/typewriter";
 
 const GAP = 20; // space between the character's head and the box (room for the tail)
-const MARGIN = 12; // minimum distance from the viewport edges
+const BOTTOM_MARGIN = 12; // minimum distance from the bottom viewport edge
+// Clears the fixed mute button (top-4 left-4, h-10 → its bottom edge sits at
+// 56px) plus a buffer — the box's own photo/name header renders ~24px inside
+// its own top edge, so anything smaller here lets that header collide with
+// the mute button on short viewports (confirmed: it does, at MARGIN=12).
+const TOP_MARGIN = 56;
 const EXIT_DURATION_MS = 150;
 const TYPE_SPEED_MS = 24;
 
@@ -113,8 +118,8 @@ export default function DialogueBox({
   // Default: hug just above the character. If there isn't room above (character
   // near the top of the screen), slide down just enough to stay fully visible.
   const desiredTop = anchorY - GAP - measuredHeight;
-  const maxTop = Math.max(viewportHeight - measuredHeight - MARGIN, MARGIN);
-  const top = Math.min(Math.max(desiredTop, MARGIN), maxTop);
+  const maxTop = Math.max(viewportHeight - measuredHeight - BOTTOM_MARGIN, TOP_MARGIN);
+  const top = Math.min(Math.max(desiredTop, TOP_MARGIN), maxTop);
 
   function handleTapDismiss() {
     if (isExiting) return;

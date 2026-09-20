@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import StarfieldBackground from "../../StarfieldBackground";
 import CopyLinkRow from "../CopyLinkRow";
 import PaymentPendingPanel from "../PaymentPendingPanel";
+import ShareReminderBanner from "../ShareReminderBanner";
 
 export default async function CreateSuccessPage({
   params,
@@ -68,6 +69,7 @@ export default async function CreateSuccessPage({
 
         {isPaid ? (
           <>
+            <ShareReminderBanner guestUrl={guestUrl} adminUrl={adminUrl} />
             <div className="mt-6 flex flex-col gap-3">
               <CopyLinkRow label="Guest game link" url={guestUrl} />
               <CopyLinkRow label="Your dashboard link (see RSVPs)" url={adminUrl} />

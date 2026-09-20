@@ -1,5 +1,6 @@
 "use client";
 
+import { useLayoutEffect, useRef, useState } from "react";
 import { THEME_CONFIG } from "@/lib/theme-config";
 import type { Character } from "@/lib/types";
 import { DIALOGUE_TONES, TONE_LABELS, fillTemplate, DialogueTone } from "@/lib/dialogue-tones";
@@ -7,7 +8,12 @@ import { playSfx } from "@/lib/sfx";
 import DialogueBox from "../invite/[guest_link]/DialogueBox";
 import StarfieldBackground from "./StarfieldBackground";
 
-const PREVIEW_ANCHOR_Y = 430;
+const DEFAULT_PREVIEW_ANCHOR_Y = 430;
+// Breathing room between the preview bubble and the sheet below it.
+const SHEET_GAP = 16;
+// Never push the preview bubble so high it collides with the sprite/heading
+// above it, even if the sheet somehow measures unexpectedly tall.
+const MIN_ANCHOR_Y = 180;
 
 const TONE_ORDER: DialogueTone[] = ["excited", "sweet", "silly"];
 
@@ -28,6 +34,34 @@ export default function ToneSelectStep({
   onBack: () => void;
   onContinue: () => void;
 }) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [anchorY, setAnchorY] = useState(DEFAULT_PREVIEW_ANCHOR_Y);
+
+  // The preview bubble above and the tone-picker sheet below are both
+  // independently fixed-positioned, so — unlike normal document flow —
+  // nothing here pushes the other out of the way on its own. Measuring the
+  // sheet's actual rendered height (it varies with content) lets the
+  // preview move up to stay clear of it on short mobile viewports instead
+  // of overlapping (confirmed: at anchorY fixed to 430, a 667px-tall
+  // viewport already overlaps by ~90px).
+  useLayoutEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    function update() {
+      const sheetHeight = el!.getBoundingClientRect().height;
+      const available = window.innerHeight - sheetHeight - SHEET_GAP;
+      setAnchorY(Math.max(Math.min(DEFAULT_PREVIEW_ANCHOR_Y, available), MIN_ANCHOR_Y));
+    }
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
   const sprite = THEME_CONFIG.characterSprites[character].idle;
   const previewTone = selected ?? "excited";
   const previewLine = fillTemplate(DIALOGUE_TONES[previewTone].opening, {
@@ -52,11 +86,14 @@ export default function ToneSelectStep({
         key={previewTone}
         photoUrl={null}
         name={childName}
-        anchorY={PREVIEW_ANCHOR_Y}
+        anchorY={anchorY}
         segments={[{ text: previewLine }]}
       />
 
-      <div className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t-4 border-cyan-400/40 bg-[#0a0e27] px-4 pt-4 pb-6 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]">
+      <div
+        ref={sheetRef}
+        className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t-4 border-cyan-400/40 bg-[#0a0e27] px-4 pt-4 pb-6 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
+      >
         <p className="font-display text-center text-xs font-bold tracking-widest text-cyan-300/70 uppercase">
           Step 3 of 8
         </p>
