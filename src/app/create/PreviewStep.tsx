@@ -58,7 +58,7 @@ export default function PreviewStep({
   paying: boolean;
   payError: string | null;
 }) {
-  const sprite = THEME_CONFIG.characterSprites[character].idle;
+  const sprite = THEME_CONFIG.themes.space.characterSprites[character].idle;
 
   return (
     <StepShell

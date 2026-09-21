@@ -56,7 +56,7 @@ export default function GameWorld({
   talking?: boolean;
 }) {
   const sprites =
-    character === "girl" ? THEME_CONFIG.characterSprites.girl : THEME_CONFIG.characterSprites.boy;
+    character === "girl" ? THEME_CONFIG.themes.space.characterSprites.girl : THEME_CONFIG.themes.space.characterSprites.boy;
   const spriteSrc = characterState === "victory" ? sprites.yay : sprites.idle;
 
   const stars = useMemo(() => generateStars(starSeed, WORLD_HEIGHT), [starSeed]);

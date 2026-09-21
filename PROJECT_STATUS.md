@@ -167,7 +167,11 @@ that manually if needed.
   exist, nothing branches on the value yet. The `/create` theme picker and
   dashboard edit's character/tone selects are the only theme-adjacent UI.
   Asset inventory + spec for what a new theme needs to provide (file list,
-  dimensions, naming) is documented in `public/assets/theme/README.md`.
+  dimensions, naming) is documented in
+  `public/assets/theme/README - Theme.md`. A second theme (`dinosaur`) has
+  its character/decoration assets already in place and wired into
+  `THEME_CONFIG`, but isn't reachable from the UI yet — see that doc's
+  "Making a theme selectable" section for what's still needed.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
 - Brand identity not finalized — the "KidKad" text on the `/create` welcome

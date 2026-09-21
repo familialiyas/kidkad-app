@@ -62,7 +62,7 @@ export default function ToneSelectStep({
     };
   }, []);
 
-  const sprite = THEME_CONFIG.characterSprites[character].idle;
+  const sprite = THEME_CONFIG.themes.space.characterSprites[character].idle;
   const previewTone = selected ?? "excited";
   const previewLine = fillTemplate(DIALOGUE_TONES[previewTone].opening, {
     name: childName,

@@ -18,8 +18,8 @@ export default function TitleScreen({
   const [starting, setStarting] = useState(false);
   const idleSprite =
     character === "girl"
-      ? THEME_CONFIG.characterSprites.girl.idle
-      : THEME_CONFIG.characterSprites.boy.idle;
+      ? THEME_CONFIG.themes.space.characterSprites.girl.idle
+      : THEME_CONFIG.themes.space.characterSprites.boy.idle;
 
   function handleStart() {
     if (starting) return;

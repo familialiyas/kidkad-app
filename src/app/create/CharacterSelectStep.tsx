@@ -33,7 +33,7 @@ export default function CharacterSelectStep({
       <div className="flex flex-col gap-3">
         {cards.map((card) => {
           const isSelected = selected === card.key;
-          const sprite = THEME_CONFIG.characterSprites[card.key].idle;
+          const sprite = THEME_CONFIG.themes.space.characterSprites[card.key].idle;
           return (
             <button
               key={card.key}

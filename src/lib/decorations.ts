@@ -66,14 +66,14 @@ export function generateDecorations(seed: string, worldHeight: number): PlacedDe
   const random = mulberry32(hashStringToSeed(`${seed}:decorations`));
 
   const instances: DecorationInstance[] = [];
-  function queueInstances(defs: typeof THEME_CONFIG.decorations.large, min: number, max: number) {
+  function queueInstances(defs: typeof THEME_CONFIG.themes.space.decorations.large, min: number, max: number) {
     for (const d of defs) {
       const count = min + Math.floor(random() * (max - min + 1));
       for (let i = 0; i < count; i++) instances.push(d);
     }
   }
-  queueInstances(THEME_CONFIG.decorations.large, LARGE_MIN_COUNT, LARGE_MAX_COUNT);
-  queueInstances(THEME_CONFIG.decorations.small, SMALL_MIN_COUNT, SMALL_MAX_COUNT);
+  queueInstances(THEME_CONFIG.themes.space.decorations.large, LARGE_MIN_COUNT, LARGE_MAX_COUNT);
+  queueInstances(THEME_CONFIG.themes.space.decorations.small, SMALL_MIN_COUNT, SMALL_MAX_COUNT);
 
   // Shuffle so large/small types interleave, then walk down the world height
   // slot by slot — this is what guarantees the minimum spacing above.
