@@ -1,25 +1,17 @@
 import type { ParticleConfig } from "./starfield";
+import type { SlotName } from "./decorations";
 
-export interface DecorationAsset {
-  key: string;
-  src: string;
-}
-
-export interface ThemeDecorations {
-  large: DecorationAsset[];
-  small: DecorationAsset[];
-}
-
-/** How many instances of each decoration key spawn per invite — see
- * src/lib/decorations.ts. Per-theme (not shared) since a theme with more
- * distinct decoration keys than another would otherwise end up visibly
- * busier just from having more art, not from any deliberate density choice. */
-export interface DecorationDensity {
-  largeMinCount: number;
-  largeMaxCount: number;
-  smallMinCount: number;
-  smallMaxCount: number;
-}
+/**
+ * One image src per named decoration slot — all 20 required (TypeScript's
+ * `Record<SlotName, string>` enforces this). Size, placement frequency, and
+ * tilt behavior are NOT specified here; they live entirely in
+ * DECORATION_SLOTS (decorations.ts), the master layout extracted from
+ * space's current placement, and apply identically to every theme. A theme
+ * only ever decides which asset fills which slot — see the "CONVENTION"
+ * note on space's `decorations` below and "Adding a new theme from
+ * scratch" in the theme asset README.
+ */
+export type ThemeDecorationAssets = Record<SlotName, string>;
 
 /**
  * Colors for the dialogue box and everything visually attached to it
@@ -62,8 +54,7 @@ export interface ThemeAssets {
   /** e.g. "{name}'s Space Mission" on the title screen — TitleScreen.tsx
    * reads this instead of hardcoding "Space Mission". */
   missionLabel: string;
-  decorations: ThemeDecorations;
-  decorationDensity: DecorationDensity;
+  decorations: ThemeDecorationAssets;
   /** Ambient dot layer (src/lib/starfield.ts) — space uses white "stars",
    * other themes can recolor/resize via this instead of a hardcoded look. */
   particles: ParticleConfig;
@@ -75,14 +66,14 @@ export interface ThemeAssets {
 // Centralized theme assets. Everything that plays backgroundMusicSrc
 // (AudioToggle) reads from here.
 //
-// coin/reward/audio/mute-icon are identical across every theme by product
-// decision, so they live under public/assets/shared/ instead of being
-// duplicated per theme. characterSprites/decorations/particles/skyGradient
-// differ per theme, keyed under `themes` by the orders.template value —
-// resolved via getTheme() below. Only /invite/[guest_link] actually reads
-// an order's template today; /create's steps (CharacterSelectStep,
-// ToneSelectStep, PreviewStep) still hardcode themes.space since there's no
-// theme-picker UI yet (see "Making a theme selectable" in the assets doc).
+// coin/reward/audio are identical across every theme by product decision,
+// so they live under public/assets/shared/ instead of being duplicated per
+// theme. characterSprites/decorations/particles/skyGradient differ per
+// theme, keyed under `themes` by the orders.template value — resolved via
+// getTheme() below. Only /invite/[guest_link] actually reads an order's
+// template today; /create's steps (CharacterSelectStep, ToneSelectStep,
+// PreviewStep) still hardcode themes.space since there's no theme-picker UI
+// yet (see "Making a theme selectable" in the assets doc).
 export const THEME_CONFIG = {
   backgroundMusicSrc: "/assets/shared/audio/bgm-space.mp3",
   coinSprites: {
@@ -112,51 +103,39 @@ export const THEME_CONFIG = {
       missionLabel: "Space Mission",
       // Standardized 512x512 canvas, same as dino — display size/rotation
       // are randomized per placement instance (decorations.ts), not fixed
-      // per-asset. The 3 ringed planets + sun + rocket read as the "grand"
-      // pieces (landmark tier); the plainer round planets are closer in
-      // visual weight to the moons/stars they sit alongside (small tier).
+      // per-asset.
       //
-      // CONVENTION — this theme is the reference layout: exactly 5 large-tier
-      // and 15 small-tier keys (20 total). decorations.ts's placement
-      // algorithm (pairing/symmetry, sizing, the deliberate overlap+hero-size
-      // moments) is driven purely by array length and density config, not by
-      // which specific asset occupies a slot — so every theme, present and
-      // future, should keep this exact 5+15 split to get numerically the
-      // same placement/sizing behavior as space "for free". Adding a new
-      // theme is then just supplying 20 assets and slotting them into these
-      // two arrays (5 anywhere in `large`, 15 anywhere in `small`) — no
-      // changes needed to decorations.ts or decorationDensity.
+      // CONVENTION — this theme IS the master layout: its 20 decoration
+      // slot names (and every slot's size/frequency/tilt config) are
+      // defined once, theme-independently, in DECORATION_SLOTS
+      // (decorations.ts). A theme here supplies only an image src per slot
+      // name — never its own size/density/tilt config — so every theme,
+      // present and future, inherits space's exact placement/sizing/
+      // "crowdiness" behavior automatically. Adding a new theme means
+      // supplying 20 assets and slotting them into these exact 20 names
+      // (any asset-to-slot assignment is fine); no changes needed in
+      // decorations.ts.
       decorations: {
-        large: [
-          { key: "rocket", src: "/assets/theme/space/decorations/rocket.png" },
-          { key: "sun", src: "/assets/theme/space/decorations/sun.png" },
-          { key: "planet-01", src: "/assets/theme/space/decorations/planet-01.png" }, // ringed, tan
-          { key: "planet-04", src: "/assets/theme/space/decorations/planet-04.png" }, // ringed, pink
-          { key: "planet-05", src: "/assets/theme/space/decorations/planet-05.png" }, // ringed, orange
-        ],
-        small: [
-          { key: "planet-02", src: "/assets/theme/space/decorations/planet-02.png" }, // cratered, mars-like
-          { key: "planet-03", src: "/assets/theme/space/decorations/planet03.png" }, // teal striped
-          { key: "planet-06", src: "/assets/theme/space/decorations/planet-06.png" }, // green polka-dot
-          { key: "planet-07", src: "/assets/theme/space/decorations/planet-07.png" }, // teal wave
-          { key: "moon-01", src: "/assets/theme/space/decorations/moon-01.png" },
-          { key: "moon-crescent", src: "/assets/theme/space/decorations/moon-crescent.png" },
-          { key: "star", src: "/assets/theme/space/decorations/star.png" },
-          { key: "star-cluster", src: "/assets/theme/space/decorations/star-cluster.png" },
-          { key: "comet", src: "/assets/theme/space/decorations/comet.png" },
-          { key: "asteroid", src: "/assets/theme/space/decorations/asteroid.png" },
-          { key: "alien-01", src: "/assets/theme/space/decorations/alien-01.png" },
-          { key: "alien-02", src: "/assets/theme/space/decorations/alien-02.png" },
-          { key: "alien-03", src: "/assets/theme/space/decorations/alien-03.png" },
-          { key: "ufo", src: "/assets/theme/space/decorations/ufo.png" },
-          { key: "ufo-02", src: "/assets/theme/space/decorations/ufo-02.png" },
-        ],
-      },
-      decorationDensity: {
-        largeMinCount: 1,
-        largeMaxCount: 2,
-        smallMinCount: 2,
-        smallMaxCount: 4,
+        rocket: "/assets/theme/space/decorations/rocket.png",
+        sun: "/assets/theme/space/decorations/sun.png",
+        "planet-01": "/assets/theme/space/decorations/planet-01.png", // ringed, tan
+        "planet-04": "/assets/theme/space/decorations/planet-04.png", // ringed, pink
+        "planet-05": "/assets/theme/space/decorations/planet-05.png", // ringed, orange
+        "planet-02": "/assets/theme/space/decorations/planet-02.png", // cratered, mars-like
+        "planet-03": "/assets/theme/space/decorations/planet03.png", // teal striped — actual filename has no hyphen
+        "planet-06": "/assets/theme/space/decorations/planet-06.png", // green polka-dot
+        "planet-07": "/assets/theme/space/decorations/planet-07.png", // teal wave
+        "moon-01": "/assets/theme/space/decorations/moon-01.png",
+        "moon-crescent": "/assets/theme/space/decorations/moon-crescent.png",
+        star: "/assets/theme/space/decorations/star.png",
+        "star-cluster": "/assets/theme/space/decorations/star-cluster.png",
+        comet: "/assets/theme/space/decorations/comet.png",
+        asteroid: "/assets/theme/space/decorations/asteroid.png",
+        "alien-01": "/assets/theme/space/decorations/alien-01.png",
+        "alien-02": "/assets/theme/space/decorations/alien-02.png",
+        "alien-03": "/assets/theme/space/decorations/alien-03.png",
+        ufo: "/assets/theme/space/decorations/ufo.png",
+        "ufo-02": "/assets/theme/space/decorations/ufo-02.png",
       },
       particles: {
         color: "#ffffff",
@@ -194,52 +173,39 @@ export const THEME_CONFIG = {
         girl: "Dinogirl",
       },
       missionLabel: "Dino Mission",
-      // Standardized 512x512 canvas — see space's decorations above, and its
-      // "CONVENTION" note: 5 large-tier + 15 small-tier keys, matching
-      // space's split exactly so decorations.ts's placement/sizing behaves
-      // identically (same array-length-driven random() sequence), just with
-      // dino's own art filling the slots. volcano/trees/dino-00 plus the two
-      // biggest standalone dinosaur silhouettes (stegosaurus, triceratops)
-      // are the "grand" pieces; the rest read as closer in visual weight to
-      // each other (small tier) — no asset-for-asset thematic pairing with
-      // space intended, just a matching count per tier.
+      // Standardized 512x512 canvas — see space's decorations above and its
+      // "CONVENTION" note. dino's 20 assets slot into space's 20 named
+      // slots by ROLE/VISUAL WEIGHT, not arbitrary order: the rocket/sun/3
+      // ringed-planet slots (space's biggest, rarest showpieces) go to
+      // dino's biggest, most prominent pieces (volcano, the brontosaurus,
+      // trees, and the two largest standalone dinosaur silhouettes); the
+      // remaining 15 "everyday" slots (plain planets/moons/stars/aliens/
+      // UFOs) go to dino's smaller props and creatures, loosely by feel
+      // (e.g. the flying pterodactyl into the "ufo" slot, the armored
+      // ankylosaurus into "asteroid", baby dinosaurs into the star/alien
+      // slots). No literal thematic pairing intended beyond that — the
+      // point is matching visual weight per slot, not a 1:1 species joke.
       decorations: {
-        large: [
-          { key: "volcano", src: "/assets/theme/dino/decorations/volcano.png" },
-          { key: "trees", src: "/assets/theme/dino/decorations/trees.png" },
-          { key: "dino-00", src: "/assets/theme/dino/decorations/dino-00.png" }, // brontosaurus/longneck
-          { key: "dino-01", src: "/assets/theme/dino/decorations/dino-01.png" }, // stegosaurus
-          { key: "dino-05", src: "/assets/theme/dino/decorations/dino-05.png" }, // triceratops
-        ],
-        small: [
-          { key: "rocks", src: "/assets/theme/dino/decorations/rocks.png" },
-          { key: "mushroom", src: "/assets/theme/dino/decorations/mushroom.png" },
-          { key: "leaf", src: "/assets/theme/dino/decorations/leaf.png" },
-          { key: "footprint", src: "/assets/theme/dino/decorations/footprint.png" },
-          { key: "egg", src: "/assets/theme/dino/decorations/egg.png" },
-          { key: "bone", src: "/assets/theme/dino/decorations/bone.png" },
-          { key: "dino-02", src: "/assets/theme/dino/decorations/dino-02.png" }, // pterodactyl
-          { key: "dino-03", src: "/assets/theme/dino/decorations/dino-03.png" }, // ankylosaurus
-          { key: "dino-04", src: "/assets/theme/dino/decorations/dino-04.png" }, // raptor
-          { key: "baby-dino-01", src: "/assets/theme/dino/decorations/baby-dino-01.png" },
-          { key: "baby-dino-02", src: "/assets/theme/dino/decorations/baby-dino-02.png" },
-          { key: "baby-dino-03", src: "/assets/theme/dino/decorations/baby-dino-03.png" },
-          { key: "baby-dino-04", src: "/assets/theme/dino/decorations/baby-dino-04.png" },
-          { key: "baby-dino-05", src: "/assets/theme/dino/decorations/baby-dino-05.png" },
-          { key: "baby-dino-06", src: "/assets/theme/dino/decorations/baby-dino-06.png" },
-        ],
-      },
-      // Matches space's density (2-4 per small-tier key) — an earlier pass
-      // halved this to 1-2 because the then-fully-random placement read as
-      // cluttered/overlapping at the full count. Since decorations.ts now
-      // places most instances as loosely-mirrored left/right pairs with
-      // deliberate clearance down the center path, the full density reads
-      // as full/composed rather than cluttered — matching space's look.
-      decorationDensity: {
-        largeMinCount: 1,
-        largeMaxCount: 2,
-        smallMinCount: 2,
-        smallMaxCount: 4,
+        rocket: "/assets/theme/dino/decorations/volcano.png",
+        sun: "/assets/theme/dino/decorations/dino-00.png", // brontosaurus/longneck — the "hero" creature
+        "planet-01": "/assets/theme/dino/decorations/trees.png",
+        "planet-04": "/assets/theme/dino/decorations/dino-01.png", // stegosaurus
+        "planet-05": "/assets/theme/dino/decorations/dino-05.png", // triceratops
+        "planet-02": "/assets/theme/dino/decorations/rocks.png",
+        "planet-03": "/assets/theme/dino/decorations/egg.png",
+        "planet-06": "/assets/theme/dino/decorations/mushroom.png",
+        "planet-07": "/assets/theme/dino/decorations/leaf.png",
+        "moon-01": "/assets/theme/dino/decorations/bone.png",
+        "moon-crescent": "/assets/theme/dino/decorations/footprint.png",
+        star: "/assets/theme/dino/decorations/baby-dino-01.png",
+        "star-cluster": "/assets/theme/dino/decorations/baby-dino-02.png",
+        comet: "/assets/theme/dino/decorations/dino-04.png", // raptor — fast-moving, comet-like energy
+        asteroid: "/assets/theme/dino/decorations/dino-03.png", // ankylosaurus — armored/rock-like
+        "alien-01": "/assets/theme/dino/decorations/baby-dino-03.png",
+        "alien-02": "/assets/theme/dino/decorations/baby-dino-04.png",
+        "alien-03": "/assets/theme/dino/decorations/baby-dino-05.png",
+        ufo: "/assets/theme/dino/decorations/dino-02.png", // pterodactyl — flies, like a ufo
+        "ufo-02": "/assets/theme/dino/decorations/baby-dino-06.png",
       },
       // Warm "floating pollen" — same size/opacity feel as space's stars,
       // just recolored.

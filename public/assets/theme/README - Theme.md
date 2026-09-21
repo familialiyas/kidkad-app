@@ -109,29 +109,42 @@ Every theme needs:
   anywhere yet, since `CharacterSelectStep.tsx` still hardcodes "Astro
   Boy"/"Astro Girl" text directly.
 - **`decorations/`** — parallax margin scenery placed by
-  `src/lib/decorations.ts`, split into a rare **large/landmark** tier and a
-  more freely-scattered **small** tier. **Standardized canvas: every
-  decoration asset is a 512×512 transparent-background PNG, content
-  centered/scaled within the square regardless of its native aspect
-  ratio.** No per-asset width/height in `theme-config.ts` — display size is
-  randomized per placement instance instead:
+  `src/lib/decorations.ts`. **Standardized canvas: every decoration asset
+  is a 512×512 transparent-background PNG, content centered/scaled within
+  the square regardless of its native aspect ratio.** No per-asset
+  width/height in `theme-config.ts` — display size comes from the slot
+  system below instead.
+
+  **Named-slot master template.** Placement/sizing/frequency/tilt are NOT
+  theme config at all — they're defined exactly once, theme-independently,
+  in `DECORATION_SLOTS` (`decorations.ts`): 20 fixed named slots
+  (`rocket`, `sun`, `planet-01`, … `ufo-02` — space's exact current 20
+  items), each carrying its own `{ tier, sizeMin, sizeMax, countMin,
+  countMax, tiltMaxDeg }`. **A theme (`theme-config.ts`) supplies only an
+  image `src` per slot name** (`ThemeDecorationAssets = Record<SlotName,
+  string>`) — never its own tier, size range, count, or tilt. This is what
+  keeps "crowdiness" identical across themes: every theme runs through the
+  exact same 20 slots with the exact same per-slot numbers, so the only
+  thing that can differ between space and dino is which art renders, never
+  how big, how often, or how tilted it is.
   - Rendered via `object-fit: contain` in a square container, so content
     scales proportionally with no distortion regardless of how much of the
     512×512 canvas it actually fills.
   - **Size** is randomized per instance (seeded, so deterministic per
-    guest_link) within the tier's range: **large/landmark ≈150–220px,
-    small ≈60–120px** (`LANDMARK_SIZE_MIN/MAX`, `SMALL_SIZE_MIN/MAX` in
-    `decorations.ts`). A few instances (any tier, `HERO_SIZE_COUNT`) get an
-    extra 1.3–1.8× size boost on top of that (capped at 280px) — no
-    "does this species make sense at this size" logic, purely for visual
-    variety (a couple of surprisingly big dinosaurs/planets among their
-    normal-sized neighbors).
-  - **Rotation** is a seeded, constrained tilt — a random ±15°
-    (`TILT_MAX_DEG` in `decorations.ts`) per instance, always right-side up.
-    Not a full 0–360° spin (an earlier approach): most decoration art has a
-    clear grounded orientation (standing dinosaurs, a specific facing
-    direction), so a full spin read as broken rather than "everything
-    floats" as originally intended.
+    guest_link) within its slot's `sizeMin`–`sizeMax`: the 5 large/landmark
+    slots ≈150–220px, the 15 small slots ≈60–120px. A few instances (any
+    slot, `HERO_SIZE_COUNT`) get an extra 1.3–1.8× size boost on top of
+    that (capped at 280px) — no "does this species make sense at this
+    size" logic, purely for visual variety (a couple of surprisingly big
+    dinosaurs/planets among their normal-sized neighbors).
+  - **Rotation** is a seeded, constrained tilt — a random ±15° per
+    instance (every slot's `tiltMaxDeg` is currently 15°, since space
+    itself is uniform on this — a future pass could diverge an individual
+    slot without touching the others), always right-side up. Not a full
+    0–360° spin (an earlier approach): most decoration art has a clear
+    grounded orientation (standing dinosaurs, a specific facing direction),
+    so a full spin read as broken rather than "everything floats" as
+    originally intended.
   - **Placement** is a "somewhat symmetrical" left/right rhythm, not pure
     random scatter: most instances form loosely-mirrored pairs (shared row
     position + inset, each side jittered independently), with a smaller
@@ -147,26 +160,22 @@ Every theme needs:
     first `START_CLEARANCE_PX` of the world, so nothing blocks the
     character right at the start, before she's even been seen clearly.
   - A soft `filter: drop-shadow` (`.decoration-float` in `globals.css`) is
-    applied to every decoration, one flat value for all themes/tiers, for a
+    applied to every decoration, one flat value for every theme/slot, for a
     layered paper-craft depth consistent with the dialogue box's
     paper-cutout look.
-  - **CONVENTION — exactly 5 large-tier and 15 small-tier keys (20 total)
-    per theme**, matching `space`'s split. `decorations.ts`'s placement
-    algorithm above is driven purely by array length and
-    `decorationDensity` (also kept identical across themes), not by which
-    specific asset occupies a slot — so any theme that keeps this exact
-    5+15 split gets the same numeric placement/sizing behavior as space
-    "for free". Adding a new theme is just supplying 20 assets and slotting
-    them into the two arrays (any assignment of which asset goes where is
-    fine) — no changes needed to `decorations.ts` or `decorationDensity`.
 
-  Both `space` and `dino` are on this same standardized system — space was
-  re-exported (its original 10 decorations replaced with a richer 20-file
-  set: aliens, a sun, 7 planets, 2 UFOs, plus the original rocket/moons/
-  stars/comet/asteroid) and its `theme-config.ts` entries no longer specify
-  width/height. `DecorationAsset` has no size fields at all now; a theme
-  that somehow needed fixed per-asset sizing again would need that added
-  back deliberately, not inherited from a leftover code path.
+  Both `space` and `dino` are on this system — space's own 20 items ARE
+  the master template (see `DECORATION_SLOTS`), so its `theme-config.ts`
+  entry is just each slot name mapped to its own existing asset. dino's 20
+  assets are mapped onto space's 20 slot names **by role/visual weight,
+  not arbitrary order or literal species pairing** — dino's biggest,
+  rarest pieces (volcano, the brontosaurus, trees, the two largest
+  standalone dinosaur silhouettes) fill space's 5 large/landmark slots
+  (rocket, sun, the 3 ringed planets); its smaller props and creatures
+  fill the 15 small slots, loosely by feel (e.g. the flying pterodactyl
+  into the `ufo` slot, the armored ankylosaurus into `asteroid`, baby
+  dinosaurs into the star/alien slots) — see the mapping comment on dino's
+  `decorations` entry in `theme-config.ts` for the exact table.
 
 Also per-theme:
 - **`particles`** — the ambient dot layer (`src/lib/starfield.ts`); space
@@ -176,12 +185,6 @@ Also per-theme:
   everything else.
 - **`missionLabel`** — e.g. "Space Mission" / "Dino Mission", shown on the
   title screen as "{childName}'s {missionLabel}" (`TitleScreen.tsx`).
-- **`decorationDensity`** — `{ largeMinCount, largeMaxCount, smallMinCount,
-  smallMaxCount }`, how many instances of each decoration *key* spawn per
-  invite. Per-theme rather than shared, since a theme with more distinct
-  decoration keys than another would otherwise end up visibly busier just
-  from having more art, not from any deliberate density choice — this bit
-  dino in practice (see its section below).
 - **`uiColors`** — `{ accent, accentLight, accentRgb, accentLightRgb,
   boxBg }` for the dialogue box and everything visually attached to it
   (footer buttons, the RSVP form, the in-game menu, the return-visit "You're
@@ -206,8 +209,11 @@ Also per-theme:
 | `astrogirl-idle.png` | 300×450 | 110×165 |
 | `astrogirl-yay.png` | 300×450 | 110×165 |
 
-**Decorations — large/landmark tier** (all 512×512, size randomized ~150–220px):
-| Key | File | Notes |
+**Decorations — this theme IS the master slot template** (`DECORATION_SLOTS`
+in `decorations.ts`); every slot name below is its own asset, unmodified:
+
+Large/landmark slots (1–2 instances each, size randomized ~150–220px):
+| Slot | File | Notes |
 |---|---|---|
 | rocket | `rocket.png` | |
 | sun | `sun.png` | |
@@ -215,8 +221,8 @@ Also per-theme:
 | planet-04 | `planet-04.png` | ringed, pink |
 | planet-05 | `planet-05.png` | ringed, orange |
 
-**Decorations — small tier** (all 512×512, size randomized ~60–120px):
-| Key | File | Notes |
+Small slots (2–4 instances each, size randomized ~60–120px):
+| Slot | File | Notes |
 |---|---|---|
 | planet-02 | `planet-02.png` | cratered, mars-like, no ring |
 | planet-03 | `planet03.png` | teal striped, no ring — note the actual filename has no hyphen |
@@ -231,13 +237,11 @@ Also per-theme:
 | alien-01, alien-02, alien-03 | `alien-0{1..3}.png` | 3 variants |
 | ufo, ufo-02 | `ufo.png`, `ufo-02.png` | 2 variants |
 
-Tiering call: the 3 ringed planets + sun + rocket read as the "grand"
-centerpiece pieces; the 4 plainer round planets sit in the small tier
-alongside the moons/stars, closer to them in visual weight.
+Tiering call (baked into `DECORATION_SLOTS`, so it now applies to every
+theme, not just space): the 3 ringed planets + sun + rocket read as the
+"grand" centerpiece pieces; the 4 plainer round planets sit in the small
+tier alongside the moons/stars, closer to them in visual weight.
 
-**`decorationDensity`:** 1–2 per large-tier key, 2–4 per small-tier key —
-the shared default every theme starts from (`largeMinCount:1,
-largeMaxCount:2, smallMinCount:2, smallMaxCount:4`).
 **Particles:** white, size 1–3px, opacity 0.4–1.
 **Sky:** `linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)` (deep navy).
 **UI colors:** cyan/navy — `accent` #22d3ee (cyan-400), `accentLight`
@@ -255,43 +259,29 @@ largeMaxCount:2, smallMinCount:2, smallMaxCount:4`).
 | `dinogirl-idle.png` | 300×450 | 110×165 |
 | `dinogirl-yay.png` | 300×450 | 110×165 |
 
-**Decorations — large/landmark tier** (all 512×512, size randomized ~150–220px):
-| Key | File | Notes |
-|---|---|---|
-| volcano | `volcano.png` | |
-| trees | `trees.png` | |
-| dino-00 | `dino-00.png` | brontosaurus/longneck |
-| dino-01 | `dino-01.png` | stegosaurus |
-| dino-05 | `dino-05.png` | triceratops |
+**Decorations — dino's 20 assets mapped onto space's 20 slots**, by
+role/visual weight (not literal species pairing — see the mapping comment
+on dino's `decorations` entry in `theme-config.ts` for the reasoning per
+slot):
 
-**Decorations — small tier** (all 512×512, size randomized ~60–120px):
-| Key | File | Notes |
-|---|---|---|
-| rocks | `rocks.png` | |
-| mushroom | `mushroom.png` | |
-| leaf | `leaf.png` | |
-| footprint | `footprint.png` | |
-| egg | `egg.png` | |
-| bone | `bone.png` | |
-| dino-02 | `dino-02.png` | pterodactyl |
-| dino-03 | `dino-03.png` | ankylosaurus |
-| dino-04 | `dino-04.png` | raptor |
-| baby-dino-01 … baby-dino-06 | `baby-dino-0{1..6}.png` | 6 variants |
+| Slot (space's role) | Dino asset | Slot (space's role) | Dino asset |
+|---|---|---|---|
+| rocket (landmark) | `volcano.png` | star (small) | `baby-dino-01.png` |
+| sun (landmark) | `dino-00.png` (brontosaurus) | star-cluster (small) | `baby-dino-02.png` |
+| planet-01 (landmark) | `trees.png` | comet (small) | `dino-04.png` (raptor) |
+| planet-04 (landmark) | `dino-01.png` (stegosaurus) | asteroid (small) | `dino-03.png` (ankylosaurus) |
+| planet-05 (landmark) | `dino-05.png` (triceratops) | alien-01 (small) | `baby-dino-03.png` |
+| planet-02 (small) | `rocks.png` | alien-02 (small) | `baby-dino-04.png` |
+| planet-03 (small) | `egg.png` | alien-03 (small) | `baby-dino-05.png` |
+| planet-06 (small) | `mushroom.png` | ufo (small) | `dino-02.png` (pterodactyl) |
+| planet-07 (small) | `leaf.png` | ufo-02 (small) | `baby-dino-06.png` |
+| moon-01 (small) | `bone.png` | moon-crescent (small) | `footprint.png` |
 
-5 large + 15 small = 20, matching space's split (see the CONVENTION note
-above) — dino-01 (stegosaurus) and dino-05 (triceratops) were promoted from
-small to large tier for this; no thematic pairing with space's specific
-large-tier keys is intended, just a matching count per tier.
+dino-01 (stegosaurus) and dino-05 (triceratops) fill 2 of the 5 landmark
+slots — promoted from what used to be dino's own "small" tier once the
+slot system replaced per-theme tiers, since they're dino's biggest
+standalone dinosaur silhouettes after the brontosaurus.
 
-**`decorationDensity`:** identical to space (`largeMinCount:1,
-largeMaxCount:2, smallMinCount:2, smallMaxCount:4`). An earlier pass halved
-the small-tier count (1–2 instead of 2–4) because dino's then-larger small
-tier (17 keys) combined with fully-random placement read as cluttered at
-the full count. Once both the tier split was fixed to match space (15
-small keys) and placement became the paired/symmetrical system described
-above (which keeps the center path clear rather than scattering
-everywhere), the full density reads as appropriately full rather than
-cluttered — raised back to match space.
 **Particles:** warm "floating pollen", `#ffe9b3`, same size/opacity range as
 space's stars (1–3px, 0.4–1 opacity) — just recolored.
 **Sky:** `linear-gradient(to top, #5c3a1e 0%, #b3702e 55%, #f4c15f 100%)` —
@@ -334,22 +324,26 @@ order's `template` column names — that part is done for both `space` and
 2. Provide 4 character PNGs (2:3, matching space/dino's spec) and **exactly
    20 decoration PNGs** (512×512 transparent-canvas, content
    centered/scaled within the square, no cropping — don't specify
-   width/height, the shared randomized-scale system handles sizing).
+   width/height, the shared slot system handles sizing).
 3. Add a `themes.<name>` entry to `THEME_CONFIG` in `src/lib/theme-config.ts`
    (`characterSprites`, `characterNames`, `missionLabel`, `decorations`,
-   `decorationDensity`, `particles`, `skyGradient`, `uiColors` — same shape
-   as `dino`; TypeScript's `satisfies` check will flag anything missing).
+   `particles`, `skyGradient`, `uiColors` — same shape as `dino`;
+   TypeScript's `satisfies` check will flag anything missing).
    `backgroundMusicSrc`, `coinSprites`, and `rewardSprites` need no changes.
-   - Split the 20 decorations **exactly 5 into `decorations.large`, 15 into
-     `decorations.small`** — see the CONVENTION note on space's decorations
-     above. Any assignment of which specific asset goes into which slot is
-     fine; the count per tier is what matters.
-   - Set `decorationDensity` to space's exact values
-     (`largeMinCount:1, largeMaxCount:2, smallMinCount:2, smallMaxCount:4`)
-     — don't reduce it. With the 5+15 split above, this reproduces space's
-     placement/sizing/pairing behavior numerically, just with the new
-     theme's art filling the slots — this is the point of the convention,
-     no per-theme tuning needed.
+   - `decorations` is `Record<SlotName, string>` — one image path for each
+     of the 20 fixed slot names from `DECORATION_SLOTS` in
+     `decorations.ts` (`rocket`, `sun`, `planet-01`, `planet-04`,
+     `planet-05`, `planet-02`, `planet-03`, `planet-06`, `planet-07`,
+     `moon-01`, `moon-crescent`, `star`, `star-cluster`, `comet`,
+     `asteroid`, `alien-01`, `alien-02`, `alien-03`, `ufo`, `ufo-02`).
+     TypeScript will refuse to compile if any slot is missing. Assign your
+     20 assets to these slots by **role/visual weight**: put your biggest/
+     rarest 5 pieces in the 5 that were space's large/landmark items
+     (rocket, sun, the 3 ringed planets) and the other 15 in the rest — see
+     dino's `decorations` entry for a worked example and its mapping
+     comment. No further config (size, frequency, tilt) is needed or
+     wanted — that's the whole point of the slot system: it's inherited
+     from `DECORATION_SLOTS`, identical for every theme.
 4. Fill in that theme's section in this doc.
 5. Follow "Making a theme selectable in `/create`" above to actually expose
    it as a customer-facing choice — `/invite/[guest_link]` will already

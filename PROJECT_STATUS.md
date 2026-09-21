@@ -136,13 +136,24 @@ instances (any tier) also get an oversized "hero" boost, purely for visual
 variety (no per-species size logic). **Every decoration also gets a subtle
 `filter: drop-shadow`** (one flat value, all themes/tiers) for a
 layered-paper-craft depth consistent with the dialogue box's paper-cutout
-look. **Convention for all themes, including future ones:** exactly 5
-large-tier + 15 small-tier decoration keys (20 total) and identical
-`decorationDensity` — the placement algorithm is driven by array length,
-not by which specific asset fills a slot, so any theme keeping this split
-gets space's exact placement/sizing behavior "for free" (see the
-CONVENTION note in `theme-config.ts` and "Adding a new theme from scratch"
-in the theme doc).
+look.
+
+**Decoration placement is a fixed named-slot master template, not
+per-theme tier config.** `DECORATION_SLOTS` in `decorations.ts` defines 20
+fixed slot names (`rocket`, `sun`, `planet-01`, … `ufo-02` — space's exact
+current 20 items), each carrying its own `{tier, sizeMin, sizeMax,
+countMin, countMax, tiltMaxDeg}`. A theme (`ThemeAssets.decorations` in
+`theme-config.ts`) now supplies only `Record<SlotName, string>` — one
+image path per slot, nothing else; size/frequency/tilt are inherited from
+`DECORATION_SLOTS` and are identical across every theme by construction,
+which is what keeps "crowdiness" consistent (dino previously looked more
+cluttered than space purely from differing per-theme density tuning — that
+class of bug is now structurally impossible). dino's 20 assets are mapped
+onto space's 20 slot names by role/visual weight (see the mapping comment
+on dino's `decorations` entry in `theme-config.ts`), not arbitrary order.
+Adding a future theme means supplying 20 assets and slotting them into
+these exact 20 names — TypeScript's `Record<SlotName, string>` refuses to
+compile if any slot is missing — no decorations.ts changes, ever.
 
 **Dialogue system** (`DialogueBox.tsx` + `src/lib/typewriter.ts`):
 character-by-character typewriter reveal (~24ms/char), tap-to-skip then

@@ -1,14 +1,16 @@
 import { mulberry32, hashStringToSeed } from "./seeded-random";
-import type { DecorationAsset, ThemeAssets } from "./theme-config";
+import type { ThemeAssets } from "./theme-config";
 
 // This module is intentionally theme-agnostic: every size/inset/pairing/
-// overlap/hero-size constant below applies identically regardless of which
-// theme's assets it's generating for. What makes a theme's placement feel
-// consistent with space's (the reference layout) is purely its
-// decorationDensity and its decorations.large/small ARRAY LENGTHS (5 and 15
-// — see the "CONVENTION" note on space's decorations in theme-config.ts) —
-// matching those is enough to get the same numeric placement/sizing
-// behavior "for free" with no changes needed here.
+// overlap/hero-size constant below, and every per-slot entry in
+// DECORATION_SLOTS, applies identically regardless of which theme's assets
+// it's generating for. DECORATION_SLOTS is the master layout — extracted
+// from space's current placement — that every theme inherits verbatim; a
+// theme only supplies one image path per named slot (ThemeDecorationAssets
+// in theme-config.ts), never its own size/frequency/tilt config. That's
+// what keeps "crowdiness" identical across themes: space and dino now run
+// through the exact same 20 slots with the exact same per-slot numbers,
+// just rendering different art.
 
 export interface PlacedDecoration {
   id: string;
@@ -93,18 +95,71 @@ const FLOAT_DURATION_MAX_S = 5;
 // Most decoration art (standing dinosaurs, characters facing a specific
 // way) has a clear grounded "right way up" — a full 0-360 spin reads as
 // broken for those, so every decoration instead gets a small, playful
-// left/right lean instead of a full rotation.
+// left/right lean instead of a full rotation. Space is currently uniform
+// on this (every slot gets the same range), so DECORATION_SLOTS below
+// just reuses this one constant for all 20 entries rather than inventing
+// per-slot variation that doesn't exist yet.
 const TILT_MAX_DEG = 15;
 
 // Every decoration asset is a standardized 512x512 transparent canvas
 // (content centered/scaled within the square regardless of native aspect
 // ratio) — rendered via object-fit: contain in a square container whose
-// size is randomized per placement instance from these tier ranges, rather
-// than a fixed size per asset.
+// size is randomized per placement instance from the slot's own range.
 const LANDMARK_SIZE_MIN = 150;
 const LANDMARK_SIZE_MAX = 220;
 const SMALL_SIZE_MIN = 60;
 const SMALL_SIZE_MAX = 120;
+
+// How many instances of a slot spawn per invite — space is currently
+// uniform per former-tier (every "large" slot 1-2, every "small" slot
+// 2-4), so, like TILT_MAX_DEG above, DECORATION_SLOTS just reuses these
+// two constants rather than inventing per-slot variation that doesn't
+// exist yet. A future pass could diverge an individual slot's count/size/
+// tilt from its neighbors without touching anything else, since each slot
+// is now its own independent entry, not a shared tier lookup.
+const LARGE_COUNT_MIN = 1;
+const LARGE_COUNT_MAX = 2;
+const SMALL_COUNT_MIN = 2;
+const SMALL_COUNT_MAX = 4;
+
+/**
+ * The master decoration layout — space's exact current 20 items, each
+ * assigned a stable slot name, with space's exact current per-slot
+ * size/frequency/tilt config. This is the ONE place placement/sizing/tilt
+ * behavior is defined; it is never theme-specific. A theme (theme-config.ts)
+ * supplies only an image src per slot name (ThemeDecorationAssets) — no
+ * per-theme tuning, ever. Adding a new theme means providing 20 assets and
+ * slotting them into these exact names, nothing else.
+ */
+const DECORATION_SLOTS = [
+  // Large/landmark tier — space's 5 biggest, rarest showpiece items.
+  { name: "rocket", tier: "large", sizeMin: LANDMARK_SIZE_MIN, sizeMax: LANDMARK_SIZE_MAX, countMin: LARGE_COUNT_MIN, countMax: LARGE_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "sun", tier: "large", sizeMin: LANDMARK_SIZE_MIN, sizeMax: LANDMARK_SIZE_MAX, countMin: LARGE_COUNT_MIN, countMax: LARGE_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "planet-01", tier: "large", sizeMin: LANDMARK_SIZE_MIN, sizeMax: LANDMARK_SIZE_MAX, countMin: LARGE_COUNT_MIN, countMax: LARGE_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "planet-04", tier: "large", sizeMin: LANDMARK_SIZE_MIN, sizeMax: LANDMARK_SIZE_MAX, countMin: LARGE_COUNT_MIN, countMax: LARGE_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "planet-05", tier: "large", sizeMin: LANDMARK_SIZE_MIN, sizeMax: LANDMARK_SIZE_MAX, countMin: LARGE_COUNT_MIN, countMax: LARGE_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  // Small tier — space's 15 more freely-scattered items.
+  { name: "planet-02", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "planet-03", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "planet-06", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "planet-07", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "moon-01", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "moon-crescent", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "star", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "star-cluster", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "comet", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "asteroid", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "alien-01", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "alien-02", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "alien-03", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "ufo", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "ufo-02", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+] as const;
+
+/** The 20 stable slot names every theme must provide an asset for — see ThemeDecorationAssets in theme-config.ts. */
+export type SlotName = (typeof DECORATION_SLOTS)[number]["name"];
+
+type DecorationSlot = (typeof DECORATION_SLOTS)[number];
 
 function shuffle<T>(items: T[], random: () => number): T[] {
   const copy = [...items];
@@ -119,8 +174,9 @@ function clampInsetPct(pct: number): number {
   return Math.min(PAIR_INSET_CLAMP_MAX_PCT, Math.max(PAIR_INSET_CLAMP_MIN_PCT, pct));
 }
 
-interface DecorationInstance extends DecorationAsset {
-  tier: "large" | "small";
+interface DecorationInstance {
+  slot: DecorationSlot;
+  src: string;
 }
 
 type Row =
@@ -136,15 +192,11 @@ export function generateDecorations(
   const random = mulberry32(hashStringToSeed(`${seed}:decorations`));
 
   const instances: DecorationInstance[] = [];
-  function queueInstances(defs: DecorationAsset[], tier: "large" | "small", min: number, max: number) {
-    for (const d of defs) {
-      const count = min + Math.floor(random() * (max - min + 1));
-      for (let i = 0; i < count; i++) instances.push({ ...d, tier });
-    }
+  for (const slot of DECORATION_SLOTS) {
+    const count = slot.countMin + Math.floor(random() * (slot.countMax - slot.countMin + 1));
+    const src = theme.decorations[slot.name];
+    for (let i = 0; i < count; i++) instances.push({ slot, src });
   }
-  const density = theme.decorationDensity;
-  queueInstances(theme.decorations.large, "large", density.largeMinCount, density.largeMaxCount);
-  queueInstances(theme.decorations.small, "small", density.smallMinCount, density.smallMaxCount);
 
   const shuffled = shuffle(instances, random);
   const total = shuffled.length;
@@ -177,15 +229,13 @@ export function generateDecorations(
     top: number,
     side: "left" | "right",
     insetPct: number
-  ): { deco: PlacedDecoration; tier: "large" | "small" } {
-    const [sizeMin, sizeMax] =
-      d.tier === "large" ? [LANDMARK_SIZE_MIN, LANDMARK_SIZE_MAX] : [SMALL_SIZE_MIN, SMALL_SIZE_MAX];
+  ): { deco: PlacedDecoration; slot: DecorationSlot } {
     return {
-      tier: d.tier,
+      slot: d.slot,
       deco: {
         id,
         src: d.src,
-        size: sizeMin + random() * (sizeMax - sizeMin),
+        size: d.slot.sizeMin + random() * (d.slot.sizeMax - d.slot.sizeMin),
         top,
         side,
         insetPct,
@@ -195,12 +245,12 @@ export function generateDecorations(
         floatDelayS: -random() * FLOAT_DURATION_MAX_S,
         // Constrained tilt, not a full spin — always right-side up, just a
         // slight random lean left or right.
-        baseRotationDeg: (random() * 2 - 1) * TILT_MAX_DEG,
+        baseRotationDeg: (random() * 2 - 1) * d.slot.tiltMaxDeg,
       },
     };
   }
 
-  const placed: { deco: PlacedDecoration; tier: "large" | "small" }[] = [];
+  const placed: { deco: PlacedDecoration; slot: DecorationSlot }[] = [];
 
   orderedRows.forEach((row, i) => {
     const rowTop = i * slotHeight + random() * slotHeight * JITTER_FRACTION;
@@ -211,12 +261,12 @@ export function generateDecorations(
       const rightTop = rowTop + (random() * 2 - 1) * slotHeight * PAIR_TOP_JITTER_FRACTION;
       const leftInset = clampInsetPct(baseInset + (random() * 2 - 1) * PAIR_INSET_JITTER_PCT);
       const rightInset = clampInsetPct(baseInset + (random() * 2 - 1) * PAIR_INSET_JITTER_PCT);
-      placed.push(place(row.a, `${row.a.key}-${i}-l`, leftTop, "left", leftInset));
-      placed.push(place(row.b, `${row.b.key}-${i}-r`, rightTop, "right", rightInset));
+      placed.push(place(row.a, `${row.a.slot.name}-${i}-l`, leftTop, "left", leftInset));
+      placed.push(place(row.b, `${row.b.slot.name}-${i}-r`, rightTop, "right", rightInset));
     } else {
       const side = random() < 0.5 ? "left" : ("right" as const);
       const insetPct = MARGIN_MIN_INSET_PCT + random() * (MARGIN_MAX_INSET_PCT - MARGIN_MIN_INSET_PCT);
-      placed.push(place(row.item, `${row.item.key}-${i}-x`, rowTop, side, insetPct));
+      placed.push(place(row.item, `${row.item.slot.name}-${i}-x`, rowTop, side, insetPct));
     }
   });
 
@@ -226,7 +276,7 @@ export function generateDecorations(
   // start (see START_CLEARANCE_PX above).
   const clearOfStart = (p: { deco: PlacedDecoration }) => p.deco.top >= START_CLEARANCE_PX;
   const largeCandidates = shuffle(
-    placed.filter((p) => p.tier === "large" && clearOfStart(p)),
+    placed.filter((p) => p.slot.tier === "large" && clearOfStart(p)),
     random
   );
   const overlapCandidates =
@@ -250,12 +300,12 @@ export function generateDecorations(
   // happened to roll a high inset and/or a large size, not just the
   // deliberate overlap/hero passes above), no large decoration this close
   // to the start should still be reaching toward center. Caps size back to
-  // the tier's own minimum too — a low inset alone doesn't help if the
+  // the slot's own minimum too — a low inset alone doesn't help if the
   // item is wide enough to reach center from the edge regardless.
   for (const p of placed) {
-    if (p.tier === "large" && p.deco.top < START_CLEARANCE_PX) {
+    if (p.slot.tier === "large" && p.deco.top < START_CLEARANCE_PX) {
       p.deco.insetPct = Math.min(p.deco.insetPct, START_CLEARANCE_MAX_INSET_PCT);
-      p.deco.size = Math.min(p.deco.size, LANDMARK_SIZE_MIN);
+      p.deco.size = Math.min(p.deco.size, p.slot.sizeMin);
     }
   }
 
