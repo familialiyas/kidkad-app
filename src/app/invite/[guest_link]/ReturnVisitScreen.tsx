@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 import type { PublicOrder, Rsvp } from "@/lib/types";
 import { formatFriendlyDate, isPastDeadline } from "@/lib/date";
 import { buildGoogleCalendarUrl, buildIcsContent, downloadIcs } from "@/lib/calendar";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { clearStoredRsvp, setStoredRsvp } from "@/lib/rsvp-storage";
 import { playSfx } from "@/lib/sfx";
+import { getTheme, themeUiStyle } from "@/lib/theme-config";
 import RsvpForm, { RsvpFormValues } from "./RsvpForm";
 import DialogueButton from "./DialogueButton";
 import { CalendarIcon, LocationIcon, DressCodeIcon, CelebrationIcon } from "./PartyIcons";
@@ -20,6 +21,7 @@ export default function ReturnVisitScreen({
   rsvp: Rsvp;
   onPlayAgain: () => void;
 }) {
+  const theme = getTheme(order.template);
   const [mode, setMode] = useState<"view" | "edit" | "confirmCancel" | "cancelled">("view");
   const [currentRsvp, setCurrentRsvp] = useState(rsvp);
   const [submitting, setSubmitting] = useState(false);
@@ -89,7 +91,7 @@ export default function ReturnVisitScreen({
       {(order.party_date || order.party_time) && (
         <div className="space-y-2">
           <div className="flex items-start gap-2">
-            <CalendarIcon className="mt-0.5 h-6 w-6 shrink-0 text-cyan-400" />
+            <CalendarIcon className="ui-text-accent mt-0.5 h-6 w-6 shrink-0" />
             <div className="space-y-1">
               {order.party_date && <p>{formatFriendlyDate(order.party_date)}</p>}
               {order.party_time && <p>{order.party_time}</p>}
@@ -137,7 +139,7 @@ export default function ReturnVisitScreen({
       {order.party_venue && (
         <div className="space-y-2">
           <div className="flex items-start gap-2">
-            <LocationIcon className="mt-0.5 h-6 w-6 shrink-0 text-cyan-400" />
+            <LocationIcon className="ui-text-accent mt-0.5 h-6 w-6 shrink-0" />
             <p>{order.party_venue}</p>
           </div>
           {order.maps_link && (
@@ -152,7 +154,7 @@ export default function ReturnVisitScreen({
 
       {order.dress_code && (
         <div className="flex items-start gap-2">
-          <DressCodeIcon className="mt-0.5 h-6 w-6 shrink-0 text-cyan-400" />
+          <DressCodeIcon className="ui-text-accent mt-0.5 h-6 w-6 shrink-0" />
           <p>{order.dress_code}</p>
         </div>
       )}
@@ -162,12 +164,12 @@ export default function ReturnVisitScreen({
   return (
     <div
       className="flex min-h-screen items-center justify-center p-4"
-      style={{ background: "linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)" }}
+      style={{ background: theme.skyGradient, ...themeUiStyle(theme) } as CSSProperties}
     >
-      <div className="dialogue-space-bg dialogue-space-glow w-full max-w-md rounded-2xl border-4 border-cyan-400/80 p-5">
+      <div className="dialogue-space-bg dialogue-space-glow ui-border-accent-80 w-full max-w-md rounded-2xl border-4 p-5">
         {mode === "cancelled" ? (
           <>
-            <h1 className="font-display text-lg font-bold text-cyan-300">Aw, we&apos;ll miss you!</h1>
+            <h1 className="ui-text-accent-light font-display text-lg font-bold">Aw, we&apos;ll miss you!</h1>
             <p className="mt-2 text-sm text-slate-100">Hope to celebrate with you next time.</p>
             <div className="mt-4">
               <DialogueButton theme="space" onClick={() => setMode("edit")}>
@@ -178,8 +180,8 @@ export default function ReturnVisitScreen({
         ) : (
           <>
             <div className="flex items-center gap-2">
-              <CelebrationIcon className="h-8 w-8 shrink-0 text-cyan-400" />
-              <h1 className="font-display text-lg font-bold text-cyan-300">
+              <CelebrationIcon className="ui-text-accent h-8 w-8 shrink-0" />
+              <h1 className="ui-text-accent-light font-display text-lg font-bold">
                 You&apos;re in! See you at {order.child_name}&apos;s party!
               </h1>
             </div>
@@ -189,7 +191,7 @@ export default function ReturnVisitScreen({
               href="https://kidkad.my"
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 block text-center text-[11px] text-cyan-300/50 underline decoration-cyan-300/30 underline-offset-2 hover:text-cyan-300/80"
+              className="ui-text-accent-light-50 ui-decoration-accent-light-30 ui-hover-text-accent-light-80 mt-4 block text-center text-[11px] underline underline-offset-2"
             >
               Loved this? Make your own invitation at kidkad.my
             </a>
@@ -233,7 +235,7 @@ export default function ReturnVisitScreen({
                         playSfx("buttonTap");
                         setMode("confirmCancel");
                       }}
-                      className="mt-1 text-xs text-cyan-300/70 underline"
+                      className="ui-text-accent-light-70 mt-1 text-xs underline"
                     >
                       Can&apos;t make it anymore?
                     </button>
@@ -254,7 +256,7 @@ export default function ReturnVisitScreen({
 
             {mode === "confirmCancel" && (
               <div className="mt-4 flex flex-col gap-2">
-                <p className="text-sm font-semibold text-cyan-300">
+                <p className="ui-text-accent-light text-sm font-semibold">
                   Are you sure you want to cancel your RSVP?
                 </p>
                 {error && <p className="text-xs font-semibold text-red-400">{error}</p>}

@@ -3,6 +3,22 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Theme-driven dialogue/UI accent colors — defaults here match space's
+     palette as a safety net for anything rendered without a themed
+     ancestor. DialogueBox.tsx, ReturnVisitScreen.tsx, and GameClient.tsx's
+     in-game menu each set these on their own root from the order's
+     resolved theme (src/lib/theme-config.ts's ThemeAssets["uiColors"]);
+     everything else (.dialogue-btn-*, .ui-* below, DialogueButton.tsx,
+     RsvpForm.tsx) inherits via normal CSS cascade rather than needing the
+     color threaded through as a prop. *-rgb are space-separated "R G B"
+     triplets so rgb(var(--x) / N%) can blend to any opacity from one
+     variable instead of needing one per opacity level. */
+  --ui-accent: #22d3ee;
+  --ui-accent-light: #67e8f9;
+  --ui-accent-rgb: 34 211 238;
+  --ui-accent-light-rgb: 103 232 249;
+  --ui-box-bg: #0f1442;
 }
 
 @theme inline {
@@ -314,14 +330,15 @@ input[type="time"] {
   animation: character-float 3.2s ease-in-out infinite;
 }
 
-/* Space-themed dialogue box: glowing cyan border + a faint star-fleck texture. */
+/* Dialogue box glow + faint star-fleck texture — colors follow the order's
+   theme via --ui-* custom properties (see :root above). */
 .dialogue-space-glow {
   box-shadow:
-    0 0 24px 4px rgba(34, 211, 238, 0.35),
-    0 0 0 1px rgba(34, 211, 238, 0.15) inset;
+    0 0 24px 4px rgb(var(--ui-accent-rgb) / 35%),
+    0 0 0 1px rgb(var(--ui-accent-rgb) / 15%) inset;
 }
 .dialogue-space-bg {
-  background-color: #0f1442;
+  background-color: var(--ui-box-bg);
   background-image:
     radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
     radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
@@ -339,7 +356,7 @@ input[type="time"] {
    finishes typing so the reveal draws a second glance. */
 .dialogue-highlight {
   font-weight: 800;
-  color: #67e8f9;
+  color: var(--ui-accent-light);
 }
 @keyframes dialogue-highlight-pop {
   0% {
@@ -385,8 +402,8 @@ input[type="time"] {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-color: #0f1442;
-  border: 4px solid rgba(34, 211, 238, 0.8);
+  background-color: var(--ui-box-bg);
+  border: 4px solid rgb(var(--ui-accent-rgb) / 80%);
   background-image:
     radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
     radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
@@ -447,6 +464,60 @@ input[type="time"] {
     0% 6%
   );
   filter:
-    drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))
+    drop-shadow(0 0 20px rgb(var(--ui-accent-rgb) / 30%))
     drop-shadow(0 4px 0 rgba(0, 0, 0, 0.25));
+}
+
+/* Theme-aware text/border accents — read the --ui-* custom properties set
+   by whichever ancestor (DialogueBox, ReturnVisitScreen, the in-game menu)
+   resolved the order's theme. Used in place of Tailwind's cyan-* utilities
+   throughout the guest game so the same markup renders correctly under any
+   theme without passing color props through every component. */
+.ui-text-accent {
+  color: var(--ui-accent);
+}
+.ui-text-accent-light {
+  color: var(--ui-accent-light);
+}
+.ui-border-accent-80 {
+  border-color: rgb(var(--ui-accent-rgb) / 80%);
+}
+.ui-border-accent-70 {
+  border-color: rgb(var(--ui-accent-rgb) / 70%);
+}
+.ui-border-accent-40 {
+  border-color: rgb(var(--ui-accent-rgb) / 40%);
+}
+.ui-text-accent-light-80 {
+  color: rgb(var(--ui-accent-light-rgb) / 80%);
+}
+.ui-text-accent-light-70 {
+  color: rgb(var(--ui-accent-light-rgb) / 70%);
+}
+.ui-text-accent-light-50 {
+  color: rgb(var(--ui-accent-light-rgb) / 50%);
+}
+.ui-decoration-accent-light-30 {
+  text-decoration-color: rgb(var(--ui-accent-light-rgb) / 30%);
+}
+.ui-hover-text-accent-light-80:hover {
+  color: rgb(var(--ui-accent-light-rgb) / 80%);
+}
+
+/* Dialogue footer buttons (DialogueButton.tsx's "space" theme variant) —
+   same --ui-* inheritance as the classes above. */
+.dialogue-btn-primary {
+  background-color: var(--ui-accent);
+  color: #0f172a; /* slate-900 */
+}
+.dialogue-btn-primary:hover {
+  background-color: var(--ui-accent-light);
+}
+.dialogue-btn-secondary {
+  background-color: transparent;
+  color: var(--ui-accent-light);
+  border-color: rgb(var(--ui-accent-rgb) / 70%);
+}
+.dialogue-btn-secondary:hover {
+  background-color: rgb(var(--ui-accent-rgb) / 10%);
 }

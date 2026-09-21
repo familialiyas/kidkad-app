@@ -20,11 +20,6 @@ export interface PlacedDecoration {
 // 100%), faster than the distant star field (60%) — see STAR_PARALLAX_FACTOR.
 export const DECORATION_PARALLAX_FACTOR = 0.8;
 
-const LARGE_MIN_COUNT = 1;
-const LARGE_MAX_COUNT = 2;
-const SMALL_MIN_COUNT = 2;
-const SMALL_MAX_COUNT = 4;
-
 // Keeps decorations off the center path stripe (~28% of viewport, centered)
 // by confining them to a band within each margin.
 const MARGIN_MIN_INSET_PCT = 2;
@@ -77,8 +72,9 @@ export function generateDecorations(
       for (let i = 0; i < count; i++) instances.push({ ...d, tier });
     }
   }
-  queueInstances(theme.decorations.large, "large", LARGE_MIN_COUNT, LARGE_MAX_COUNT);
-  queueInstances(theme.decorations.small, "small", SMALL_MIN_COUNT, SMALL_MAX_COUNT);
+  const density = theme.decorationDensity;
+  queueInstances(theme.decorations.large, "large", density.largeMinCount, density.largeMaxCount);
+  queueInstances(theme.decorations.small, "small", density.smallMinCount, density.smallMaxCount);
 
   // Shuffle so large/small types interleave, then walk down the world height
   // slot by slot — this is what guarantees the minimum spacing above.

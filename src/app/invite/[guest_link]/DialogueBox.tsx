@@ -1,8 +1,9 @@
 "use client";
 
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment, segmentsFullLength, sliceSegments } from "@/lib/typewriter";
+import { themeUiStyle, type ThemeAssets } from "@/lib/theme-config";
 
 const GAP = 20; // space between the character's head and the box (room for the tail)
 const BOTTOM_MARGIN = 12; // minimum distance from the bottom viewport edge
@@ -17,6 +18,7 @@ const TYPE_SPEED_MS = 24;
 export default function DialogueBox({
   photoUrl,
   name,
+  theme,
   children,
   segments,
   icon,
@@ -27,6 +29,8 @@ export default function DialogueBox({
 }: {
   photoUrl: string | null;
   name: string;
+  /** Resolved from the order's template (theme-config.ts's getTheme) — sets this box's colors, and everything rendered inside it (footer buttons, RsvpForm) via CSS inheritance. */
+  theme: ThemeAssets;
   /** Rendered as-is, immediately, with no typewriter (e.g. the RSVP form). Ignored when `segments` is set. */
   children?: ReactNode;
   /** Typed conversational text, revealed character-by-character. Highlighted segments get the accent treatment + pop. */
@@ -145,6 +149,7 @@ export default function DialogueBox({
   return (
     <div
       className={`fixed inset-0 z-50 ${onTapDismiss ? "cursor-pointer" : ""}`}
+      style={themeUiStyle(theme) as CSSProperties}
       onClick={onTapDismiss ? handleTapDismiss : undefined}
       role={onTapDismiss ? "button" : undefined}
       tabIndex={onTapDismiss ? 0 : undefined}
@@ -181,23 +186,23 @@ export default function DialogueBox({
 
           {/* Speech-bubble tail, pointing down toward the character below */}
           <div
-            className="dialogue-space-bg absolute bottom-0 left-1/2 z-0 h-5 w-5 translate-x-[-50%] translate-y-1/2 rotate-45 border-r-4 border-b-4 border-cyan-400/80"
+            className="dialogue-space-bg ui-border-accent-80 absolute bottom-0 left-1/2 z-0 h-5 w-5 translate-x-[-50%] translate-y-1/2 rotate-45 border-r-4 border-b-4"
             aria-hidden
           />
           <div className="font-display relative z-10">
             <div className="flex items-center gap-3">
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 border-cyan-400/70 bg-slate-800">
+              <div className="ui-border-accent-70 relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 bg-slate-800">
                 {photoUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={photoUrl} alt={name} className="h-full w-full object-cover" />
                 )}
               </div>
-              <div className="font-bold text-cyan-300">{name}</div>
+              <div className="ui-text-accent-light font-bold">{name}</div>
             </div>
             <div className="mt-3 min-h-[3rem] text-[16.5px] leading-relaxed text-slate-100">
               {segments ? (
                 <div className="flex items-start gap-2">
-                  {icon && <span className="mt-0.5 shrink-0 text-cyan-400">{icon}</span>}
+                  {icon && <span className="ui-text-accent mt-0.5 shrink-0">{icon}</span>}
                   <p>
                     {sliceSegments(segments, revealedCount).map((seg, i) =>
                       seg.highlight ? (
@@ -218,7 +223,7 @@ export default function DialogueBox({
               )}
             </div>
             {onTapDismiss ? (
-              <p className="mt-4 animate-pulse text-center text-xs text-cyan-300/70">
+              <p className="ui-text-accent-light-70 mt-4 animate-pulse text-center text-xs">
                 Tap anywhere to continue
               </p>
             ) : (

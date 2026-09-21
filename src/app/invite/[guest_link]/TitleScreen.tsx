@@ -36,7 +36,7 @@ export default function TitleScreen({
       }`}
     >
       <h1 className="font-display text-3xl font-bold tracking-wide text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.85)]">
-        {childName}&apos;s Space Mission
+        {childName}&apos;s {theme.missionLabel}
       </h1>
 
       {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -10,6 +10,43 @@ export interface ThemeDecorations {
   small: DecorationAsset[];
 }
 
+/** How many instances of each decoration key spawn per invite — see
+ * src/lib/decorations.ts. Per-theme (not shared) since a theme with more
+ * distinct decoration keys than another would otherwise end up visibly
+ * busier just from having more art, not from any deliberate density choice. */
+export interface DecorationDensity {
+  largeMinCount: number;
+  largeMaxCount: number;
+  smallMinCount: number;
+  smallMaxCount: number;
+}
+
+/**
+ * Colors for the dialogue box and everything visually attached to it
+ * (footer buttons, RSVP form, the in-game menu, the return-visit card) —
+ * read as CSS custom properties set on each of those components' own root
+ * (DialogueBox.tsx, ReturnVisitScreen.tsx, GameClient.tsx's menu panel),
+ * inherited from there by DialogueButton/RsvpForm/icons via normal CSS
+ * cascade. See the `.ui-*`/`.dialogue-btn-*` rules in globals.css.
+ *
+ * `*Rgb` fields are space-separated "R G B" triplets (not hex) so CSS can
+ * blend them to arbitrary opacities via `rgb(var(--x) / N%)` without a
+ * separate variable per opacity level.
+ */
+export interface UiColors {
+  accent: string;
+  accentLight: string;
+  accentRgb: string;
+  accentLightRgb: string;
+  boxBg: string;
+}
+
+/** `rgbTriplet` is a "R G B" string (see UiColors) — returns a plain rgba() color. */
+export function withAlpha(rgbTriplet: string, alpha: number): string {
+  const [r, g, b] = rgbTriplet.split(" ");
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export interface ThemeAssets {
   characterSprites: {
     boy: { idle: string; yay: string };
@@ -22,12 +59,17 @@ export interface ThemeAssets {
     boy: string;
     girl: string;
   };
+  /** e.g. "{name}'s Space Mission" on the title screen — TitleScreen.tsx
+   * reads this instead of hardcoding "Space Mission". */
+  missionLabel: string;
   decorations: ThemeDecorations;
+  decorationDensity: DecorationDensity;
   /** Ambient dot layer (src/lib/starfield.ts) — space uses white "stars",
    * other themes can recolor/resize via this instead of a hardcoded look. */
   particles: ParticleConfig;
   /** CSS background value for the world/sky behind everything else. */
   skyGradient: string;
+  uiColors: UiColors;
 }
 
 // Centralized theme assets. Everything that plays backgroundMusicSrc
@@ -71,6 +113,7 @@ export const THEME_CONFIG = {
         boy: "Astro Boy",
         girl: "Astro Girl",
       },
+      missionLabel: "Space Mission",
       // Standardized 512x512 canvas, same as dino — display size/rotation
       // are randomized per placement instance (decorations.ts), not fixed
       // per-asset. The 3 ringed planets + sun + rocket read as the "grand"
@@ -102,6 +145,12 @@ export const THEME_CONFIG = {
           { key: "ufo-02", src: "/assets/theme/space/decorations/ufo-02.png" },
         ],
       },
+      decorationDensity: {
+        largeMinCount: 1,
+        largeMaxCount: 2,
+        smallMinCount: 2,
+        smallMaxCount: 4,
+      },
       particles: {
         color: "#ffffff",
         sizeMin: 1,
@@ -110,6 +159,13 @@ export const THEME_CONFIG = {
         opacityMax: 1,
       },
       skyGradient: "linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)",
+      uiColors: {
+        accent: "#22d3ee", // cyan-400
+        accentLight: "#67e8f9", // cyan-300
+        accentRgb: "34 211 238",
+        accentLightRgb: "103 232 249",
+        boxBg: "#0f1442",
+      },
     },
     // Not selectable anywhere in the app yet (ThemeSelectStep.tsx still
     // only offers "space"), but fully wired into THEME_CONFIG and read by
@@ -130,6 +186,7 @@ export const THEME_CONFIG = {
         boy: "Dinoboy",
         girl: "Dinogirl",
       },
+      missionLabel: "Dino Mission",
       // Standardized 512x512 canvas — see space's decorations above.
       decorations: {
         large: [
@@ -157,6 +214,17 @@ export const THEME_CONFIG = {
           { key: "baby-dino-06", src: "/assets/theme/dino/decorations/baby-dino-06.png" },
         ],
       },
+      // Small tier halved vs space's default (17 small-tier keys here vs
+      // space's 15, but at the same 2-4-per-key density that was reading
+      // noticeably more cluttered/overlapping in live testing) — 1-2 per
+      // key instead targets roughly the same total instance count space's
+      // original, smaller 7-key small tier produced.
+      decorationDensity: {
+        largeMinCount: 1,
+        largeMaxCount: 2,
+        smallMinCount: 1,
+        smallMaxCount: 2,
+      },
       // Warm "floating pollen" — same size/opacity feel as space's stars,
       // just recolored.
       particles: {
@@ -166,9 +234,17 @@ export const THEME_CONFIG = {
         opacityMin: 0.4,
         opacityMax: 1,
       },
-      // Deep jungle green at the ground, through a warm dusk amber, to a
-      // golden-hour top.
-      skyGradient: "linear-gradient(to top, #2d5016 0%, #a15a2e 50%, #f4a940 100%)",
+      // Consistently warm throughout the scroll (softened from an earlier
+      // pass that went full dark jungle-green at the bottom — that read as
+      // a jarring day-to-night shift rather than one warm daylight scene).
+      skyGradient: "linear-gradient(to top, #5c3a1e 0%, #b3702e 55%, #f4c15f 100%)",
+      uiColors: {
+        accent: "#e8a33d", // warm amber/gold
+        accentLight: "#f5d68a", // soft warm gold
+        accentRgb: "232 163 61",
+        accentLightRgb: "245 214 138",
+        boxBg: "#2b2410", // deep warm brown-olive
+      },
     },
   },
 } satisfies {
@@ -189,4 +265,22 @@ export function getTheme(template?: string | null): ThemeAssets {
     return THEME_CONFIG.themes[template as ThemeName];
   }
   return THEME_CONFIG.themes.space;
+}
+
+/** CSS custom properties for `theme.uiColors`, meant to be spread onto a
+ * `style` prop (cast to `React.CSSProperties`, same as any other inline
+ * custom-property usage in this codebase) on the root of a "themed region"
+ * — DialogueBox.tsx, ReturnVisitScreen.tsx, and GameClient.tsx's in-game
+ * menu each set these once on their own wrapper; the `.ui-*`/`.dialogue-btn-*`
+ * rules in globals.css and DialogueButton.tsx/RsvpForm.tsx read them back
+ * via normal CSS inheritance, not as a prop threaded through every level. */
+export function themeUiStyle(theme: ThemeAssets): Record<string, string> {
+  const c = theme.uiColors;
+  return {
+    "--ui-accent": c.accent,
+    "--ui-accent-light": c.accentLight,
+    "--ui-accent-rgb": c.accentRgb,
+    "--ui-accent-light-rgb": c.accentLightRgb,
+    "--ui-box-bg": c.boxBg,
+  };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PublicOrder, Rsvp } from "@/lib/types";
 import { getStoredRsvp, setStoredRsvp } from "@/lib/rsvp-storage";
 import { isPastDeadline, formatConversationalDate } from "@/lib/date";
@@ -21,7 +21,7 @@ import RsvpForm, { RsvpFormValues } from "./RsvpForm";
 import ReturnVisitScreen from "./ReturnVisitScreen";
 import TitleScreen from "./TitleScreen";
 import AudioToggle, { AudioToggleHandle } from "./AudioToggle";
-import { THEME_CONFIG, getTheme } from "@/lib/theme-config";
+import { THEME_CONFIG, getTheme, themeUiStyle } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment } from "@/lib/typewriter";
 import { DIALOGUE_TONES, fillTemplate } from "@/lib/dialogue-tones";
@@ -270,7 +270,10 @@ function Game({
 
   function handleRewardTap() {
     if (rewardPhase !== "idle") return;
-    const OPEN_DISPLAY_MS = 350; // gift-opened art shown briefly before the dialogue takes over
+    // Long enough for the opened-gift art + confetti to actually register
+    // before the mission-complete dialogue (with its Accept Invitation/RSVP
+    // buttons) takes over — 350ms read as too abrupt in live testing.
+    const OPEN_DISPLAY_MS = 1200;
     playSfx("giftOpen");
     setRewardPhase("opened");
     setCharacterState("victory");
@@ -387,7 +390,7 @@ function Game({
   // the parent's own verbatim words, not game copy.
   const personalMessageBlock = order.personal_message ? (
     <div className="mb-1 rounded-lg bg-black/20 p-3 text-left">
-      <p className="font-display text-xs font-bold text-cyan-300/80">{childName} says</p>
+      <p className="ui-text-accent-light-80 font-display text-xs font-bold">{childName} says</p>
       <p className="font-body mt-1 text-sm text-slate-100">{order.personal_message}</p>
     </div>
   ) : null;
@@ -452,6 +455,7 @@ function Game({
 
       {screen.kind === "opening" && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -463,6 +467,7 @@ function Game({
 
       {screen.kind === "coin" && screen.coinId === 1 && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -475,6 +480,7 @@ function Game({
 
       {screen.kind === "coin" && screen.coinId === 2 && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -487,6 +493,7 @@ function Game({
 
       {screen.kind === "coin" && screen.coinId === 3 && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -499,6 +506,7 @@ function Game({
 
       {screen.kind === "missionCompleteIntro" && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -520,6 +528,7 @@ function Game({
 
       {screen.kind === "missionComplete" && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -567,6 +576,7 @@ function Game({
 
       {screen.kind === "rsvpYes" && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -584,6 +594,7 @@ function Game({
 
       {screen.kind === "rsvpNo" && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -600,6 +611,7 @@ function Game({
       {screen.kind === "menu" && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          style={themeUiStyle(theme) as CSSProperties}
           onClick={() => setScreen({ kind: "none" })}
           role="button"
           tabIndex={0}
@@ -614,7 +626,7 @@ function Game({
           >
             <div className="dialogue-paper-bg" aria-hidden />
             <div className="font-display relative z-10 flex flex-col gap-2.5">
-              <h2 className="mb-1 text-center text-base font-bold text-cyan-300">Menu</h2>
+              <h2 className="ui-text-accent-light mb-1 text-center text-base font-bold">Menu</h2>
               <DialogueButton
                 theme="space"
                 onClick={() => {
@@ -646,6 +658,7 @@ function Game({
 
       {screen.kind === "eventDetails" && (
         <DialogueBox
+          theme={theme}
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
@@ -657,7 +670,7 @@ function Game({
           <div className="flex flex-col gap-3 text-left">
             {(order.party_date || order.party_time) && (
               <div className="flex items-start gap-2">
-                <span className="mt-0.5 shrink-0 text-cyan-400">{ICONS.calendar}</span>
+                <span className="ui-text-accent mt-0.5 shrink-0">{ICONS.calendar}</span>
                 <p>
                   {order.party_date && (
                     <>
@@ -681,7 +694,7 @@ function Game({
               </div>
             )}
             <div className="flex items-start gap-2">
-              <span className="mt-0.5 shrink-0 text-cyan-400">{ICONS.location}</span>
+              <span className="ui-text-accent mt-0.5 shrink-0">{ICONS.location}</span>
               <p>
                 We&apos;re having it at{" "}
                 <span className="dialogue-highlight">
@@ -691,7 +704,7 @@ function Game({
               </p>
             </div>
             <div className="flex items-start gap-2">
-              <span className="mt-0.5 shrink-0 text-cyan-400">{ICONS.dresscode}</span>
+              <span className="ui-text-accent mt-0.5 shrink-0">{ICONS.dresscode}</span>
               <p>
                 Come dressed in{" "}
                 <span className="dialogue-highlight">

@@ -131,12 +131,35 @@ Every theme needs:
   that somehow needed fixed per-asset sizing again would need that added
   back deliberately, not inherited from a leftover code path.
 
-Also per-theme: **`particles`** (the ambient dot layer, `src/lib/starfield.ts`
-— space uses small white "stars"; a theme can recolor/resize via
-`{ color, sizeMin, sizeMax, opacityMin, opacityMax }`) and **`skyGradient`**
-(a CSS `background` value for the world behind everything else).
+Also per-theme:
+- **`particles`** — the ambient dot layer (`src/lib/starfield.ts`); space
+  uses small white "stars", a theme can recolor/resize via
+  `{ color, sizeMin, sizeMax, opacityMin, opacityMax }`.
+- **`skyGradient`** — a CSS `background` value for the world behind
+  everything else.
+- **`missionLabel`** — e.g. "Space Mission" / "Dino Mission", shown on the
+  title screen as "{childName}'s {missionLabel}" (`TitleScreen.tsx`).
+- **`decorationDensity`** — `{ largeMinCount, largeMaxCount, smallMinCount,
+  smallMaxCount }`, how many instances of each decoration *key* spawn per
+  invite. Per-theme rather than shared, since a theme with more distinct
+  decoration keys than another would otherwise end up visibly busier just
+  from having more art, not from any deliberate density choice — this bit
+  dino in practice (see its section below).
+- **`uiColors`** — `{ accent, accentLight, accentRgb, accentLightRgb,
+  boxBg }` for the dialogue box and everything visually attached to it
+  (footer buttons, the RSVP form, the in-game menu, the return-visit "You're
+  in!" card). Read as CSS custom properties (`--ui-*`) set once on each of
+  those components' own root (`DialogueBox.tsx`, `ReturnVisitScreen.tsx`,
+  the menu panel in `GameClient.tsx`) via `themeUiStyle()` in
+  `theme-config.ts`; everything else inherits via normal CSS cascade rather
+  than needing the color threaded through as a prop — see the `.ui-*` /
+  `.dialogue-btn-*` rules in `globals.css`. `*Rgb` fields are
+  space-separated "R G B" triplets (not hex), so CSS can blend to any
+  opacity via `rgb(var(--x) / N%)` without a variable per opacity level.
 
 ### `space` (live)
+
+**`missionLabel`:** "Space Mission".
 
 **Characters:** (`characterNames`: Astro Boy / Astro Girl)
 | File | Native size | Displayed size |
@@ -175,10 +198,17 @@ Tiering call: the 3 ringed planets + sun + rocket read as the "grand"
 centerpiece pieces; the 4 plainer round planets sit in the small tier
 alongside the moons/stars, closer to them in visual weight.
 
+**`decorationDensity`:** 1–2 per large-tier key, 2–4 per small-tier key —
+the shared default every theme starts from (`largeMinCount:1,
+largeMaxCount:2, smallMinCount:2, smallMaxCount:4`).
 **Particles:** white, size 1–3px, opacity 0.4–1.
 **Sky:** `linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)` (deep navy).
+**UI colors:** cyan/navy — `accent` #22d3ee (cyan-400), `accentLight`
+#67e8f9 (cyan-300), `boxBg` #0f1442.
 
 ### `dino` (live)
+
+**`missionLabel`:** "Dino Mission".
 
 **Characters:** (`characterNames`: Dinoboy / Dinogirl)
 | File | Native size | Displayed size |
@@ -211,11 +241,23 @@ alongside the moons/stars, closer to them in visual weight.
 | dino-05 | `dino-05.png` | triceratops |
 | baby-dino-01 … baby-dino-06 | `baby-dino-0{1..6}.png` | 6 variants |
 
+**`decorationDensity`:** 1–2 per large-tier key (same as space), but only
+1–2 per small-tier key (`smallMinCount:1, smallMaxCount:2` — half of
+space's default). Dino's small tier has more distinct keys than space's
+original 7 (17 vs. 7), so at the shared 2–4-per-key default it was spawning
+roughly double the total instances and reading noticeably overlapped/
+cluttered in live testing; halved to land closer to what that original,
+smaller small tier actually produced. Revisit if dino's small-tier key
+count changes significantly.
 **Particles:** warm "floating pollen", `#ffe9b3`, same size/opacity range as
 space's stars (1–3px, 0.4–1 opacity) — just recolored.
-**Sky:** `linear-gradient(to top, #2d5016 0%, #a15a2e 50%, #f4a940 100%)` —
-deep jungle green at the ground, through warm dusk amber, to golden-hour at
-the top.
+**Sky:** `linear-gradient(to top, #5c3a1e 0%, #b3702e 55%, #f4c15f 100%)` —
+warm brown at the ground through amber to golden-hour at the top. Softened
+from an earlier version that went full dark jungle-green at the bottom
+(read as a jarring day-to-night shift rather than one warm daylight scene)
+— a stylistic call, open to further adjustment.
+**UI colors:** warm amber/gold — `accent` #e8a33d, `accentLight` #f5d68a
+(soft warm gold), `boxBg` #2b2410 (deep warm brown-olive).
 
 ### `ocean` (empty scaffold)
 Folder exists (`public/assets/theme/ocean/`) but has no assets yet — nothing
@@ -251,9 +293,14 @@ order's `template` column names — that part is done for both `space` and
    centered/scaled within the square, no cropping) — don't specify
    width/height for them, the shared randomized-scale system handles sizing.
 3. Add a `themes.<name>` entry to `THEME_CONFIG` in `src/lib/theme-config.ts`
-   (`characterSprites`, `characterNames`, `decorations`, `particles`,
-   `skyGradient` — same shape as `dino`). `backgroundMusicSrc`, `muteIcons`,
-   `coinSprites`, and `rewardSprites` need no changes.
+   (`characterSprites`, `characterNames`, `missionLabel`, `decorations`,
+   `decorationDensity`, `particles`, `skyGradient`, `uiColors` — same shape
+   as `dino`; TypeScript's `satisfies` check will flag anything missing).
+   `backgroundMusicSrc`, `muteIcons`, `coinSprites`, and `rewardSprites`
+   need no changes. Start `decorationDensity` at space's defaults
+   (1–2 large, 2–4 small per key) and only reduce it if the new theme's
+   small tier has a lot more keys than space's and starts looking
+   cluttered, same as dino's did.
 4. Fill in that theme's section in this doc.
 5. Follow "Making a theme selectable in `/create`" above to actually expose
    it as a customer-facing choice — `/invite/[guest_link]` will already

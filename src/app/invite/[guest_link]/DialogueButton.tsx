@@ -19,8 +19,8 @@ export default function DialogueButton({
   const styles =
     theme === "space"
       ? variant === "primary"
-        ? "bg-cyan-400 text-slate-900 hover:bg-cyan-300"
-        : "bg-transparent text-cyan-300 border-2 border-cyan-400/70 hover:bg-cyan-400/10"
+        ? "dialogue-btn-primary"
+        : "dialogue-btn-secondary border-2"
       : variant === "primary"
         ? "bg-amber-600 text-white hover:bg-amber-700"
         : "bg-white text-amber-800 border-2 border-amber-600 hover:bg-amber-100";

@@ -86,6 +86,7 @@ export default function ToneSelectStep({
         key={previewTone}
         photoUrl={null}
         name={childName}
+        theme={THEME_CONFIG.themes.space}
         anchorY={anchorY}
         segments={[{ text: previewLine }]}
       />

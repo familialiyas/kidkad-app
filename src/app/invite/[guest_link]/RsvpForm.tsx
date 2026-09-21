@@ -37,10 +37,10 @@ export default function RsvpForm({
   const [paxText, setPaxText] = useState(String(initialValues?.paxCount ?? 1));
 
   const labelClass =
-    theme === "space" ? "text-xs font-bold text-cyan-100" : "text-xs font-bold text-amber-900";
+    theme === "space" ? "ui-text-accent-light text-xs font-bold" : "text-xs font-bold text-amber-900";
   const inputClass =
     theme === "space"
-      ? "mt-1 w-full rounded-lg border-2 border-cyan-400/40 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-400"
+      ? "ui-border-accent-40 mt-1 w-full rounded-lg border-2 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-400"
       : "mt-1 w-full rounded-lg border-2 border-amber-300 bg-white px-3 py-2 text-sm text-amber-950";
   const errorClass = theme === "space" ? "text-xs font-bold text-red-400" : "text-xs font-bold text-red-600";
 
