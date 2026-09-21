@@ -298,6 +298,19 @@ input[type="time"] {
     0 4px 0 rgba(0, 0, 0, 0.25);
 }
 
+/* Semi-transparent "glass" treatment for small circular icon buttons (the
+   mute toggle) — same frosted look as .start-mission-btn (bg-white/10 +
+   backdrop-blur, applied via className alongside this) scaled down to a
+   softer glow, so it reads as one consistent button language across the
+   game rather than a solid dark badge. Not theme-tinted, same as
+   start-mission-btn itself — the transparency is what makes it sit
+   correctly over any theme's background, no per-theme color needed. */
+.glass-icon-btn {
+  box-shadow:
+    0 0 10px 3px rgba(147, 197, 253, 0.35),
+    0 3px 0 rgba(0, 0, 0, 0.2);
+}
+
 /* Gentle zero-gravity tumble — duration/delay are randomized per element
    inline so decorations don't all bob in sync. --deco-rot and --deco-scale
    are also set per element, so repeats of the same asset don't look like
