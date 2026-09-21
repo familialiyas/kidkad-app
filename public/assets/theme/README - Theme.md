@@ -127,11 +127,25 @@ Every theme needs:
   exact same 20 slots with the exact same per-slot numbers, so the only
   thing that can differ between space and dino is which art renders, never
   how big, how often, or how tilted it is.
+
+  **LOCKED, not per-guest.** `generateDecorations()` seeds its PRNG from
+  `REFERENCE_SEED`, a fixed constant in `decorations.ts` — not the guest's
+  own `guest_link` — so every single guest, in every theme, renders the
+  exact same positions/sizes/tilts/float-timing; only the image per slot
+  differs by theme. (The star field, `starfield.ts`, is unaffected and
+  still varies per `guest_link` as before — this locking is decoration-only.)
+  This was a deliberate reversal of the original "different invites look
+  different" design, after specifically comparing two guest_links' output
+  and preferring one arrangement. To re-tune the locked layout, edit the
+  constants below and/or change `REFERENCE_SEED` to a different guest_link
+  — the generation mechanics (pairing/overlap/hero-size/start-clearance)
+  stay live code specifically so this doesn't require hand-editing a large
+  array of numbers.
   - Rendered via `object-fit: contain` in a square container, so content
     scales proportionally with no distortion regardless of how much of the
     512×512 canvas it actually fills.
-  - **Size** is randomized per instance (seeded, so deterministic per
-    guest_link) within its slot's `sizeMin`–`sizeMax`: the 5 large/landmark
+  - **Size** is randomized per instance (seeded from the locked reference,
+    same for every guest) within its slot's `sizeMin`–`sizeMax`: the 5 large/landmark
     slots ≈150–220px, the 15 small slots ≈60–120px. A few instances (any
     slot, `HERO_SIZE_COUNT`) get an extra 1.3–1.8× size boost on top of
     that (capped at 280px) — no "does this species make sense at this

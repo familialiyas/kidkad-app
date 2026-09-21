@@ -66,10 +66,11 @@ export default function GameWorld({
     () => generateStars(starSeed, WORLD_HEIGHT, theme.particles),
     [starSeed, theme.particles]
   );
-  const decorations = useMemo(
-    () => generateDecorations(starSeed, WORLD_HEIGHT, theme),
-    [starSeed, theme]
-  );
+  // Locked layout: every guest, every theme, gets the same decoration
+  // arrangement (positions/sizes/tilts) — see decorations.ts's
+  // REFERENCE_SEED. Not guest-seeded like the star field above; theme is
+  // the only thing that varies which art renders per slot.
+  const decorations = useMemo(() => generateDecorations(WORLD_HEIGHT, theme), [theme]);
   // Each background layer scrolls slower than the foreground (parallax): a
   // layer only moves (1 - factor) of the true scroll distance, achieved by
   // shifting it the opposite way by that remainder so its net on-screen

@@ -11,6 +11,18 @@ import type { ThemeAssets } from "./theme-config";
 // what keeps "crowdiness" identical across themes: space and dino now run
 // through the exact same 20 slots with the exact same per-slot numbers,
 // just rendering different art.
+//
+// LOCKED LAYOUT: the generator below is seeded from REFERENCE_SEED, a fixed
+// constant — not a per-guest value — so every guest, in every theme, sees
+// the exact same decoration arrangement (positions/sizes/tilts/pairing;
+// only the art differs per theme). This was a deliberate product decision:
+// earlier, each guest_link produced its own unique-but-consistent layout;
+// now positioning is locked to whichever arrangement REFERENCE_SEED
+// happens to produce, chosen because it read well. The generation
+// mechanics (pairing/symmetry, overlap, hero-size, start-clearance) are
+// kept as live code rather than a frozen data table specifically so this
+// can be re-tuned by editing the constants above and/or REFERENCE_SEED,
+// not by hand-editing a large array of numbers.
 
 export interface PlacedDecoration {
   id: string;
@@ -183,13 +195,15 @@ type Row =
   | { kind: "pair"; a: DecorationInstance; b: DecorationInstance }
   | { kind: "single"; item: DecorationInstance };
 
-/** Same seed (e.g. guest_link) always produces the same layout; different invites look different. */
-export function generateDecorations(
-  seed: string,
-  worldHeight: number,
-  theme: ThemeAssets
-): PlacedDecoration[] {
-  const random = mulberry32(hashStringToSeed(`${seed}:decorations`));
+// The exact guest_link this layout was locked from — see "LOCKED LAYOUT"
+// above. Not a real order's identity at this point, just a fixed input to
+// the PRNG; change this (or the constants above it) to deliberately
+// re-tune the locked arrangement.
+const REFERENCE_SEED = "guest_ioZDLcCYzLYXAemXGFbU";
+
+/** Every guest, every theme, renders this same locked arrangement — see "LOCKED LAYOUT" above. */
+export function generateDecorations(worldHeight: number, theme: ThemeAssets): PlacedDecoration[] {
+  const random = mulberry32(hashStringToSeed(`${REFERENCE_SEED}:decorations`));
 
   const instances: DecorationInstance[] = [];
   for (const slot of DECORATION_SLOTS) {

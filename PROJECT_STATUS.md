@@ -82,10 +82,12 @@ far were run ad hoc via the Supabase SQL editor by the user, on request.
 ## What's built and working
 
 **Guest game** (`/invite/[guest_link]`): scroll-driven world with a seeded
-parallax starfield and decorations (`src/lib/starfield.ts`,
-`src/lib/decorations.ts`, `src/lib/seeded-random.ts` — deterministic per
-`guest_link`), 3 collectible coins revealing date/time, venue, and dress
-code via `DialogueBox`. Opening dialogue is generated from
+parallax starfield (`src/lib/starfield.ts`, `src/lib/seeded-random.ts` —
+deterministic per `guest_link`, still varies per guest) and decorations
+(`src/lib/decorations.ts` — locked to one fixed arrangement for every
+guest as of the slot-template rework, see below; no longer per-guest), 3
+collectible coins revealing date/time, venue, and dress code via
+`DialogueBox`. Opening dialogue is generated from
 `DIALOGUE_TONES[order.dialogue_tone].opening` (name+age filled via
 `fillTemplate`) — not from `personal_message`. Once all 3 coins are
 collected: a ceremony dialogue plays the tone's `missionComplete` line: the
@@ -154,6 +156,22 @@ on dino's `decorations` entry in `theme-config.ts`), not arbitrary order.
 Adding a future theme means supplying 20 assets and slotting them into
 these exact 20 names — TypeScript's `Record<SlotName, string>` refuses to
 compile if any slot is missing — no decorations.ts changes, ever.
+
+**Decoration positioning is now LOCKED — one fixed arrangement for every
+guest, in every theme**, not seeded per-guest like the star field still is.
+`generateDecorations(worldHeight, theme)` no longer takes a `seed`
+parameter; internally it always seeds from `REFERENCE_SEED` (a fixed
+constant in `decorations.ts`, currently the guest_link of the specific
+layout this was locked from), so every order — regardless of its own
+guest_link — renders the exact same positions/sizes/tilts/float timing,
+with only the art differing by theme (via the slot mapping above). This
+was a deliberate reversal of the original "different invites look
+different" design, requested after comparing two different guest_links'
+layouts and preferring one specific arrangement over per-guest variety.
+The full pairing/overlap/hero-size/start-clearance generation logic is
+still live code (not a frozen data table) specifically so the locked
+layout can be re-tuned later by editing constants and/or `REFERENCE_SEED`,
+rather than hand-editing a ~45-entry array of numbers.
 
 **Dialogue system** (`DialogueBox.tsx` + `src/lib/typewriter.ts`):
 character-by-character typewriter reveal (~24ms/char), tap-to-skip then
