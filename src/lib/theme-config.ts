@@ -1,7 +1,15 @@
 // Centralized theme assets. Everything that plays backgroundMusicSrc
 // (AudioToggle) reads from here.
+//
+// coin/reward/audio/mute-icon are identical across every theme by product
+// decision, so they live under public/assets/shared/ instead of being
+// duplicated per theme — only characterSprites and decorations differ.
 export const THEME_CONFIG = {
-  backgroundMusicSrc: "/assets/theme/space/audio/bgm-space.mp3",
+  backgroundMusicSrc: "/assets/shared/audio/bgm-space.mp3",
+  muteIcons: {
+    on: "/assets/shared/icons/icon-sound-on.png",
+    off: "/assets/shared/icons/icon-sound-off.png",
+  },
   characterSprites: {
     boy: {
       idle: "/assets/theme/space/character/astroboy-idle.png",
@@ -13,12 +21,12 @@ export const THEME_CONFIG = {
     },
   },
   coinSprites: {
-    glow: "/assets/theme/space/coin/coin-glow.png",
-    burst: "/assets/theme/space/coin/coin-burst.png",
+    glow: "/assets/shared/coin/coin-glow.png",
+    burst: "/assets/shared/coin/coin-burst.png",
   },
   rewardSprites: {
-    closed: "/assets/theme/space/reward/gift-closed.png",
-    opened: "/assets/theme/space/reward/gift-opened.png",
+    closed: "/assets/shared/reward/gift-closed.png",
+    opened: "/assets/shared/reward/gift-opened.png",
   },
   // Margin decorations, split by how often each should appear (see
   // src/lib/decorations.ts). The 3 biggest assets read as "landmarks" and

@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { THEME_CONFIG } from "@/lib/theme-config";
 
 const STORAGE_KEY = "kidkad_audio_muted";
 
@@ -71,11 +72,7 @@ const AudioToggle = forwardRef<AudioToggleHandle, { src: string }>(function Audi
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={
-            muted
-              ? "/assets/theme/space/icons/icon-sound-off.png"
-              : "/assets/theme/space/icons/icon-sound-on.png"
-          }
+          src={muted ? THEME_CONFIG.muteIcons.off : THEME_CONFIG.muteIcons.on}
           alt=""
           className="h-6 w-6 object-contain"
         />

@@ -166,6 +166,8 @@ that manually if needed.
 - Multi-theme support — `template` column exists, only "space" assets
   exist, nothing branches on the value yet. The `/create` theme picker and
   dashboard edit's character/tone selects are the only theme-adjacent UI.
+  Asset inventory + spec for what a new theme needs to provide (file list,
+  dimensions, naming) is documented in `public/assets/theme/README.md`.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
 - Brand identity not finalized — the "KidKad" text on the `/create` welcome

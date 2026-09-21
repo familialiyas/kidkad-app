@@ -14,14 +14,16 @@ export type SfxName =
   | "buttonTap"
   | "rsvpSuccess";
 
+// Shared across every theme (identical by product decision), so these live
+// under public/assets/shared/ rather than per-theme.
 const SFX_SRC: Record<SfxName, string> = {
-  coinCollect: "/assets/theme/space/audio/sfx-coin-collect.mp3",
-  giftOpen: "/assets/theme/space/audio/sfx-gift-open.mp3",
-  warp: "/assets/theme/space/audio/sfx-warp.mp3",
-  dialogueOpen: "/assets/theme/space/audio/sfx-dialogue-open.mp3",
-  dialogueClose: "/assets/theme/space/audio/sfx-dialogue-close.mp3",
-  buttonTap: "/assets/theme/space/audio/sfx-button-tap.mp3",
-  rsvpSuccess: "/assets/theme/space/audio/sfx-rsvp-success.mp3",
+  coinCollect: "/assets/shared/audio/sfx-coin-collect.mp3",
+  giftOpen: "/assets/shared/audio/sfx-gift-open.mp3",
+  warp: "/assets/shared/audio/sfx-warp.mp3",
+  dialogueOpen: "/assets/shared/audio/sfx-dialogue-open.mp3",
+  dialogueClose: "/assets/shared/audio/sfx-dialogue-close.mp3",
+  buttonTap: "/assets/shared/audio/sfx-button-tap.mp3",
+  rsvpSuccess: "/assets/shared/audio/sfx-rsvp-success.mp3",
 };
 
 // Relative loudness pass: coin-collect and dialogue-open were recorded
