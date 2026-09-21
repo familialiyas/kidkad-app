@@ -11,7 +11,7 @@ import {
 } from "@/lib/game-constants";
 import { generateStars, STAR_PARALLAX_FACTOR } from "@/lib/starfield";
 import { generateDecorations, DECORATION_PARALLAX_FACTOR } from "@/lib/decorations";
-import { THEME_CONFIG } from "@/lib/theme-config";
+import { THEME_CONFIG, type ThemeAssets } from "@/lib/theme-config";
 import type { Character } from "@/lib/types";
 
 type CoinVisualPhase = "locked" | "active" | "burst" | "flying" | "collected";
@@ -29,6 +29,7 @@ export default function GameWorld({
   onRewardTap,
   rewardTop,
   starSeed,
+  theme,
   showGameplayChrome = true,
   warping = false,
   talking = false,
@@ -48,6 +49,8 @@ export default function GameWorld({
   rewardTop: number;
   /** Seeds the star field so the same invite always shows the same pattern. */
   starSeed: string;
+  /** Resolved from the order's template (see theme-config.ts's getTheme) — drives character sprites, decorations, ambient particles, and the sky gradient. */
+  theme: ThemeAssets;
   /** False during the title screen — the sprite and HUD live there separately, avoid double-rendering. */
   showGameplayChrome?: boolean;
   /** Briefly stretches the stars into streaks (warp speed) on the way to mission complete. */
@@ -55,12 +58,17 @@ export default function GameWorld({
   /** True while dialogue text is actively typing — plays a talking loop instead of the idle float. */
   talking?: boolean;
 }) {
-  const sprites =
-    character === "girl" ? THEME_CONFIG.themes.space.characterSprites.girl : THEME_CONFIG.themes.space.characterSprites.boy;
+  const sprites = character === "girl" ? theme.characterSprites.girl : theme.characterSprites.boy;
   const spriteSrc = characterState === "victory" ? sprites.yay : sprites.idle;
 
-  const stars = useMemo(() => generateStars(starSeed, WORLD_HEIGHT), [starSeed]);
-  const decorations = useMemo(() => generateDecorations(starSeed, WORLD_HEIGHT), [starSeed]);
+  const stars = useMemo(
+    () => generateStars(starSeed, WORLD_HEIGHT, theme.particles),
+    [starSeed, theme.particles]
+  );
+  const decorations = useMemo(
+    () => generateDecorations(starSeed, WORLD_HEIGHT, theme),
+    [starSeed, theme]
+  );
   // Each background layer scrolls slower than the foreground (parallax): a
   // layer only moves (1 - factor) of the true scroll distance, achieved by
   // shifting it the opposite way by that remainder so its net on-screen
@@ -109,7 +117,7 @@ export default function GameWorld({
       className="relative w-full overflow-hidden"
       style={{
         height: WORLD_HEIGHT,
-        background: "linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)",
+        background: theme.skyGradient,
       }}
     >
       {/* Parallax star field — moves slower than the foreground for depth */}
@@ -121,13 +129,14 @@ export default function GameWorld({
         {stars.map((star) => (
           <span
             key={star.id}
-            className={`absolute rounded-full bg-white ${warping ? "star-warp" : ""}`}
+            className={`absolute rounded-full ${warping ? "star-warp" : ""}`}
             style={{
               top: star.top,
               left: `${star.leftPct}%`,
               width: star.size,
               height: star.size,
               opacity: star.opacity,
+              backgroundColor: theme.particles.color,
             }}
           />
         ))}
@@ -155,7 +164,7 @@ export default function GameWorld({
             key={deco.id}
             src={deco.src}
             alt=""
-            className="decoration-float absolute select-none"
+            className="decoration-float absolute select-none object-contain"
             style={
               {
                 top: deco.top,

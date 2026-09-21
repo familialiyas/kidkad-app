@@ -163,15 +163,25 @@ that manually if needed.
   + "your dashboard link is ready — check back anytime to see who's
   RSVP'd", explicitly no receipt mention (Toyyibpay's separate concern) and
   no digest/cron system — single automatic send on payment confirmation.
-- Multi-theme support — `template` column exists, only "space" assets
-  exist, nothing branches on the value yet. The `/create` theme picker and
-  dashboard edit's character/tone selects are the only theme-adjacent UI.
-  Asset inventory + spec for what a new theme needs to provide (file list,
-  dimensions, naming) is documented in
-  `public/assets/theme/README - Theme.md`. A second theme (`dinosaur`) has
-  its character/decoration assets already in place and wired into
-  `THEME_CONFIG`, but isn't reachable from the UI yet — see that doc's
-  "Making a theme selectable" section for what's still needed.
+- Multi-theme support, partially wired — `/invite/[guest_link]` now reads
+  an order's `template` column and renders the matching theme
+  (`getTheme()` in `src/lib/theme-config.ts`, defaulting to "space" for
+  null/unrecognized values): character sprites, decorations, the ambient
+  particle layer, and sky gradient are all theme-driven. A second theme,
+  `dino`, is fully built and confirmed rendering correctly this way. What's
+  still missing is any customer-facing way to *choose* a theme — `/create`'s
+  steps (character/tone/preview previews, `ThemeSelectStep.tsx`) and
+  dashboard edit's character/tone selects all still hardcode "space", so a
+  dino invite today only happens by setting an existing order's `template`
+  directly (e.g. via Supabase). Asset inventory, the standardized-canvas
+  decoration system, and what's left to build theme-selection UI are
+  documented in `public/assets/theme/README - Theme.md`.
+- Space's decorations are still on a legacy fixed-size rendering path,
+  pending the user re-exporting its 10 decoration PNGs onto the same
+  standardized 512×512 canvas dino already uses — once that lands, drop
+  `width`/`height` from space's `theme-config.ts` decoration entries and it
+  picks up the same randomized-scale/full-rotation system automatically
+  (see the assets doc).
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
 - Brand identity not finalized — the "KidKad" text on the `/create` welcome

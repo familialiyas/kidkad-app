@@ -7,13 +7,18 @@ Assets split into two locations:
   there's exactly one copy, used by all themes.
 - **`public/assets/theme/<name>/`** — character sprites and decorations.
   These differ per theme, one folder per `orders.template` value.
-  **`space` is the only theme that's actually selectable/live** — `template`
-  isn't switched on anywhere yet (see `PROJECT_STATUS.md`), and
-  `ThemeSelectStep.tsx` only offers "Space Mission". `dinosaur` has assets
-  wired into `THEME_CONFIG` (below) but isn't reachable from the UI yet.
+  **`space` and `dino` both actually render** — `/invite/[guest_link]` reads
+  an order's `template` and loads the matching theme (`getTheme()` in
+  `theme-config.ts`, defaulting to `space` for null/unrecognized values).
+  What's *not* built yet is any UI to pick a theme: `/create`'s steps
+  (`CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, `PreviewStep.tsx`) still
+  hardcode `themes.space`, and `ThemeSelectStep.tsx` only offers "Space
+  Mission" — so a dino invite currently only happens by setting an existing
+  order's `template` column to `"dino"` directly. See "Making a theme
+  selectable in `/create`" below for what's left.
 
 **Source of truth:** `src/lib/theme-config.ts` is what the app actually
-reads — every path and display size here is wired through that one file. If
+reads — every path, tier, and color here is wired through that one file. If
 this doc and the code ever disagree, trust the code and fix this doc.
 
 ## Shared assets — `public/assets/shared/` (every theme)
@@ -55,10 +60,8 @@ These are the *only* raster icons in the app. Party-detail icons (calendar,
 location, dress code, celebration) are inline SVG on purpose — a raster
 `<img>` gets auto-inverted/washed out by OS-level "force dark mode" on some
 devices, inline SVG via `currentColor` doesn't (see
-`src/app/invite/[guest_link]/PartyIcons.tsx`). The 4 PNG equivalents that
-used to live here (`icon-calendar.png`, `icon-celebration.png`,
-`icon-dresscode.png`, `icon-location.png`) were deleted once confirmed dead
-— don't re-add PNGs for that icon category, follow the SVG pattern instead.
+`src/app/invite/[guest_link]/PartyIcons.tsx`). Don't add PNGs for that icon
+category, follow the SVG pattern instead.
 
 ### Audio — `audio/`
 | File | Duration | Size |
@@ -88,30 +91,55 @@ public/assets/theme/<name>/
 ```
 
 Every theme needs:
+
 - **`characters/`** — 2 characters (boy/girl) × 2 states (idle/victory) = 4
   transparent PNGs, portrait 2:3, named `<charactername>-idle.png` /
   `<charactername>-yay.png`. Display size comes from `CHARACTER_WIDTH` /
   `CHARACTER_HEIGHT` in `src/lib/game-constants.ts` (width is the source
   value; height is derived to preserve the 2:3 ratio — sprites that don't
-  match it will crop/stretch).
+  match it will crop/stretch). Each theme also has a `characterNames` entry
+  (e.g. dino's `{ boy: "Dinoboy", girl: "Dinogirl" }`) — not consumed
+  anywhere yet, since `CharacterSelectStep.tsx` still hardcodes "Astro
+  Boy"/"Astro Girl" text directly.
 - **`decorations/`** — parallax margin scenery placed by
-  `src/lib/decorations.ts`, split into a rare "large/landmark" tier and a
-  more freely-scattered "small" tier. Transparent PNG. The declared
-  `width`/`height` in `theme-config.ts` drive placement math directly (not
-  read from the file), so they must match each asset's actual aspect ratio.
-  A theme needs at least a few of each tier to avoid maps looking sparse.
+  `src/lib/decorations.ts`, split into a rare **large/landmark** tier (1–2
+  instances per invite) and a more freely-scattered **small** tier (2–4
+  instances each). **Standardized canvas: every decoration asset is a
+  512×512 transparent-background PNG, content centered/scaled within the
+  square regardless of its native aspect ratio.** No per-asset width/height
+  in `theme-config.ts` — display size is randomized per placement instance
+  instead:
+  - Rendered via `object-fit: contain` in a square container, so content
+    scales proportionally with no distortion regardless of how much of the
+    512×512 canvas it actually fills.
+  - **Size** is randomized per instance (seeded, so deterministic per
+    guest_link) within the tier's range: **large/landmark ≈150–220px,
+    small ≈60–120px** (`LANDMARK_SIZE_MIN/MAX`, `SMALL_SIZE_MIN/MAX` in
+    `decorations.ts`).
+  - **Rotation** is a full random 0–360° per instance — nothing in this
+    game has a "wrong way up".
+  - A theme needs at least a few of each tier to avoid maps looking sparse;
+    density itself (how many instances of each key spawn) is controlled by
+    shared, theme-agnostic constants (`LARGE_MIN_COUNT`/`MAX_COUNT`,
+    `SMALL_MIN_COUNT`/`MAX_COUNT`).
 
-Wired in code as `THEME_CONFIG.themes.<name>.{characterSprites,decorations}`
-in `src/lib/theme-config.ts`. Every consumer (`TitleScreen.tsx`,
-`GameWorld.tsx`, `CharacterSelectStep.tsx`, `ToneSelectStep.tsx`,
-`PreviewStep.tsx`, `decorations.ts`) is currently hardcoded to
-`themes.space` specifically — nothing reads `orders.template` to pick a
-theme dynamically yet, so adding a `themes.<name>` entry alone doesn't make
-it playable (see "Making a theme selectable" below).
+  **Space is still on a legacy path**, pending re-export of its 10
+  decorations onto the standardized 512×512 canvas — its `theme-config.ts`
+  entries keep explicit `width`/`height` per asset, which `decorations.ts`
+  detects and falls back to: exact fixed size (no scale randomization) and
+  a subtle ±15° rotation wobble (not full rotation), matching how it always
+  looked. Once the real files land, drop `width`/`height` from space's
+  entries and it picks up the same system dino already uses — no other
+  code change needed.
 
-### `space` (live)
+Also per-theme: **`particles`** (the ambient dot layer, `src/lib/starfield.ts`
+— space uses small white "stars"; a theme can recolor/resize via
+`{ color, sizeMin, sizeMax, opacityMin, opacityMax }`) and **`skyGradient`**
+(a CSS `background` value for the world behind everything else).
 
-**Characters:**
+### `space` (live, legacy decoration sizing)
+
+**Characters:** (`characterNames`: Astro Boy / Astro Girl)
 | File | Native size | Displayed size |
 |---|---|---|
 | `astroboy-idle.png` | 300×450 (2:3) | 110×165 |
@@ -119,14 +147,14 @@ it playable (see "Making a theme selectable" below).
 | `astrogirl-idle.png` | 300×450 | 110×165 |
 | `astrogirl-yay.png` | 300×450 | 110×165 |
 
-**Decorations — large tier** (1–2 of each per invite):
+**Decorations — large tier** (fixed size, legacy):
 | Key | File | Size |
 |---|---|---|
 | saturn-planet | `saturn-planet.png` | 200×200 |
 | striped-planet | `striped-planet.png` | 150×150 |
 | rocket | `rocket.png` | 120×150 |
 
-**Decorations — small tier** (2–4 of each):
+**Decorations — small tier** (fixed size, legacy):
 | Key | File | Size |
 |---|---|---|
 | small-moon | `small-moon.png` | 100×100 |
@@ -137,17 +165,12 @@ it playable (see "Making a theme selectable" below).
 | comet | `comet.png` | 120×80 |
 | ufo | `ufo.png` | 120×80 |
 
-### `dinosaur` (assets in, not selectable yet)
+**Particles:** white, size 1–3px, opacity 0.4–1.
+**Sky:** `linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)` (deep navy).
 
-Wired into `THEME_CONFIG.themes.dinosaur`, but **not reachable from the
-UI** — `ThemeSelectStep.tsx` doesn't offer it, and nothing switches on
-`orders.template`. The large/small tiering and display sizes below are a
-first-pass reading of the art (all native files are a uniform 512×512, so
-sizes are assigned per-tier rather than per-asset aspect ratio like space's
-non-square pieces) — not visually tuned or reviewed. Revisit both before
-this theme actually ships.
+### `dino` (live, standardized decoration sizing)
 
-**Characters:**
+**Characters:** (`characterNames`: Dinoboy / Dinogirl)
 | File | Native size | Displayed size |
 |---|---|---|
 | `dinoboy-idle.png` | 300×450 (2:3) | 110×165 |
@@ -155,59 +178,73 @@ this theme actually ships.
 | `dinogirl-idle.png` | 300×450 | 110×165 |
 | `dinogirl-yay.png` | 300×450 | 110×165 |
 
-**Decorations — large tier** (8 keys — notably more than space's 3; density
-constants in `decorations.ts` are currently shared across all themes and
-haven't been rebalanced for this, so this tier will read much busier than
-space's if ever turned on as-is):
-| Key | File | Native size | Assigned display size |
-|---|---|---|---|
-| volcano | `volcano.png` | 512×512 | 160×160 |
-| trees | `trees.png` | 512×512 | 160×160 |
-| dino-00 … dino-05 (6 files) | `dino-0{0..5}.png` | 512×512 | 160×160 |
+**Decorations — large/landmark tier** (all 512×512, size randomized ~150–220px):
+| Key | File | Notes |
+|---|---|---|
+| volcano | `volcano.png` | |
+| trees | `trees.png` | |
+| dino-00 | `dino-00.png` | brontosaurus/longneck |
 
-**Decorations — small tier** (12 keys):
-| Key | File | Native size | Assigned display size |
-|---|---|---|---|
-| baby-dino-01 … baby-dino-06 (6 files) | `baby-dino-0{1..6}.png` | 512×512 | 90×90 |
-| bone | `bone.png` | 512×512 | 90×90 |
-| egg | `egg.png` | 512×512 | 90×90 |
-| footprint | `footprint.png` | 512×512 | 90×90 |
-| leaf | `leaf.png` | 512×512 | 90×90 |
-| mushroom | `mushroom.png` | 512×512 | 90×90 |
-| rocks | `rocks.png` | 512×512 | 90×90 |
+**Decorations — small tier** (all 512×512, size randomized ~60–120px):
+| Key | File | Notes |
+|---|---|---|
+| rocks | `rocks.png` | |
+| mushroom | `mushroom.png` | |
+| leaf | `leaf.png` | |
+| footprint | `footprint.png` | |
+| egg | `egg.png` | |
+| bone | `bone.png` | |
+| dino-01 | `dino-01.png` | stegosaurus |
+| dino-02 | `dino-02.png` | pterodactyl |
+| dino-03 | `dino-03.png` | ankylosaurus |
+| dino-04 | `dino-04.png` | raptor |
+| dino-05 | `dino-05.png` | triceratops |
+| baby-dino-01 … baby-dino-06 | `baby-dino-0{1..6}.png` | 6 variants |
+
+**Particles:** warm "floating pollen", `#ffe9b3`, same size/opacity range as
+space's stars (1–3px, 0.4–1 opacity) — just recolored.
+**Sky:** `linear-gradient(to top, #2d5016 0%, #a15a2e 50%, #f4a940 100%)` —
+deep jungle green at the ground, through warm dusk amber, to golden-hour at
+the top.
 
 ### `ocean` (empty scaffold)
 Folder exists (`public/assets/theme/ocean/`) but has no assets yet — nothing
 wired into `THEME_CONFIG`.
 
-## Making a theme selectable
+## Making a theme selectable in `/create`
 
-Having a `themes.<name>` entry in `THEME_CONFIG` (dinosaur already does)
-isn't enough on its own. To actually turn one on:
+`/invite/[guest_link]` already resolves and renders whichever theme an
+order's `template` column names — that part is done for both `space` and
+`dino`. What's still missing is any way for a customer to actually *choose*
+`dino` while creating an invite:
 
 1. Add a card for it in `ThemeSelectStep.tsx` (currently hardcodes "Space
-   Mission" as selected and a single locked placeholder card).
-2. Make every consumer read the *order's* theme instead of hardcoding
-   `themes.space` — `TitleScreen.tsx`, `GameWorld.tsx`,
-   `CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, `PreviewStep.tsx`, and
-   `decorations.ts` (`generateDecorations`) all currently do this.
-   `orders.template` already exists as a column to key off of.
-3. For dinosaur specifically: rebalance `LARGE_MIN_COUNT`/`LARGE_MAX_COUNT`
-   in `decorations.ts` if its large tier should feel as sparse as space's
-   (8 large-tier types vs. space's 3, same density constants today), and
-   spot-check the 90×90/160×160 display sizes assigned above against the
-   actual art.
+   Mission" as selected and a single locked placeholder card) and thread
+   the choice through `CreateOrderClient.tsx` into the `template` field
+   `/api/orders` already accepts.
+2. `CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, and `PreviewStep.tsx`
+   (the /create steps that preview a character sprite while building a new
+   order) still hardcode `THEME_CONFIG.themes.space` — once there's a
+   selected theme to read instead, swap those to use it (and pull the
+   card/button label from that theme's `characterNames` instead of the
+   hardcoded "Astro Boy"/"Astro Girl" strings).
+3. Until then, the only way to see a `dino` invite is setting an existing
+   order's `template` column to `"dino"` directly (e.g. via Supabase).
 
 ## Adding a new theme from scratch
 
 1. Create `public/assets/theme/<name>/` with `characters/` and
    `decorations/` — **not** `audio/`, `coin/`, `icons/`, or `reward/`; those
    are shared and already exist under `public/assets/shared/`.
-2. Provide the character and decoration assets, sized per the guidance
-   above.
-3. Add a `themes.<name>` entry to `THEME_CONFIG` in
-   `src/lib/theme-config.ts` (`characterSprites` + `decorations`, same
-   shape as `space`/`dinosaur`). `backgroundMusicSrc`, `muteIcons`,
+2. Provide 4 character PNGs (2:3, matching space/dino's spec) and enough
+   decorations per tier, every one a 512×512 transparent-canvas PNG (content
+   centered/scaled within the square, no cropping) — don't specify
+   width/height for them, the shared randomized-scale system handles sizing.
+3. Add a `themes.<name>` entry to `THEME_CONFIG` in `src/lib/theme-config.ts`
+   (`characterSprites`, `characterNames`, `decorations`, `particles`,
+   `skyGradient` — same shape as `dino`). `backgroundMusicSrc`, `muteIcons`,
    `coinSprites`, and `rewardSprites` need no changes.
 4. Fill in that theme's section in this doc.
-5. Follow "Making a theme selectable" above to actually expose it.
+5. Follow "Making a theme selectable in `/create`" above to actually expose
+   it as a customer-facing choice — `/invite/[guest_link]` will already
+   render it correctly for any order whose `template` names it.

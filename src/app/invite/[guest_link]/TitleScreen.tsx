@@ -2,24 +2,25 @@
 
 import { useState } from "react";
 import { CHARACTER_WIDTH, CHARACTER_HEIGHT } from "@/lib/game-constants";
-import { THEME_CONFIG } from "@/lib/theme-config";
+import type { ThemeAssets } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import type { Character } from "@/lib/types";
 
 export default function TitleScreen({
   childName,
   character,
+  theme,
   onStart,
 }: {
   childName: string;
   character: Character | null;
+  /** Resolved from the order's template — see theme-config.ts's getTheme. */
+  theme: ThemeAssets;
   onStart: () => void;
 }) {
   const [starting, setStarting] = useState(false);
   const idleSprite =
-    character === "girl"
-      ? THEME_CONFIG.themes.space.characterSprites.girl.idle
-      : THEME_CONFIG.themes.space.characterSprites.boy.idle;
+    character === "girl" ? theme.characterSprites.girl.idle : theme.characterSprites.boy.idle;
 
   function handleStart() {
     if (starting) return;

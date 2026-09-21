@@ -21,7 +21,7 @@ import RsvpForm, { RsvpFormValues } from "./RsvpForm";
 import ReturnVisitScreen from "./ReturnVisitScreen";
 import TitleScreen from "./TitleScreen";
 import AudioToggle, { AudioToggleHandle } from "./AudioToggle";
-import { THEME_CONFIG } from "@/lib/theme-config";
+import { THEME_CONFIG, getTheme } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment } from "@/lib/typewriter";
 import { DIALOGUE_TONES, fillTemplate } from "@/lib/dialogue-tones";
@@ -166,6 +166,10 @@ function Game({
   const [menuPayError, setMenuPayError] = useState<string | null>(null);
 
   const isPreview = order.payment_status !== "paid";
+  // Resolved from the order's template — drives character sprites,
+  // decorations, ambient particles, and the sky gradient throughout. Falls
+  // back to "space" for null/unrecognized values (getTheme in theme-config.ts).
+  const theme = useMemo(() => getTheme(order.template), [order.template]);
 
   const deadlinePassed = useMemo(
     () => isPastDeadline(order.rsvp_deadline),
@@ -421,6 +425,7 @@ function Game({
         rewardPhase={screen.kind === "reward" && rewardSpawned ? rewardPhase : null}
         onRewardTap={handleRewardTap}
         rewardTop={rewardTop}
+        theme={theme}
         showGameplayChrome={screen.kind !== "title"}
         warping={warping}
         talking={isDialogueTyping}
@@ -434,6 +439,7 @@ function Game({
         <TitleScreen
           childName={childName}
           character={order.character}
+          theme={theme}
           onStart={() => {
             // First guaranteed user gesture on the page — the reliable spot
             // to actually start music, since mobile browsers silently block

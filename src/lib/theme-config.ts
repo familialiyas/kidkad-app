@@ -1,12 +1,56 @@
+import type { ParticleConfig } from "./starfield";
+
+export interface DecorationAsset {
+  key: string;
+  src: string;
+  /**
+   * Legacy fixed display size, space-only. Every other theme (and space
+   * itself once its decorations are re-exported onto the standardized
+   * 512x512 canvas) omits these — size is then randomized per placement
+   * instance from the tier's range in decorations.ts instead. Kept only so
+   * space keeps rendering exactly as before until that re-export lands; see
+   * public/assets/theme/README - Theme.md.
+   */
+  width?: number;
+  height?: number;
+}
+
+export interface ThemeDecorations {
+  large: DecorationAsset[];
+  small: DecorationAsset[];
+}
+
+export interface ThemeAssets {
+  characterSprites: {
+    boy: { idle: string; yay: string };
+    girl: { idle: string; yay: string };
+  };
+  /** Not consumed anywhere yet — CharacterSelectStep.tsx still hardcodes
+   * "Astro Boy"/"Astro Girl" text directly. Wired here so the data exists
+   * for whenever theme-selection UI gets built. */
+  characterNames: {
+    boy: string;
+    girl: string;
+  };
+  decorations: ThemeDecorations;
+  /** Ambient dot layer (src/lib/starfield.ts) — space uses white "stars",
+   * other themes can recolor/resize via this instead of a hardcoded look. */
+  particles: ParticleConfig;
+  /** CSS background value for the world/sky behind everything else. */
+  skyGradient: string;
+}
+
 // Centralized theme assets. Everything that plays backgroundMusicSrc
 // (AudioToggle) reads from here.
 //
 // coin/reward/audio/mute-icon are identical across every theme by product
 // decision, so they live under public/assets/shared/ instead of being
-// duplicated per theme. characterSprites and decorations differ per theme,
-// keyed under `themes` by the orders.template value — though nothing in the
-// app actually reads `template` yet (see PROJECT_STATUS.md), so every
-// consumer is still hardcoded to `themes.space` for now.
+// duplicated per theme. characterSprites/decorations/particles/skyGradient
+// differ per theme, keyed under `themes` by the orders.template value —
+// resolved via getTheme() below. Only /invite/[guest_link] actually reads
+// an order's template today; /create's steps (CharacterSelectStep,
+// ToneSelectStep, PreviewStep) still hardcode themes.space since there's no
+// theme-picker UI yet (see "Making a theme selectable" in the assets doc).
 export const THEME_CONFIG = {
   backgroundMusicSrc: "/assets/shared/audio/bgm-space.mp3",
   muteIcons: {
@@ -33,9 +77,15 @@ export const THEME_CONFIG = {
           yay: "/assets/theme/space/characters/astrogirl-yay.png",
         },
       },
-      // Margin decorations, split by how often each should appear (see
-      // src/lib/decorations.ts). The 3 biggest assets read as "landmarks"
-      // and stay rare; the rest are small enough to scatter more freely.
+      characterNames: {
+        boy: "Astro Boy",
+        girl: "Astro Girl",
+      },
+      // Fixed width/height below is the pre-migration (legacy) sizing —
+      // intentionally left as-is until space's decorations are re-exported
+      // onto the standardized 512x512 canvas, at which point these should
+      // drop width/height entirely (like dino's below) to pick up the
+      // shared randomized-scale system.
       decorations: {
         large: [
           { key: "saturn-planet", src: "/assets/theme/space/decorations/saturn-planet.png", width: 200, height: 200 },
@@ -52,49 +102,93 @@ export const THEME_CONFIG = {
           { key: "ufo", src: "/assets/theme/space/decorations/ufo.png", width: 120, height: 80 },
         ],
       },
+      particles: {
+        color: "#ffffff",
+        sizeMin: 1,
+        sizeMax: 3,
+        opacityMin: 0.4,
+        opacityMax: 1,
+      },
+      skyGradient: "linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)",
     },
     // Not selectable anywhere in the app yet (ThemeSelectStep.tsx still
-    // only offers "space"). Assets exist and are wired here so the data is
-    // ready, but the large/small split and display sizes below are a
-    // first-pass reading of the art, not visually tuned or reviewed the
-    // way space's is — revisit before this theme actually ships.
-    dinosaur: {
+    // only offers "space"), but fully wired into THEME_CONFIG and read by
+    // /invite/[guest_link] once orders.template is set to "dino" — see
+    // public/assets/theme/README - Theme.md.
+    dino: {
       characterSprites: {
         boy: {
-          idle: "/assets/theme/dinosaur/characters/dinoboy-idle.png",
-          yay: "/assets/theme/dinosaur/characters/dinoboy-yay.png",
+          idle: "/assets/theme/dino/characters/dinoboy-idle.png",
+          yay: "/assets/theme/dino/characters/dinoboy-yay.png",
         },
         girl: {
-          idle: "/assets/theme/dinosaur/characters/dinogirl-idle.png",
-          yay: "/assets/theme/dinosaur/characters/dinogirl-yay.png",
+          idle: "/assets/theme/dino/characters/dinogirl-idle.png",
+          yay: "/assets/theme/dino/characters/dinogirl-yay.png",
         },
       },
+      characterNames: {
+        boy: "Dinoboy",
+        girl: "Dinogirl",
+      },
+      // No width/height — every asset is a 512x512 transparent canvas, so
+      // display size is randomized per placement from the tier's range
+      // (decorations.ts) instead of fixed per-asset.
       decorations: {
         large: [
-          { key: "volcano", src: "/assets/theme/dinosaur/decorations/volcano.png", width: 160, height: 160 },
-          { key: "trees", src: "/assets/theme/dinosaur/decorations/trees.png", width: 160, height: 160 },
-          { key: "dino-00", src: "/assets/theme/dinosaur/decorations/dino-00.png", width: 160, height: 160 },
-          { key: "dino-01", src: "/assets/theme/dinosaur/decorations/dino-01.png", width: 160, height: 160 },
-          { key: "dino-02", src: "/assets/theme/dinosaur/decorations/dino-02.png", width: 160, height: 160 },
-          { key: "dino-03", src: "/assets/theme/dinosaur/decorations/dino-03.png", width: 160, height: 160 },
-          { key: "dino-04", src: "/assets/theme/dinosaur/decorations/dino-04.png", width: 160, height: 160 },
-          { key: "dino-05", src: "/assets/theme/dinosaur/decorations/dino-05.png", width: 160, height: 160 },
+          { key: "volcano", src: "/assets/theme/dino/decorations/volcano.png" },
+          { key: "trees", src: "/assets/theme/dino/decorations/trees.png" },
+          { key: "dino-00", src: "/assets/theme/dino/decorations/dino-00.png" }, // brontosaurus/longneck
         ],
         small: [
-          { key: "baby-dino-01", src: "/assets/theme/dinosaur/decorations/baby-dino-01.png", width: 90, height: 90 },
-          { key: "baby-dino-02", src: "/assets/theme/dinosaur/decorations/baby-dino-02.png", width: 90, height: 90 },
-          { key: "baby-dino-03", src: "/assets/theme/dinosaur/decorations/baby-dino-03.png", width: 90, height: 90 },
-          { key: "baby-dino-04", src: "/assets/theme/dinosaur/decorations/baby-dino-04.png", width: 90, height: 90 },
-          { key: "baby-dino-05", src: "/assets/theme/dinosaur/decorations/baby-dino-05.png", width: 90, height: 90 },
-          { key: "baby-dino-06", src: "/assets/theme/dinosaur/decorations/baby-dino-06.png", width: 90, height: 90 },
-          { key: "bone", src: "/assets/theme/dinosaur/decorations/bone.png", width: 90, height: 90 },
-          { key: "egg", src: "/assets/theme/dinosaur/decorations/egg.png", width: 90, height: 90 },
-          { key: "footprint", src: "/assets/theme/dinosaur/decorations/footprint.png", width: 90, height: 90 },
-          { key: "leaf", src: "/assets/theme/dinosaur/decorations/leaf.png", width: 90, height: 90 },
-          { key: "mushroom", src: "/assets/theme/dinosaur/decorations/mushroom.png", width: 90, height: 90 },
-          { key: "rocks", src: "/assets/theme/dinosaur/decorations/rocks.png", width: 90, height: 90 },
+          { key: "rocks", src: "/assets/theme/dino/decorations/rocks.png" },
+          { key: "mushroom", src: "/assets/theme/dino/decorations/mushroom.png" },
+          { key: "leaf", src: "/assets/theme/dino/decorations/leaf.png" },
+          { key: "footprint", src: "/assets/theme/dino/decorations/footprint.png" },
+          { key: "egg", src: "/assets/theme/dino/decorations/egg.png" },
+          { key: "bone", src: "/assets/theme/dino/decorations/bone.png" },
+          { key: "dino-01", src: "/assets/theme/dino/decorations/dino-01.png" }, // stegosaurus
+          { key: "dino-02", src: "/assets/theme/dino/decorations/dino-02.png" }, // pterodactyl
+          { key: "dino-03", src: "/assets/theme/dino/decorations/dino-03.png" }, // ankylosaurus
+          { key: "dino-04", src: "/assets/theme/dino/decorations/dino-04.png" }, // raptor
+          { key: "dino-05", src: "/assets/theme/dino/decorations/dino-05.png" }, // triceratops
+          { key: "baby-dino-01", src: "/assets/theme/dino/decorations/baby-dino-01.png" },
+          { key: "baby-dino-02", src: "/assets/theme/dino/decorations/baby-dino-02.png" },
+          { key: "baby-dino-03", src: "/assets/theme/dino/decorations/baby-dino-03.png" },
+          { key: "baby-dino-04", src: "/assets/theme/dino/decorations/baby-dino-04.png" },
+          { key: "baby-dino-05", src: "/assets/theme/dino/decorations/baby-dino-05.png" },
+          { key: "baby-dino-06", src: "/assets/theme/dino/decorations/baby-dino-06.png" },
         ],
       },
+      // Warm "floating pollen" — same size/opacity feel as space's stars,
+      // just recolored.
+      particles: {
+        color: "#ffe9b3",
+        sizeMin: 1,
+        sizeMax: 3,
+        opacityMin: 0.4,
+        opacityMax: 1,
+      },
+      // Deep jungle green at the ground, through a warm dusk amber, to a
+      // golden-hour top.
+      skyGradient: "linear-gradient(to top, #2d5016 0%, #a15a2e 50%, #f4a940 100%)",
     },
   },
+} satisfies {
+  backgroundMusicSrc: string;
+  muteIcons: { on: string; off: string };
+  coinSprites: { glow: string; burst: string };
+  rewardSprites: { closed: string; opened: string };
+  themes: Record<string, ThemeAssets>;
 };
+
+export type ThemeName = keyof typeof THEME_CONFIG.themes;
+
+/** Resolves an order's `template` value to its theme config, falling back
+ * to "space" for null/unrecognized values (the default before `template`
+ * was wired to anything). */
+export function getTheme(template?: string | null): ThemeAssets {
+  if (template && template in THEME_CONFIG.themes) {
+    return THEME_CONFIG.themes[template as ThemeName];
+  }
+  return THEME_CONFIG.themes.space;
+}
