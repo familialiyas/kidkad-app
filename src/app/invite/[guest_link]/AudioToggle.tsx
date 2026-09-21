@@ -1,8 +1,8 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { THEME_CONFIG } from "@/lib/theme-config";
 import { frameInset } from "@/lib/game-constants";
+import { SpeakerOnIcon, SpeakerOffIcon } from "./PartyIcons";
 
 const STORAGE_KEY = "kidkad_audio_muted";
 
@@ -72,12 +72,11 @@ const AudioToggle = forwardRef<AudioToggleHandle, { src: string }>(function Audi
         className="glass-icon-btn fixed top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full border-2 border-blue-200/70 bg-white/10 backdrop-blur-sm active:scale-95"
         style={{ left: frameInset(16) }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={muted ? THEME_CONFIG.muteIcons.off : THEME_CONFIG.muteIcons.on}
-          alt=""
-          className="h-6 w-6 object-contain"
-        />
+        {muted ? (
+          <SpeakerOffIcon className="h-5 w-5 text-white" />
+        ) : (
+          <SpeakerOnIcon className="h-5 w-5 text-white" />
+        )}
       </button>
     </>
   );

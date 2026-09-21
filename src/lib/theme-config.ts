@@ -85,10 +85,6 @@ export interface ThemeAssets {
 // theme-picker UI yet (see "Making a theme selectable" in the assets doc).
 export const THEME_CONFIG = {
   backgroundMusicSrc: "/assets/shared/audio/bgm-space.mp3",
-  muteIcons: {
-    on: "/assets/shared/icons/icon-sound-on.png",
-    off: "/assets/shared/icons/icon-sound-off.png",
-  },
   coinSprites: {
     glow: "/assets/shared/coin/coin-glow.png",
     burst: "/assets/shared/coin/coin-burst.png",
@@ -250,7 +246,6 @@ export const THEME_CONFIG = {
   },
 } satisfies {
   backgroundMusicSrc: string;
-  muteIcons: { on: string; off: string };
   coinSprites: { glow: string; burst: string };
   rewardSprites: { closed: string; opened: string };
   themes: Record<string, ThemeAssets>;

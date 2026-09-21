@@ -36,6 +36,36 @@ export function DressCodeIcon({ className }: IconProps) {
   );
 }
 
+export function SpeakerOnIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={className} aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 8.25 11.47 3.53a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53L6.75 15.75H4.5a.75.75 0 0 1-.75-.75V9a.75.75 0 0 1 .75-.75h2.25Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M16.463 8.288a5.25 5.25 0 0 1 0 7.424M19.114 5.636a9 9 0 0 1 0 12.728"
+      />
+    </svg>
+  );
+}
+
+export function SpeakerOffIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={className} aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 8.25 11.47 3.53a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53L6.75 15.75H4.5a.75.75 0 0 1-.75-.75V9a.75.75 0 0 1 .75-.75h2.25Z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75 21 13.5m0-3.75-3.75 3.75" />
+    </svg>
+  );
+}
+
 export function CelebrationIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={className} aria-hidden>
