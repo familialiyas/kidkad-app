@@ -151,11 +151,16 @@ image path per slot, nothing else; size/frequency/tilt are inherited from
 which is what keeps "crowdiness" consistent (dino previously looked more
 cluttered than space purely from differing per-theme density tuning — that
 class of bug is now structurally impossible). dino's 20 assets are mapped
-onto space's 20 slot names by role/visual weight (see the mapping comment
-on dino's `decorations` entry in `theme-config.ts`), not arbitrary order.
-Adding a future theme means supplying 20 assets and slotting them into
-these exact 20 names — TypeScript's `Record<SlotName, string>` refuses to
-compile if any slot is missing — no decorations.ts changes, ever.
+onto space's 20 slot names per an explicit table the user provided directly
+(see `themes.dino.decorations` in `theme-config.ts` and the matching table
+in the theme README), not a role/visual-weight heuristic. Adding a future
+theme means supplying 20 assets and slotting them into these exact 20
+names (`rocket`, `sun`, `planet-01`…`planet-07`, `moon-01`,
+`moon-crescent`, `star`, `star-cluster`, `comet`, `asteroid`,
+`alien-01`…`alien-03`, `ufo-01`, `ufo-02` — note `ufo-01`, not `ufo`, to
+match the actual asset filename) — TypeScript's `Record<SlotName, string>`
+refuses to compile if any slot is missing — no decorations.ts changes,
+ever.
 
 **Decoration positioning is now LOCKED — one fixed arrangement for every
 guest, in every theme**, not seeded per-guest like the star field still is.

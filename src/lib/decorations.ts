@@ -164,7 +164,7 @@ const DECORATION_SLOTS = [
   { name: "alien-01", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
   { name: "alien-02", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
   { name: "alien-03", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
-  { name: "ufo", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
+  { name: "ufo-01", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
   { name: "ufo-02", tier: "small", sizeMin: SMALL_SIZE_MIN, sizeMax: SMALL_SIZE_MAX, countMin: SMALL_COUNT_MIN, countMax: SMALL_COUNT_MAX, tiltMaxDeg: TILT_MAX_DEG },
 ] as const;
 

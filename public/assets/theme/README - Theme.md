@@ -181,15 +181,10 @@ Every theme needs:
   Both `space` and `dino` are on this system — space's own 20 items ARE
   the master template (see `DECORATION_SLOTS`), so its `theme-config.ts`
   entry is just each slot name mapped to its own existing asset. dino's 20
-  assets are mapped onto space's 20 slot names **by role/visual weight,
-  not arbitrary order or literal species pairing** — dino's biggest,
-  rarest pieces (volcano, the brontosaurus, trees, the two largest
-  standalone dinosaur silhouettes) fill space's 5 large/landmark slots
-  (rocket, sun, the 3 ringed planets); its smaller props and creatures
-  fill the 15 small slots, loosely by feel (e.g. the flying pterodactyl
-  into the `ufo` slot, the armored ankylosaurus into `asteroid`, baby
-  dinosaurs into the star/alien slots) — see the mapping comment on dino's
-  `decorations` entry in `theme-config.ts` for the exact table.
+  assets are mapped onto space's 20 slot names via an explicit mapping
+  table (not derived from a role/visual-weight heuristic) — see the
+  dino-specific table further down, or `theme-config.ts`'s
+  `themes.dino.decorations` for the live source of truth.
 
 Also per-theme:
 - **`particles`** — the ambient dot layer (`src/lib/starfield.ts`); space
@@ -239,7 +234,7 @@ Small slots (2–4 instances each, size randomized ~60–120px):
 | Slot | File | Notes |
 |---|---|---|
 | planet-02 | `planet-02.png` | cratered, mars-like, no ring |
-| planet-03 | `planet03.png` | teal striped, no ring — note the actual filename has no hyphen |
+| planet-03 | `planet-03.png` | teal striped, no ring |
 | planet-06 | `planet-06.png` | green polka-dot, no ring |
 | planet-07 | `planet-07.png` | teal wave, no ring |
 | moon-01 | `moon-01.png` | |
@@ -249,7 +244,7 @@ Small slots (2–4 instances each, size randomized ~60–120px):
 | comet | `comet.png` | |
 | asteroid | `asteroid.png` | |
 | alien-01, alien-02, alien-03 | `alien-0{1..3}.png` | 3 variants |
-| ufo, ufo-02 | `ufo.png`, `ufo-02.png` | 2 variants |
+| ufo-01, ufo-02 | `ufo-01.png`, `ufo-02.png` | 2 variants |
 
 Tiering call (baked into `DECORATION_SLOTS`, so it now applies to every
 theme, not just space): the 3 ringed planets + sun + rocket read as the
@@ -273,28 +268,32 @@ tier alongside the moons/stars, closer to them in visual weight.
 | `dinogirl-idle.png` | 300×450 | 110×165 |
 | `dinogirl-yay.png` | 300×450 | 110×165 |
 
-**Decorations — dino's 20 assets mapped onto space's 20 slots**, by
-role/visual weight (not literal species pairing — see the mapping comment
-on dino's `decorations` entry in `theme-config.ts` for the reasoning per
-slot):
+**Decorations — dino's 20 assets mapped onto space's 20 slots**, by an
+explicit mapping table (not a role/visual-weight heuristic like an earlier
+pass — see `theme-config.ts`'s `themes.dino.decorations` for the live
+source of truth):
 
-| Slot (space's role) | Dino asset | Slot (space's role) | Dino asset |
+| Space slot | Dino asset | Space slot | Dino asset |
 |---|---|---|---|
-| rocket (landmark) | `volcano.png` | star (small) | `baby-dino-01.png` |
-| sun (landmark) | `dino-00.png` (brontosaurus) | star-cluster (small) | `baby-dino-02.png` |
-| planet-01 (landmark) | `trees.png` | comet (small) | `dino-04.png` (raptor) |
-| planet-04 (landmark) | `dino-01.png` (stegosaurus) | asteroid (small) | `dino-03.png` (ankylosaurus) |
-| planet-05 (landmark) | `dino-05.png` (triceratops) | alien-01 (small) | `baby-dino-03.png` |
-| planet-02 (small) | `rocks.png` | alien-02 (small) | `baby-dino-04.png` |
-| planet-03 (small) | `egg.png` | alien-03 (small) | `baby-dino-05.png` |
-| planet-06 (small) | `mushroom.png` | ufo (small) | `dino-02.png` (pterodactyl) |
-| planet-07 (small) | `leaf.png` | ufo-02 (small) | `baby-dino-06.png` |
-| moon-01 (small) | `bone.png` | moon-crescent (small) | `footprint.png` |
+| alien-01 (small) | `baby-dino-01.png` | planet-01 (landmark) | `dino-00.png` (brontosaurus) |
+| alien-02 (small) | `baby-dino-02.png` | planet-02 (small) | `dino-01.png` (stegosaurus) |
+| alien-03 (small) | `baby-dino-03.png` | planet-03 (small) | `dino-02.png` (pterodactyl) |
+| asteroid (small) | `baby-dino-04.png` | planet-04 (landmark) | `dino-03.png` (ankylosaurus) |
+| comet (small) | `bone.png` | planet-05 (landmark) | `dino-04.png` (raptor) |
+| moon-01 (small) | `rocks.png` | planet-06 (small) | `dino-05.png` (triceratops) |
+| moon-crescent (small) | `leaf.png` | planet-07 (small) | `trees.png` |
+| rocket (landmark) | `volcano.png` | star-cluster (small) | `footprint.png` |
+| star (small) | `mushroom.png` | ufo-01 (small) | `baby-dino-05.png` |
+| sun (landmark) | `egg.png` | ufo-02 (small) | `baby-dino-06.png` |
 
-dino-01 (stegosaurus) and dino-05 (triceratops) fill 2 of the 5 landmark
-slots — promoted from what used to be dino's own "small" tier once the
-slot system replaced per-theme tiers, since they're dino's biggest
-standalone dinosaur silhouettes after the brontosaurus.
+Note this table doesn't preserve space's landmark/small tiering by
+role — e.g. `planet-02`/`planet-03` (space's small tier) map to dino's
+stegosaurus/pterodactyl, while `planet-06` (also small) maps to the
+triceratops. The 5 large/landmark slots (`rocket`, `sun`, `planet-01`,
+`planet-04`, `planet-05`) still get 1–2 instances each at ~150–220px
+regardless of which dino asset fills them, per `DECORATION_SLOTS` — a
+slot's tier/size/frequency is fixed by the slot itself, not by whichever
+asset currently occupies it.
 
 **Particles:** warm "floating pollen", `#ffe9b3`, same size/opacity range as
 space's stars (1–3px, 0.4–1 opacity) — just recolored.
@@ -349,13 +348,17 @@ order's `template` column names — that part is done for both `space` and
      `decorations.ts` (`rocket`, `sun`, `planet-01`, `planet-04`,
      `planet-05`, `planet-02`, `planet-03`, `planet-06`, `planet-07`,
      `moon-01`, `moon-crescent`, `star`, `star-cluster`, `comet`,
-     `asteroid`, `alien-01`, `alien-02`, `alien-03`, `ufo`, `ufo-02`).
+     `asteroid`, `alien-01`, `alien-02`, `alien-03`, `ufo-01`, `ufo-02`).
      TypeScript will refuse to compile if any slot is missing. Assign your
-     20 assets to these slots by **role/visual weight**: put your biggest/
-     rarest 5 pieces in the 5 that were space's large/landmark items
-     (rocket, sun, the 3 ringed planets) and the other 15 in the rest — see
-     dino's `decorations` entry for a worked example and its mapping
-     comment. No further config (size, frequency, tilt) is needed or
+     20 assets to these slots however makes sense for the new theme — dino's
+     mapping (see its section below and `theme-config.ts`) wasn't done by a
+     role/visual-weight rule, it was an explicit table, so there's no fixed
+     assignment rule to follow, just make sure all 20 are covered. If you
+     do want space's exact "biggest 5 pieces as landmarks" feel, put them in
+     the 5 that were space's large/landmark items (rocket, sun, the 3 ringed
+     planets) — that's a choice, not a requirement, since a slot's
+     tier/size/frequency is fixed by the slot itself regardless of which
+     asset fills it. No further config (size, frequency, tilt) is needed or
      wanted — that's the whole point of the slot system: it's inherited
      from `DECORATION_SLOTS`, identical for every theme.
 4. Fill in that theme's section in this doc.

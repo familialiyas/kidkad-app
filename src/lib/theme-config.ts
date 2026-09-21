@@ -122,7 +122,7 @@ export const THEME_CONFIG = {
         "planet-04": "/assets/theme/space/decorations/planet-04.png", // ringed, pink
         "planet-05": "/assets/theme/space/decorations/planet-05.png", // ringed, orange
         "planet-02": "/assets/theme/space/decorations/planet-02.png", // cratered, mars-like
-        "planet-03": "/assets/theme/space/decorations/planet03.png", // teal striped — actual filename has no hyphen
+        "planet-03": "/assets/theme/space/decorations/planet-03.png", // teal striped
         "planet-06": "/assets/theme/space/decorations/planet-06.png", // green polka-dot
         "planet-07": "/assets/theme/space/decorations/planet-07.png", // teal wave
         "moon-01": "/assets/theme/space/decorations/moon-01.png",
@@ -134,7 +134,7 @@ export const THEME_CONFIG = {
         "alien-01": "/assets/theme/space/decorations/alien-01.png",
         "alien-02": "/assets/theme/space/decorations/alien-02.png",
         "alien-03": "/assets/theme/space/decorations/alien-03.png",
-        ufo: "/assets/theme/space/decorations/ufo.png",
+        "ufo-01": "/assets/theme/space/decorations/ufo-01.png",
         "ufo-02": "/assets/theme/space/decorations/ufo-02.png",
       },
       particles: {
@@ -175,36 +175,28 @@ export const THEME_CONFIG = {
       missionLabel: "Dino Mission",
       // Standardized 512x512 canvas — see space's decorations above and its
       // "CONVENTION" note. dino's 20 assets slot into space's 20 named
-      // slots by ROLE/VISUAL WEIGHT, not arbitrary order: the rocket/sun/3
-      // ringed-planet slots (space's biggest, rarest showpieces) go to
-      // dino's biggest, most prominent pieces (volcano, the brontosaurus,
-      // trees, and the two largest standalone dinosaur silhouettes); the
-      // remaining 15 "everyday" slots (plain planets/moons/stars/aliens/
-      // UFOs) go to dino's smaller props and creatures, loosely by feel
-      // (e.g. the flying pterodactyl into the "ufo" slot, the armored
-      // ankylosaurus into "asteroid", baby dinosaurs into the star/alien
-      // slots). No literal thematic pairing intended beyond that — the
-      // point is matching visual weight per slot, not a 1:1 species joke.
+      // slots per an explicit mapping table provided directly (not derived
+      // by role/visual-weight heuristics like an earlier pass) — see below.
       decorations: {
+        "alien-01": "/assets/theme/dino/decorations/baby-dino-01.png",
+        "alien-02": "/assets/theme/dino/decorations/baby-dino-02.png",
+        "alien-03": "/assets/theme/dino/decorations/baby-dino-03.png",
+        asteroid: "/assets/theme/dino/decorations/baby-dino-04.png",
+        comet: "/assets/theme/dino/decorations/bone.png",
+        "moon-01": "/assets/theme/dino/decorations/rocks.png",
+        "moon-crescent": "/assets/theme/dino/decorations/leaf.png",
+        "planet-01": "/assets/theme/dino/decorations/dino-00.png", // brontosaurus/longneck
+        "planet-02": "/assets/theme/dino/decorations/dino-01.png", // stegosaurus
+        "planet-03": "/assets/theme/dino/decorations/dino-02.png", // pterodactyl
+        "planet-04": "/assets/theme/dino/decorations/dino-03.png", // ankylosaurus
+        "planet-05": "/assets/theme/dino/decorations/dino-04.png", // raptor
+        "planet-06": "/assets/theme/dino/decorations/dino-05.png", // triceratops
+        "planet-07": "/assets/theme/dino/decorations/trees.png",
         rocket: "/assets/theme/dino/decorations/volcano.png",
-        sun: "/assets/theme/dino/decorations/dino-00.png", // brontosaurus/longneck — the "hero" creature
-        "planet-01": "/assets/theme/dino/decorations/trees.png",
-        "planet-04": "/assets/theme/dino/decorations/dino-01.png", // stegosaurus
-        "planet-05": "/assets/theme/dino/decorations/dino-05.png", // triceratops
-        "planet-02": "/assets/theme/dino/decorations/rocks.png",
-        "planet-03": "/assets/theme/dino/decorations/egg.png",
-        "planet-06": "/assets/theme/dino/decorations/mushroom.png",
-        "planet-07": "/assets/theme/dino/decorations/leaf.png",
-        "moon-01": "/assets/theme/dino/decorations/bone.png",
-        "moon-crescent": "/assets/theme/dino/decorations/footprint.png",
-        star: "/assets/theme/dino/decorations/baby-dino-01.png",
-        "star-cluster": "/assets/theme/dino/decorations/baby-dino-02.png",
-        comet: "/assets/theme/dino/decorations/dino-04.png", // raptor — fast-moving, comet-like energy
-        asteroid: "/assets/theme/dino/decorations/dino-03.png", // ankylosaurus — armored/rock-like
-        "alien-01": "/assets/theme/dino/decorations/baby-dino-03.png",
-        "alien-02": "/assets/theme/dino/decorations/baby-dino-04.png",
-        "alien-03": "/assets/theme/dino/decorations/baby-dino-05.png",
-        ufo: "/assets/theme/dino/decorations/dino-02.png", // pterodactyl — flies, like a ufo
+        "star-cluster": "/assets/theme/dino/decorations/footprint.png",
+        star: "/assets/theme/dino/decorations/mushroom.png",
+        sun: "/assets/theme/dino/decorations/egg.png",
+        "ufo-01": "/assets/theme/dino/decorations/baby-dino-05.png",
         "ufo-02": "/assets/theme/dino/decorations/baby-dino-06.png",
       },
       // Warm "floating pollen" — same size/opacity feel as space's stars,
