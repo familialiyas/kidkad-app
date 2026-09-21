@@ -153,9 +153,13 @@ export default function GameWorld({
         aria-hidden
       />
 
-      {/* Margin decorations — middle parallax depth: slower than gameplay, faster than stars */}
+      {/* Margin decorations — middle parallax depth: slower than gameplay, faster
+          than stars. z-8, above the character (z-5) but below coins/reward
+          (z-10) — large decorations that drift toward center can visually
+          occlude the character passing behind them, without ever covering
+          the tappable coins/reward. */}
       <div
-        className="pointer-events-none absolute top-0 left-0 z-0 h-full w-full"
+        className="pointer-events-none absolute top-0 left-0 z-[8] h-full w-full"
         style={{ transform: `translateY(${decorationLayerOffset}px)` }}
         aria-hidden
       >
@@ -291,13 +295,15 @@ export default function GameWorld({
         </button>
       )}
 
-      {/* Character */}
+      {/* Character — z-5, below decorations (z-8) so a large decoration
+          drifting toward center visually reads as the character walking
+          behind it, not on top of it. */}
       {showGameplayChrome && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={spriteSrc}
           alt=""
-          className={`absolute z-20 select-none ${
+          className={`absolute z-[5] select-none ${
             characterState === "victory"
               ? "character-victory"
               : talking
