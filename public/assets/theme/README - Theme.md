@@ -2,9 +2,10 @@
 
 Assets split into two locations:
 
-- **`public/assets/shared/`** — coin, reward gift, audio (music + SFX), and
-  the mute icons. Identical across every theme by product decision, so
-  there's exactly one copy, used by all themes.
+- **`public/assets/shared/`** — coin, reward gift, and audio (music + SFX).
+  Identical across every theme by product decision, so there's exactly one
+  copy, used by all themes. Also holds the now-unused mute icon PNGs (see
+  "Icons" below).
 - **`public/assets/theme/<name>/`** — character sprites and decorations.
   These differ per theme, one folder per `orders.template` value.
   **`space` and `dino` both actually render** — `/invite/[guest_link]` reads
@@ -53,15 +54,21 @@ Same oversizing note as the coin assets applies here.
 ### Icons — `icons/`
 | File | Size | Status |
 |---|---|---|
-| `icon-sound-on.png` | 60×60 | **Active** — `AudioToggle.tsx` via `THEME_CONFIG.muteIcons` |
-| `icon-sound-off.png` | 60×60 | **Active** — same |
+| `icon-sound-on.png` | 60×60 | **Unused** — replaced by `SpeakerOnIcon` (inline SVG, see below) |
+| `icon-sound-off.png` | 60×60 | **Unused** — replaced by `SpeakerOffIcon` |
 
-These are the *only* raster icons in the app. Party-detail icons (calendar,
-location, dress code, celebration) are inline SVG on purpose — a raster
+The mute toggle now uses inline SVG (`SpeakerOnIcon`/`SpeakerOffIcon` in
+`PartyIcons.tsx`), same reasoning as the party-detail icons below — the old
+flat, solid-colored PNGs also clashed with the mute button's frosted-glass
+treatment (`AudioToggle.tsx`, `.glass-icon-btn` in `globals.css`), which a
+plain white outline glyph sits inside cleanly. The PNG files above are
+still on disk but no longer referenced from code; safe to delete next time
+this directory gets cleaned up. Party-detail icons (calendar, location,
+dress code, celebration) are inline SVG for a separate reason — a raster
 `<img>` gets auto-inverted/washed out by OS-level "force dark mode" on some
 devices, inline SVG via `currentColor` doesn't (see
-`src/app/invite/[guest_link]/PartyIcons.tsx`). Don't add PNGs for that icon
-category, follow the SVG pattern instead.
+`src/app/invite/[guest_link]/PartyIcons.tsx`). Don't add PNGs for icons in
+either category, follow the SVG pattern instead.
 
 ### Audio — `audio/`
 | File | Duration | Size |
@@ -102,30 +109,56 @@ Every theme needs:
   anywhere yet, since `CharacterSelectStep.tsx` still hardcodes "Astro
   Boy"/"Astro Girl" text directly.
 - **`decorations/`** — parallax margin scenery placed by
-  `src/lib/decorations.ts`, split into a rare **large/landmark** tier (1–2
-  instances per invite) and a more freely-scattered **small** tier (2–4
-  instances each). **Standardized canvas: every decoration asset is a
-  512×512 transparent-background PNG, content centered/scaled within the
-  square regardless of its native aspect ratio.** No per-asset width/height
-  in `theme-config.ts` — display size is randomized per placement instance
-  instead:
+  `src/lib/decorations.ts`, split into a rare **large/landmark** tier and a
+  more freely-scattered **small** tier. **Standardized canvas: every
+  decoration asset is a 512×512 transparent-background PNG, content
+  centered/scaled within the square regardless of its native aspect
+  ratio.** No per-asset width/height in `theme-config.ts` — display size is
+  randomized per placement instance instead:
   - Rendered via `object-fit: contain` in a square container, so content
     scales proportionally with no distortion regardless of how much of the
     512×512 canvas it actually fills.
   - **Size** is randomized per instance (seeded, so deterministic per
     guest_link) within the tier's range: **large/landmark ≈150–220px,
     small ≈60–120px** (`LANDMARK_SIZE_MIN/MAX`, `SMALL_SIZE_MIN/MAX` in
-    `decorations.ts`).
+    `decorations.ts`). A few instances (any tier, `HERO_SIZE_COUNT`) get an
+    extra 1.3–1.8× size boost on top of that (capped at 280px) — no
+    "does this species make sense at this size" logic, purely for visual
+    variety (a couple of surprisingly big dinosaurs/planets among their
+    normal-sized neighbors).
   - **Rotation** is a seeded, constrained tilt — a random ±15°
     (`TILT_MAX_DEG` in `decorations.ts`) per instance, always right-side up.
     Not a full 0–360° spin (an earlier approach): most decoration art has a
     clear grounded orientation (standing dinosaurs, a specific facing
     direction), so a full spin read as broken rather than "everything
     floats" as originally intended.
-  - A theme needs at least a few of each tier to avoid maps looking sparse;
-    density itself (how many instances of each key spawn) is controlled by
-    shared, theme-agnostic constants (`LARGE_MIN_COUNT`/`MAX_COUNT`,
-    `SMALL_MIN_COUNT`/`MAX_COUNT`).
+  - **Placement** is a "somewhat symmetrical" left/right rhythm, not pure
+    random scatter: most instances form loosely-mirrored pairs (shared row
+    position + inset, each side jittered independently), with a smaller
+    slice (~22%) breaking off as independent "extra" instances to disrupt
+    that balance. A margin band (`MARGIN_MIN/MAX_INSET_PCT`) keeps most
+    decorations clear of the character's center path; a couple of
+    large-tier instances per invite (`OVERLAP_TARGET_COUNT`) are
+    deliberately pushed past that band to cross into the path — the
+    character renders behind decorations (see GameWorld.tsx's z-index —
+    character z-[5], decorations z-[8]), so this reads as her briefly
+    walking behind the object. Both the overlap and hero-size mechanics
+    (and a final safety-net clamp) exclude/shrink instances within the
+    first `START_CLEARANCE_PX` of the world, so nothing blocks the
+    character right at the start, before she's even been seen clearly.
+  - A soft `filter: drop-shadow` (`.decoration-float` in `globals.css`) is
+    applied to every decoration, one flat value for all themes/tiers, for a
+    layered paper-craft depth consistent with the dialogue box's
+    paper-cutout look.
+  - **CONVENTION — exactly 5 large-tier and 15 small-tier keys (20 total)
+    per theme**, matching `space`'s split. `decorations.ts`'s placement
+    algorithm above is driven purely by array length and
+    `decorationDensity` (also kept identical across themes), not by which
+    specific asset occupies a slot — so any theme that keeps this exact
+    5+15 split gets the same numeric placement/sizing behavior as space
+    "for free". Adding a new theme is just supplying 20 assets and slotting
+    them into the two arrays (any assignment of which asset goes where is
+    fine) — no changes needed to `decorations.ts` or `decorationDensity`.
 
   Both `space` and `dino` are on this same standardized system — space was
   re-exported (its original 10 decorations replaced with a richer 20-file
@@ -228,6 +261,8 @@ largeMaxCount:2, smallMinCount:2, smallMaxCount:4`).
 | volcano | `volcano.png` | |
 | trees | `trees.png` | |
 | dino-00 | `dino-00.png` | brontosaurus/longneck |
+| dino-01 | `dino-01.png` | stegosaurus |
+| dino-05 | `dino-05.png` | triceratops |
 
 **Decorations — small tier** (all 512×512, size randomized ~60–120px):
 | Key | File | Notes |
@@ -238,21 +273,25 @@ largeMaxCount:2, smallMinCount:2, smallMaxCount:4`).
 | footprint | `footprint.png` | |
 | egg | `egg.png` | |
 | bone | `bone.png` | |
-| dino-01 | `dino-01.png` | stegosaurus |
 | dino-02 | `dino-02.png` | pterodactyl |
 | dino-03 | `dino-03.png` | ankylosaurus |
 | dino-04 | `dino-04.png` | raptor |
-| dino-05 | `dino-05.png` | triceratops |
 | baby-dino-01 … baby-dino-06 | `baby-dino-0{1..6}.png` | 6 variants |
 
-**`decorationDensity`:** 1–2 per large-tier key (same as space), but only
-1–2 per small-tier key (`smallMinCount:1, smallMaxCount:2` — half of
-space's default). Dino's small tier has more distinct keys than space's
-original 7 (17 vs. 7), so at the shared 2–4-per-key default it was spawning
-roughly double the total instances and reading noticeably overlapped/
-cluttered in live testing; halved to land closer to what that original,
-smaller small tier actually produced. Revisit if dino's small-tier key
-count changes significantly.
+5 large + 15 small = 20, matching space's split (see the CONVENTION note
+above) — dino-01 (stegosaurus) and dino-05 (triceratops) were promoted from
+small to large tier for this; no thematic pairing with space's specific
+large-tier keys is intended, just a matching count per tier.
+
+**`decorationDensity`:** identical to space (`largeMinCount:1,
+largeMaxCount:2, smallMinCount:2, smallMaxCount:4`). An earlier pass halved
+the small-tier count (1–2 instead of 2–4) because dino's then-larger small
+tier (17 keys) combined with fully-random placement read as cluttered at
+the full count. Once both the tier split was fixed to match space (15
+small keys) and placement became the paired/symmetrical system described
+above (which keeps the center path clear rather than scattering
+everywhere), the full density reads as appropriately full rather than
+cluttered — raised back to match space.
 **Particles:** warm "floating pollen", `#ffe9b3`, same size/opacity range as
 space's stars (1–3px, 0.4–1 opacity) — just recolored.
 **Sky:** `linear-gradient(to top, #5c3a1e 0%, #b3702e 55%, #f4c15f 100%)` —
@@ -292,19 +331,25 @@ order's `template` column names — that part is done for both `space` and
 1. Create `public/assets/theme/<name>/` with `characters/` and
    `decorations/` — **not** `audio/`, `coin/`, `icons/`, or `reward/`; those
    are shared and already exist under `public/assets/shared/`.
-2. Provide 4 character PNGs (2:3, matching space/dino's spec) and enough
-   decorations per tier, every one a 512×512 transparent-canvas PNG (content
-   centered/scaled within the square, no cropping) — don't specify
-   width/height for them, the shared randomized-scale system handles sizing.
+2. Provide 4 character PNGs (2:3, matching space/dino's spec) and **exactly
+   20 decoration PNGs** (512×512 transparent-canvas, content
+   centered/scaled within the square, no cropping — don't specify
+   width/height, the shared randomized-scale system handles sizing).
 3. Add a `themes.<name>` entry to `THEME_CONFIG` in `src/lib/theme-config.ts`
    (`characterSprites`, `characterNames`, `missionLabel`, `decorations`,
    `decorationDensity`, `particles`, `skyGradient`, `uiColors` — same shape
    as `dino`; TypeScript's `satisfies` check will flag anything missing).
-   `backgroundMusicSrc`, `muteIcons`, `coinSprites`, and `rewardSprites`
-   need no changes. Start `decorationDensity` at space's defaults
-   (1–2 large, 2–4 small per key) and only reduce it if the new theme's
-   small tier has a lot more keys than space's and starts looking
-   cluttered, same as dino's did.
+   `backgroundMusicSrc`, `coinSprites`, and `rewardSprites` need no changes.
+   - Split the 20 decorations **exactly 5 into `decorations.large`, 15 into
+     `decorations.small`** — see the CONVENTION note on space's decorations
+     above. Any assignment of which specific asset goes into which slot is
+     fine; the count per tier is what matters.
+   - Set `decorationDensity` to space's exact values
+     (`largeMinCount:1, largeMaxCount:2, smallMinCount:2, smallMaxCount:4`)
+     — don't reduce it. With the 5+15 split above, this reproduces space's
+     placement/sizing/pairing behavior numerically, just with the new
+     theme's art filling the slots — this is the point of the convention,
+     no per-theme tuning needed.
 4. Fill in that theme's section in this doc.
 5. Follow "Making a theme selectable in `/create`" above to actually expose
    it as a customer-facing choice — `/invite/[guest_link]` will already

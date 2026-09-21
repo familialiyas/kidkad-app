@@ -115,6 +115,17 @@ export const THEME_CONFIG = {
       // per-asset. The 3 ringed planets + sun + rocket read as the "grand"
       // pieces (landmark tier); the plainer round planets are closer in
       // visual weight to the moons/stars they sit alongside (small tier).
+      //
+      // CONVENTION — this theme is the reference layout: exactly 5 large-tier
+      // and 15 small-tier keys (20 total). decorations.ts's placement
+      // algorithm (pairing/symmetry, sizing, the deliberate overlap+hero-size
+      // moments) is driven purely by array length and density config, not by
+      // which specific asset occupies a slot — so every theme, present and
+      // future, should keep this exact 5+15 split to get numerically the
+      // same placement/sizing behavior as space "for free". Adding a new
+      // theme is then just supplying 20 assets and slotting them into these
+      // two arrays (5 anywhere in `large`, 15 anywhere in `small`) — no
+      // changes needed to decorations.ts or decorationDensity.
       decorations: {
         large: [
           { key: "rocket", src: "/assets/theme/space/decorations/rocket.png" },
@@ -183,12 +194,22 @@ export const THEME_CONFIG = {
         girl: "Dinogirl",
       },
       missionLabel: "Dino Mission",
-      // Standardized 512x512 canvas — see space's decorations above.
+      // Standardized 512x512 canvas — see space's decorations above, and its
+      // "CONVENTION" note: 5 large-tier + 15 small-tier keys, matching
+      // space's split exactly so decorations.ts's placement/sizing behaves
+      // identically (same array-length-driven random() sequence), just with
+      // dino's own art filling the slots. volcano/trees/dino-00 plus the two
+      // biggest standalone dinosaur silhouettes (stegosaurus, triceratops)
+      // are the "grand" pieces; the rest read as closer in visual weight to
+      // each other (small tier) — no asset-for-asset thematic pairing with
+      // space intended, just a matching count per tier.
       decorations: {
         large: [
           { key: "volcano", src: "/assets/theme/dino/decorations/volcano.png" },
           { key: "trees", src: "/assets/theme/dino/decorations/trees.png" },
           { key: "dino-00", src: "/assets/theme/dino/decorations/dino-00.png" }, // brontosaurus/longneck
+          { key: "dino-01", src: "/assets/theme/dino/decorations/dino-01.png" }, // stegosaurus
+          { key: "dino-05", src: "/assets/theme/dino/decorations/dino-05.png" }, // triceratops
         ],
         small: [
           { key: "rocks", src: "/assets/theme/dino/decorations/rocks.png" },
@@ -197,11 +218,9 @@ export const THEME_CONFIG = {
           { key: "footprint", src: "/assets/theme/dino/decorations/footprint.png" },
           { key: "egg", src: "/assets/theme/dino/decorations/egg.png" },
           { key: "bone", src: "/assets/theme/dino/decorations/bone.png" },
-          { key: "dino-01", src: "/assets/theme/dino/decorations/dino-01.png" }, // stegosaurus
           { key: "dino-02", src: "/assets/theme/dino/decorations/dino-02.png" }, // pterodactyl
           { key: "dino-03", src: "/assets/theme/dino/decorations/dino-03.png" }, // ankylosaurus
           { key: "dino-04", src: "/assets/theme/dino/decorations/dino-04.png" }, // raptor
-          { key: "dino-05", src: "/assets/theme/dino/decorations/dino-05.png" }, // triceratops
           { key: "baby-dino-01", src: "/assets/theme/dino/decorations/baby-dino-01.png" },
           { key: "baby-dino-02", src: "/assets/theme/dino/decorations/baby-dino-02.png" },
           { key: "baby-dino-03", src: "/assets/theme/dino/decorations/baby-dino-03.png" },

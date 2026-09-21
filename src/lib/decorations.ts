@@ -1,6 +1,15 @@
 import { mulberry32, hashStringToSeed } from "./seeded-random";
 import type { DecorationAsset, ThemeAssets } from "./theme-config";
 
+// This module is intentionally theme-agnostic: every size/inset/pairing/
+// overlap/hero-size constant below applies identically regardless of which
+// theme's assets it's generating for. What makes a theme's placement feel
+// consistent with space's (the reference layout) is purely its
+// decorationDensity and its decorations.large/small ARRAY LENGTHS (5 and 15
+// — see the "CONVENTION" note on space's decorations in theme-config.ts) —
+// matching those is enough to get the same numeric placement/sizing
+// behavior "for free" with no changes needed here.
+
 export interface PlacedDecoration {
   id: string;
   src: string;

@@ -120,6 +120,30 @@ system). Decoration rotation (`decorations.ts`) is a seeded, constrained
 decoration art (standing dinosaurs, a specific facing direction) has a
 clear "right way up" that a full spin broke.
 
+Decoration **placement** (`decorations.ts`) is a "somewhat symmetrical"
+left/right pairing system, not pure random scatter: most instances form
+loosely-mirrored pairs (shared row + inset, each side jittered
+independently), with a smaller slice breaking off as independent "extras"
+to disrupt that balance. A margin band keeps most decorations clear of the
+character's center path (more room to move); a couple of large-tier
+instances per invite are deliberately pushed past that band to cross into
+the path instead. The character now renders *behind* decorations
+(`GameWorld.tsx` z-index — character `z-[5]`, decorations `z-[8]`), so
+those deliberate crossings read as her briefly walking behind the object,
+not a layout bug — a final safety-net clamp keeps this from happening
+right at the world's start, before she's even been seen clearly. A few
+instances (any tier) also get an oversized "hero" boost, purely for visual
+variety (no per-species size logic). **Every decoration also gets a subtle
+`filter: drop-shadow`** (one flat value, all themes/tiers) for a
+layered-paper-craft depth consistent with the dialogue box's paper-cutout
+look. **Convention for all themes, including future ones:** exactly 5
+large-tier + 15 small-tier decoration keys (20 total) and identical
+`decorationDensity` — the placement algorithm is driven by array length,
+not by which specific asset fills a slot, so any theme keeping this split
+gets space's exact placement/sizing behavior "for free" (see the
+CONVENTION note in `theme-config.ts` and "Adding a new theme from scratch"
+in the theme doc).
+
 **Dialogue system** (`DialogueBox.tsx` + `src/lib/typewriter.ts`):
 character-by-character typewriter reveal (~24ms/char), tap-to-skip then
 tap-to-dismiss, highlighted data values (cyan, bold, delayed pop animation
@@ -136,7 +160,13 @@ prop takes a `ReactNode`, not an image src. Character sprite plays a
 dialogue open/close, button tap, RSVP success) plus background music, all
 respecting one shared mute toggle persisted to `localStorage`
 (`kidkad_audio_muted`). Per-sound volume multipliers applied after a
-relative-loudness pass.
+relative-loudness pass. The mute toggle button (`AudioToggle.tsx`) uses a
+semi-transparent "glass" treatment matching the title screen's Start
+Mission button (`bg-white/10` + `backdrop-blur-sm` + the shared
+`.glass-icon-btn` glow class in `globals.css`) rather than a solid dark
+badge, with `SpeakerOnIcon`/`SpeakerOffIcon` (inline SVG in
+`PartyIcons.tsx`, plain white) replacing the old flat-colored
+`icon-sound-on/off.png` assets, which are now unused on disk.
 
 **Dialogue tone system** (`src/lib/dialogue-tones.ts`): three tone template
 sets (Excited & Bubbly / Sweet & Gentle / Silly & Funny) with `{token}`
