@@ -315,6 +315,13 @@ input[type="time"] {
   animation-name: decoration-float;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+  /* Soft "resting on the surface" shadow, matching the paper-cutout/felt
+     look used elsewhere (see .dialogue-paper-bg) — drop-shadow (not
+     box-shadow) follows each PNG's actual transparent-alpha silhouette
+     instead of its square bounding box. One flat value for every
+     decoration/theme/tier, not per-item, so it reads as a consistent
+     layered-diorama depth cue rather than a per-asset effect. */
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.18));
 }
 
 @keyframes character-float {

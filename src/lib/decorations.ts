@@ -51,6 +51,17 @@ const OVERLAP_TARGET_COUNT = 2;
 const OVERLAP_MIN_INSET_PCT = 26;
 const OVERLAP_MAX_INSET_PCT = 38;
 
+// The character starts near the top of the world (~300px, before she's
+// begun scrolling) and stays there while the opening dialogue plays — a
+// large decoration reaching toward center in that window would immediately
+// block her before she's even been seen clearly, rather than reading as a
+// fun mid-game surprise. Keeps large-tier instances out of the deliberate
+// overlap pool here, and is enforced again as a final clamp below in case
+// an ordinary (non-deliberate) large placement lands nearby with a high
+// inset by chance.
+const START_CLEARANCE_PX = 600;
+const START_CLEARANCE_MAX_INSET_PCT = 10;
+
 // A few instances — any tier, no "does this species make sense at this
 // size" logic — get scaled up well past their tier's normal range, purely
 // for visual variety: a couple of dinosaurs (or, in space, a couple of
@@ -202,12 +213,15 @@ export function generateDecorations(
 
   // A couple of instances (large-tier preferred, for a clear "walking
   // behind" silhouette) deliberately cross into the character's path
-  // instead of staying in the margin.
+  // instead of staying in the margin — excluding anything near the world's
+  // start (see START_CLEARANCE_PX above).
+  const clearOfStart = (p: { deco: PlacedDecoration }) => p.deco.top >= START_CLEARANCE_PX;
   const largeCandidates = shuffle(
-    placed.filter((p) => p.tier === "large"),
+    placed.filter((p) => p.tier === "large" && clearOfStart(p)),
     random
   );
-  const overlapCandidates = largeCandidates.length > 0 ? largeCandidates : shuffle(placed, random);
+  const overlapCandidates =
+    largeCandidates.length > 0 ? largeCandidates : shuffle(placed.filter(clearOfStart), random);
   for (const candidate of overlapCandidates.slice(0, OVERLAP_TARGET_COUNT)) {
     candidate.deco.insetPct = OVERLAP_MIN_INSET_PCT + random() * (OVERLAP_MAX_INSET_PCT - OVERLAP_MIN_INSET_PCT);
   }
@@ -215,11 +229,25 @@ export function generateDecorations(
   // A few "hero" instances get an oversized boost, independent of the
   // overlap picks above (the two can land on the same instance or not —
   // either way is fine, a huge decoration crossing the path is an even
-  // bigger moment).
-  const heroCandidates = shuffle(placed, random).slice(0, HERO_SIZE_COUNT);
+  // bigger moment) — also excluding anything near the start, since a hero
+  // instance is wide enough to reach the character regardless of inset.
+  const heroCandidates = shuffle(placed.filter(clearOfStart), random).slice(0, HERO_SIZE_COUNT);
   for (const candidate of heroCandidates) {
     const multiplier = HERO_SIZE_MULTIPLIER_MIN + random() * (HERO_SIZE_MULTIPLIER_MAX - HERO_SIZE_MULTIPLIER_MIN);
     candidate.deco.size = Math.min(HERO_SIZE_MAX_PX, candidate.deco.size * multiplier);
+  }
+
+  // Final safety net: whatever put it there (an ordinary pair/extra that
+  // happened to roll a high inset and/or a large size, not just the
+  // deliberate overlap/hero passes above), no large decoration this close
+  // to the start should still be reaching toward center. Caps size back to
+  // the tier's own minimum too — a low inset alone doesn't help if the
+  // item is wide enough to reach center from the edge regardless.
+  for (const p of placed) {
+    if (p.tier === "large" && p.deco.top < START_CLEARANCE_PX) {
+      p.deco.insetPct = Math.min(p.deco.insetPct, START_CLEARANCE_MAX_INSET_PCT);
+      p.deco.size = Math.min(p.deco.size, LANDMARK_SIZE_MIN);
+    }
   }
 
   return placed.map((p) => p.deco);
