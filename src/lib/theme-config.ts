@@ -214,16 +214,17 @@ export const THEME_CONFIG = {
           { key: "baby-dino-06", src: "/assets/theme/dino/decorations/baby-dino-06.png" },
         ],
       },
-      // Small tier halved vs space's default (17 small-tier keys here vs
-      // space's 15, but at the same 2-4-per-key density that was reading
-      // noticeably more cluttered/overlapping in live testing) — 1-2 per
-      // key instead targets roughly the same total instance count space's
-      // original, smaller 7-key small tier produced.
+      // Matches space's density (2-4 per small-tier key) — an earlier pass
+      // halved this to 1-2 because the then-fully-random placement read as
+      // cluttered/overlapping at the full count. Since decorations.ts now
+      // places most instances as loosely-mirrored left/right pairs with
+      // deliberate clearance down the center path, the full density reads
+      // as full/composed rather than cluttered — matching space's look.
       decorationDensity: {
         largeMinCount: 1,
         largeMaxCount: 2,
-        smallMinCount: 1,
-        smallMaxCount: 2,
+        smallMinCount: 2,
+        smallMaxCount: 4,
       },
       // Warm "floating pollen" — same size/opacity feel as space's stars,
       // just recolored.

@@ -51,6 +51,16 @@ const OVERLAP_TARGET_COUNT = 2;
 const OVERLAP_MIN_INSET_PCT = 26;
 const OVERLAP_MAX_INSET_PCT = 38;
 
+// A few instances — any tier, no "does this species make sense at this
+// size" logic — get scaled up well past their tier's normal range, purely
+// for visual variety: a couple of dinosaurs (or, in space, a couple of
+// planets) read as strikingly bigger than their neighbors instead of every
+// instance of a given tier landing in the same size ballpark.
+const HERO_SIZE_COUNT = 3;
+const HERO_SIZE_MULTIPLIER_MIN = 1.3;
+const HERO_SIZE_MULTIPLIER_MAX = 1.8;
+const HERO_SIZE_MAX_PX = 280;
+
 // Every row (a pair, or a lone extra) gets its own vertical slot of the
 // world height, landing only in the first JITTER_FRACTION of that slot —
 // guaranteeing a minimum gap to the next row instead of letting two rows
@@ -200,6 +210,16 @@ export function generateDecorations(
   const overlapCandidates = largeCandidates.length > 0 ? largeCandidates : shuffle(placed, random);
   for (const candidate of overlapCandidates.slice(0, OVERLAP_TARGET_COUNT)) {
     candidate.deco.insetPct = OVERLAP_MIN_INSET_PCT + random() * (OVERLAP_MAX_INSET_PCT - OVERLAP_MIN_INSET_PCT);
+  }
+
+  // A few "hero" instances get an oversized boost, independent of the
+  // overlap picks above (the two can land on the same instance or not —
+  // either way is fine, a huge decoration crossing the path is an even
+  // bigger moment).
+  const heroCandidates = shuffle(placed, random).slice(0, HERO_SIZE_COUNT);
+  for (const candidate of heroCandidates) {
+    const multiplier = HERO_SIZE_MULTIPLIER_MIN + random() * (HERO_SIZE_MULTIPLIER_MAX - HERO_SIZE_MULTIPLIER_MIN);
+    candidate.deco.size = Math.min(HERO_SIZE_MAX_PX, candidate.deco.size * multiplier);
   }
 
   return placed.map((p) => p.deco);
