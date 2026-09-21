@@ -123,21 +123,20 @@ Every theme needs:
     shared, theme-agnostic constants (`LARGE_MIN_COUNT`/`MAX_COUNT`,
     `SMALL_MIN_COUNT`/`MAX_COUNT`).
 
-  **Space is still on a legacy path**, pending re-export of its 10
-  decorations onto the standardized 512×512 canvas — its `theme-config.ts`
-  entries keep explicit `width`/`height` per asset, which `decorations.ts`
-  detects and falls back to: exact fixed size (no scale randomization) and
-  a subtle ±15° rotation wobble (not full rotation), matching how it always
-  looked. Once the real files land, drop `width`/`height` from space's
-  entries and it picks up the same system dino already uses — no other
-  code change needed.
+  Both `space` and `dino` are on this same standardized system — space was
+  re-exported (its original 10 decorations replaced with a richer 20-file
+  set: aliens, a sun, 7 planets, 2 UFOs, plus the original rocket/moons/
+  stars/comet/asteroid) and its `theme-config.ts` entries no longer specify
+  width/height. `DecorationAsset` has no size fields at all now; a theme
+  that somehow needed fixed per-asset sizing again would need that added
+  back deliberately, not inherited from a leftover code path.
 
 Also per-theme: **`particles`** (the ambient dot layer, `src/lib/starfield.ts`
 — space uses small white "stars"; a theme can recolor/resize via
 `{ color, sizeMin, sizeMax, opacityMin, opacityMax }`) and **`skyGradient`**
 (a CSS `background` value for the world behind everything else).
 
-### `space` (live, legacy decoration sizing)
+### `space` (live)
 
 **Characters:** (`characterNames`: Astro Boy / Astro Girl)
 | File | Native size | Displayed size |
@@ -147,28 +146,39 @@ Also per-theme: **`particles`** (the ambient dot layer, `src/lib/starfield.ts`
 | `astrogirl-idle.png` | 300×450 | 110×165 |
 | `astrogirl-yay.png` | 300×450 | 110×165 |
 
-**Decorations — large tier** (fixed size, legacy):
-| Key | File | Size |
+**Decorations — large/landmark tier** (all 512×512, size randomized ~150–220px):
+| Key | File | Notes |
 |---|---|---|
-| saturn-planet | `saturn-planet.png` | 200×200 |
-| striped-planet | `striped-planet.png` | 150×150 |
-| rocket | `rocket.png` | 120×150 |
+| rocket | `rocket.png` | |
+| sun | `sun.png` | |
+| planet-01 | `planet-01.png` | ringed, tan |
+| planet-04 | `planet-04.png` | ringed, pink |
+| planet-05 | `planet-05.png` | ringed, orange |
 
-**Decorations — small tier** (fixed size, legacy):
-| Key | File | Size |
+**Decorations — small tier** (all 512×512, size randomized ~60–120px):
+| Key | File | Notes |
 |---|---|---|
-| small-moon | `small-moon.png` | 100×100 |
-| crescent-moon | `crescent-moon.png` | 120×120 |
-| large-star | `large-star.png` | 100×100 |
-| star-cluster | `star-cluster.png` | 80×80 |
-| asteroid | `asteroid.png` | 80×80 |
-| comet | `comet.png` | 120×80 |
-| ufo | `ufo.png` | 120×80 |
+| planet-02 | `planet-02.png` | cratered, mars-like, no ring |
+| planet-03 | `planet03.png` | teal striped, no ring — note the actual filename has no hyphen |
+| planet-06 | `planet-06.png` | green polka-dot, no ring |
+| planet-07 | `planet-07.png` | teal wave, no ring |
+| moon-01 | `moon-01.png` | |
+| moon-crescent | `moon-crescent.png` | |
+| star | `star.png` | |
+| star-cluster | `star-cluster.png` | |
+| comet | `comet.png` | |
+| asteroid | `asteroid.png` | |
+| alien-01, alien-02, alien-03 | `alien-0{1..3}.png` | 3 variants |
+| ufo, ufo-02 | `ufo.png`, `ufo-02.png` | 2 variants |
+
+Tiering call: the 3 ringed planets + sun + rocket read as the "grand"
+centerpiece pieces; the 4 plainer round planets sit in the small tier
+alongside the moons/stars, closer to them in visual weight.
 
 **Particles:** white, size 1–3px, opacity 0.4–1.
 **Sky:** `linear-gradient(to top, #0a0e27 0%, #1a1f4e 100%)` (deep navy).
 
-### `dino` (live, standardized decoration sizing)
+### `dino` (live)
 
 **Characters:** (`characterNames`: Dinoboy / Dinogirl)
 | File | Native size | Displayed size |

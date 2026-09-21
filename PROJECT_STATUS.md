@@ -176,12 +176,6 @@ that manually if needed.
   directly (e.g. via Supabase). Asset inventory, the standardized-canvas
   decoration system, and what's left to build theme-selection UI are
   documented in `public/assets/theme/README - Theme.md`.
-- Space's decorations are still on a legacy fixed-size rendering path,
-  pending the user re-exporting its 10 decoration PNGs onto the same
-  standardized 512×512 canvas dino already uses — once that lands, drop
-  `width`/`height` from space's `theme-config.ts` decoration entries and it
-  picks up the same randomized-scale/full-rotation system automatically
-  (see the assets doc).
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
 - Brand identity not finalized — the "KidKad" text on the `/create` welcome

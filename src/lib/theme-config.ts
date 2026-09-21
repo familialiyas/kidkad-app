@@ -3,16 +3,6 @@ import type { ParticleConfig } from "./starfield";
 export interface DecorationAsset {
   key: string;
   src: string;
-  /**
-   * Legacy fixed display size, space-only. Every other theme (and space
-   * itself once its decorations are re-exported onto the standardized
-   * 512x512 canvas) omits these — size is then randomized per placement
-   * instance from the tier's range in decorations.ts instead. Kept only so
-   * space keeps rendering exactly as before until that re-export lands; see
-   * public/assets/theme/README - Theme.md.
-   */
-  width?: number;
-  height?: number;
 }
 
 export interface ThemeDecorations {
@@ -81,25 +71,35 @@ export const THEME_CONFIG = {
         boy: "Astro Boy",
         girl: "Astro Girl",
       },
-      // Fixed width/height below is the pre-migration (legacy) sizing —
-      // intentionally left as-is until space's decorations are re-exported
-      // onto the standardized 512x512 canvas, at which point these should
-      // drop width/height entirely (like dino's below) to pick up the
-      // shared randomized-scale system.
+      // Standardized 512x512 canvas, same as dino — display size/rotation
+      // are randomized per placement instance (decorations.ts), not fixed
+      // per-asset. The 3 ringed planets + sun + rocket read as the "grand"
+      // pieces (landmark tier); the plainer round planets are closer in
+      // visual weight to the moons/stars they sit alongside (small tier).
       decorations: {
         large: [
-          { key: "saturn-planet", src: "/assets/theme/space/decorations/saturn-planet.png", width: 200, height: 200 },
-          { key: "striped-planet", src: "/assets/theme/space/decorations/striped-planet.png", width: 150, height: 150 },
-          { key: "rocket", src: "/assets/theme/space/decorations/rocket.png", width: 120, height: 150 },
+          { key: "rocket", src: "/assets/theme/space/decorations/rocket.png" },
+          { key: "sun", src: "/assets/theme/space/decorations/sun.png" },
+          { key: "planet-01", src: "/assets/theme/space/decorations/planet-01.png" }, // ringed, tan
+          { key: "planet-04", src: "/assets/theme/space/decorations/planet-04.png" }, // ringed, pink
+          { key: "planet-05", src: "/assets/theme/space/decorations/planet-05.png" }, // ringed, orange
         ],
         small: [
-          { key: "small-moon", src: "/assets/theme/space/decorations/small-moon.png", width: 100, height: 100 },
-          { key: "crescent-moon", src: "/assets/theme/space/decorations/crescent-moon.png", width: 120, height: 120 },
-          { key: "large-star", src: "/assets/theme/space/decorations/large-star.png", width: 100, height: 100 },
-          { key: "star-cluster", src: "/assets/theme/space/decorations/star-cluster.png", width: 80, height: 80 },
-          { key: "asteroid", src: "/assets/theme/space/decorations/asteroid.png", width: 80, height: 80 },
-          { key: "comet", src: "/assets/theme/space/decorations/comet.png", width: 120, height: 80 },
-          { key: "ufo", src: "/assets/theme/space/decorations/ufo.png", width: 120, height: 80 },
+          { key: "planet-02", src: "/assets/theme/space/decorations/planet-02.png" }, // cratered, mars-like
+          { key: "planet-03", src: "/assets/theme/space/decorations/planet03.png" }, // teal striped
+          { key: "planet-06", src: "/assets/theme/space/decorations/planet-06.png" }, // green polka-dot
+          { key: "planet-07", src: "/assets/theme/space/decorations/planet-07.png" }, // teal wave
+          { key: "moon-01", src: "/assets/theme/space/decorations/moon-01.png" },
+          { key: "moon-crescent", src: "/assets/theme/space/decorations/moon-crescent.png" },
+          { key: "star", src: "/assets/theme/space/decorations/star.png" },
+          { key: "star-cluster", src: "/assets/theme/space/decorations/star-cluster.png" },
+          { key: "comet", src: "/assets/theme/space/decorations/comet.png" },
+          { key: "asteroid", src: "/assets/theme/space/decorations/asteroid.png" },
+          { key: "alien-01", src: "/assets/theme/space/decorations/alien-01.png" },
+          { key: "alien-02", src: "/assets/theme/space/decorations/alien-02.png" },
+          { key: "alien-03", src: "/assets/theme/space/decorations/alien-03.png" },
+          { key: "ufo", src: "/assets/theme/space/decorations/ufo.png" },
+          { key: "ufo-02", src: "/assets/theme/space/decorations/ufo-02.png" },
         ],
       },
       particles: {
@@ -130,9 +130,7 @@ export const THEME_CONFIG = {
         boy: "Dinoboy",
         girl: "Dinogirl",
       },
-      // No width/height — every asset is a 512x512 transparent canvas, so
-      // display size is randomized per placement from the tier's range
-      // (decorations.ts) instead of fixed per-asset.
+      // Standardized 512x512 canvas — see space's decorations above.
       decorations: {
         large: [
           { key: "volcano", src: "/assets/theme/dino/decorations/volcano.png" },

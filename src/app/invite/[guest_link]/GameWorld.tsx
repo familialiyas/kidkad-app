@@ -169,12 +169,11 @@ export default function GameWorld({
               {
                 top: deco.top,
                 [deco.side]: `${deco.insetPct}%`,
-                width: deco.width,
-                height: deco.height,
+                width: deco.size,
+                height: deco.size,
                 animationDuration: `${deco.floatDurationS}s`,
                 animationDelay: `${deco.floatDelayS}s`,
                 "--deco-rot": `${deco.baseRotationDeg}deg`,
-                "--deco-scale": deco.baseScale,
               } as CSSProperties
             }
           />

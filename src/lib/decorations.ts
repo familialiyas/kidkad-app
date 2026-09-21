@@ -4,8 +4,7 @@ import type { DecorationAsset, ThemeAssets } from "./theme-config";
 export interface PlacedDecoration {
   id: string;
   src: string;
-  width: number;
-  height: number;
+  size: number;
   top: number;
   side: "left" | "right";
   /** Distance from the chosen side's edge, as a percentage of viewport width. */
@@ -15,7 +14,6 @@ export interface PlacedDecoration {
   floatDelayS: number;
   /** Static per-instance look so repeats of the same asset don't read as copy-pasted. */
   baseRotationDeg: number;
-  baseScale: number;
 }
 
 // Middle depth layer: slower than foreground gameplay (character/coins at
@@ -41,16 +39,11 @@ const JITTER_FRACTION = 0.5;
 const FLOAT_DURATION_MIN_S = 3;
 const FLOAT_DURATION_MAX_S = 5;
 
-// Legacy per-item sizing (space, until its decorations are re-exported onto
-// the standardized 512x512 canvas): a subtle wobble only, not full rotation.
-const LEGACY_ROTATION_MAX_DEG = 15;
-const LEGACY_SCALE_MIN = 0.85;
-const LEGACY_SCALE_MAX = 1.15;
-
-// Standardized-canvas sizing (every asset a 512x512 transparent square):
-// display size is randomized per placement from these ranges instead of
-// being fixed per-asset, and rotation is a full 0-360° — nothing in this
-// game has a "wrong way up".
+// Every decoration asset is a standardized 512x512 transparent canvas
+// (content centered/scaled within the square regardless of native aspect
+// ratio) — rendered via object-fit: contain in a square container whose
+// size is randomized per placement instance from these tier ranges, rather
+// than a fixed size per asset.
 const LANDMARK_SIZE_MIN = 150;
 const LANDMARK_SIZE_MAX = 220;
 const SMALL_SIZE_MIN = 60;
@@ -93,21 +86,12 @@ export function generateDecorations(
   const slotHeight = worldHeight / shuffled.length;
 
   return shuffled.map((d, i) => {
-    // A def with width/height is a legacy space asset (see theme-config.ts)
-    // — keep its exact fixed size and the old subtle rotation/scale wobble.
-    // Everything else is the standardized 512x512 canvas: one random size
-    // draw (used for both width and height, since the container is always
-    // square) from the tier's range, plus full-range rotation and no extra
-    // scale wobble (the randomized size already provides the variation).
-    const isLegacy = d.width !== undefined && d.height !== undefined;
     const [sizeMin, sizeMax] = d.tier === "large" ? [LANDMARK_SIZE_MIN, LANDMARK_SIZE_MAX] : [SMALL_SIZE_MIN, SMALL_SIZE_MAX];
-    const size = sizeMin + random() * (sizeMax - sizeMin);
 
     return {
       id: `${d.key}-${i}`,
       src: d.src,
-      width: isLegacy ? d.width! : size,
-      height: isLegacy ? d.height! : size,
+      size: sizeMin + random() * (sizeMax - sizeMin),
       top: i * slotHeight + random() * slotHeight * JITTER_FRACTION,
       side: random() < 0.5 ? "left" : ("right" as const),
       insetPct: MARGIN_MIN_INSET_PCT + random() * (MARGIN_MAX_INSET_PCT - MARGIN_MIN_INSET_PCT),
@@ -115,8 +99,8 @@ export function generateDecorations(
       // Negative delay starts the loop partway through immediately, so
       // decorations desync from frame one instead of drifting apart slowly.
       floatDelayS: -random() * FLOAT_DURATION_MAX_S,
-      baseRotationDeg: isLegacy ? (random() * 2 - 1) * LEGACY_ROTATION_MAX_DEG : random() * 360,
-      baseScale: isLegacy ? LEGACY_SCALE_MIN + random() * (LEGACY_SCALE_MAX - LEGACY_SCALE_MIN) : 1,
+      // Full range — nothing in this game has a "wrong way up".
+      baseRotationDeg: random() * 360,
     };
   });
 }
