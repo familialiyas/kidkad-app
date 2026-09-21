@@ -7,7 +7,7 @@ export interface PlacedDecoration {
   size: number;
   top: number;
   side: "left" | "right";
-  /** Distance from the chosen side's edge, as a percentage of viewport width. */
+  /** Distance from the chosen side's edge, as a percentage of the game world's own (frame-capped) width. */
   insetPct: number;
   /** Independent float-loop timing so decorations don't bob in sync. */
   floatDurationS: number;
@@ -20,15 +20,41 @@ export interface PlacedDecoration {
 // 100%), faster than the distant star field (60%) — see STAR_PARALLAX_FACTOR.
 export const DECORATION_PARALLAX_FACTOR = 0.8;
 
-// Keeps decorations off the center path stripe (~28% of viewport, centered)
-// by confining them to a band within each margin.
+// Base margin band most decorations live in — kept fairly close to the
+// edges so the character has clear room to walk down the center; a couple
+// of deliberately-placed instances (see OVERLAP_* below) go well past this
+// on purpose.
 const MARGIN_MIN_INSET_PCT = 2;
-const MARGIN_MAX_INSET_PCT = 30;
+const MARGIN_MAX_INSET_PCT = 22;
 
-// Every decoration gets its own vertical "slot" of the world height, and
-// lands only in the first JITTER_FRACTION of that slot — guaranteeing a
-// minimum gap of (1 - JITTER_FRACTION) * slotHeight to the next one, instead
-// of letting two items land arbitrarily close together.
+// A paired left/right instance shares a base row position but isn't a
+// mechanical mirror — each side jitters independently within these ranges
+// so the symmetry reads as "composed", not a rigid grid.
+const PAIR_INSET_JITTER_PCT = 4;
+const PAIR_INSET_CLAMP_MIN_PCT = 1;
+const PAIR_INSET_CLAMP_MAX_PCT = MARGIN_MAX_INSET_PCT + PAIR_INSET_JITTER_PCT;
+const PAIR_TOP_JITTER_FRACTION = 0.15;
+
+// Share of instances that break from the paired rhythm entirely — placed
+// independently (own side, own inset, no mirrored partner) so the path
+// reads as "somewhat" symmetrical rather than a strict repeating pattern.
+const EXTRA_FRACTION = 0.22;
+const EXTRA_MIN_COUNT = 2;
+
+// A small number of instances (large-tier preferred, for a clear
+// silhouette), deliberately pushed well past the normal margin band so
+// they cross into the character's path. GameWorld renders the character
+// behind decorations (z-[5] vs decorations' z-[8]), so these read as the
+// character briefly walking behind the object rather than a layout bug —
+// "once or twice" per the design brief, not a recurring pattern.
+const OVERLAP_TARGET_COUNT = 2;
+const OVERLAP_MIN_INSET_PCT = 26;
+const OVERLAP_MAX_INSET_PCT = 38;
+
+// Every row (a pair, or a lone extra) gets its own vertical slot of the
+// world height, landing only in the first JITTER_FRACTION of that slot —
+// guaranteeing a minimum gap to the next row instead of letting two rows
+// land arbitrarily close together.
 const JITTER_FRACTION = 0.5;
 
 const FLOAT_DURATION_MIN_S = 3;
@@ -59,9 +85,17 @@ function shuffle<T>(items: T[], random: () => number): T[] {
   return copy;
 }
 
+function clampInsetPct(pct: number): number {
+  return Math.min(PAIR_INSET_CLAMP_MAX_PCT, Math.max(PAIR_INSET_CLAMP_MIN_PCT, pct));
+}
+
 interface DecorationInstance extends DecorationAsset {
   tier: "large" | "small";
 }
+
+type Row =
+  | { kind: "pair"; a: DecorationInstance; b: DecorationInstance }
+  | { kind: "single"; item: DecorationInstance };
 
 /** Same seed (e.g. guest_link) always produces the same layout; different invites look different. */
 export function generateDecorations(
@@ -82,28 +116,91 @@ export function generateDecorations(
   queueInstances(theme.decorations.large, "large", density.largeMinCount, density.largeMaxCount);
   queueInstances(theme.decorations.small, "small", density.smallMinCount, density.smallMaxCount);
 
-  // Shuffle so large/small types interleave, then walk down the world height
-  // slot by slot — this is what guarantees the minimum spacing above.
   const shuffled = shuffle(instances, random);
-  const slotHeight = worldHeight / shuffled.length;
+  const total = shuffled.length;
+  if (total === 0) return [];
 
-  return shuffled.map((d, i) => {
-    const [sizeMin, sizeMax] = d.tier === "large" ? [LANDMARK_SIZE_MIN, LANDMARK_SIZE_MAX] : [SMALL_SIZE_MIN, SMALL_SIZE_MAX];
+  // Most instances form left/right pairs (the "somewhat symmetrical" base
+  // rhythm); a smaller slice breaks off as independent extras that disrupt
+  // that balance instead of mirroring anything.
+  let extrasCount = Math.min(total, Math.max(EXTRA_MIN_COUNT, Math.round(total * EXTRA_FRACTION)));
+  if ((total - extrasCount) % 2 === 1) extrasCount = Math.min(total, extrasCount + 1);
 
+  const extraInstances = shuffled.slice(0, extrasCount);
+  const pairPool = shuffled.slice(extrasCount);
+
+  const rows: Row[] = [];
+  for (let i = 0; i < pairPool.length; i += 2) {
+    rows.push({ kind: "pair", a: pairPool[i], b: pairPool[i + 1] });
+  }
+  for (const item of extraInstances) {
+    rows.push({ kind: "single", item });
+  }
+  // Interleaved randomly (not all pairs first, then all extras) so the
+  // disruption is spread down the whole path rather than lopsided.
+  const orderedRows = shuffle(rows, random);
+  const slotHeight = worldHeight / orderedRows.length;
+
+  function place(
+    d: DecorationInstance,
+    id: string,
+    top: number,
+    side: "left" | "right",
+    insetPct: number
+  ): { deco: PlacedDecoration; tier: "large" | "small" } {
+    const [sizeMin, sizeMax] =
+      d.tier === "large" ? [LANDMARK_SIZE_MIN, LANDMARK_SIZE_MAX] : [SMALL_SIZE_MIN, SMALL_SIZE_MAX];
     return {
-      id: `${d.key}-${i}`,
-      src: d.src,
-      size: sizeMin + random() * (sizeMax - sizeMin),
-      top: i * slotHeight + random() * slotHeight * JITTER_FRACTION,
-      side: random() < 0.5 ? "left" : ("right" as const),
-      insetPct: MARGIN_MIN_INSET_PCT + random() * (MARGIN_MAX_INSET_PCT - MARGIN_MIN_INSET_PCT),
-      floatDurationS: FLOAT_DURATION_MIN_S + random() * (FLOAT_DURATION_MAX_S - FLOAT_DURATION_MIN_S),
-      // Negative delay starts the loop partway through immediately, so
-      // decorations desync from frame one instead of drifting apart slowly.
-      floatDelayS: -random() * FLOAT_DURATION_MAX_S,
-      // Constrained tilt, not a full spin — always right-side up, just a
-      // slight random lean left or right.
-      baseRotationDeg: (random() * 2 - 1) * TILT_MAX_DEG,
+      tier: d.tier,
+      deco: {
+        id,
+        src: d.src,
+        size: sizeMin + random() * (sizeMax - sizeMin),
+        top,
+        side,
+        insetPct,
+        floatDurationS: FLOAT_DURATION_MIN_S + random() * (FLOAT_DURATION_MAX_S - FLOAT_DURATION_MIN_S),
+        // Negative delay starts the loop partway through immediately, so
+        // decorations desync from frame one instead of drifting apart slowly.
+        floatDelayS: -random() * FLOAT_DURATION_MAX_S,
+        // Constrained tilt, not a full spin — always right-side up, just a
+        // slight random lean left or right.
+        baseRotationDeg: (random() * 2 - 1) * TILT_MAX_DEG,
+      },
     };
+  }
+
+  const placed: { deco: PlacedDecoration; tier: "large" | "small" }[] = [];
+
+  orderedRows.forEach((row, i) => {
+    const rowTop = i * slotHeight + random() * slotHeight * JITTER_FRACTION;
+
+    if (row.kind === "pair") {
+      const baseInset = MARGIN_MIN_INSET_PCT + random() * (MARGIN_MAX_INSET_PCT - MARGIN_MIN_INSET_PCT);
+      const leftTop = rowTop + (random() * 2 - 1) * slotHeight * PAIR_TOP_JITTER_FRACTION;
+      const rightTop = rowTop + (random() * 2 - 1) * slotHeight * PAIR_TOP_JITTER_FRACTION;
+      const leftInset = clampInsetPct(baseInset + (random() * 2 - 1) * PAIR_INSET_JITTER_PCT);
+      const rightInset = clampInsetPct(baseInset + (random() * 2 - 1) * PAIR_INSET_JITTER_PCT);
+      placed.push(place(row.a, `${row.a.key}-${i}-l`, leftTop, "left", leftInset));
+      placed.push(place(row.b, `${row.b.key}-${i}-r`, rightTop, "right", rightInset));
+    } else {
+      const side = random() < 0.5 ? "left" : ("right" as const);
+      const insetPct = MARGIN_MIN_INSET_PCT + random() * (MARGIN_MAX_INSET_PCT - MARGIN_MIN_INSET_PCT);
+      placed.push(place(row.item, `${row.item.key}-${i}-x`, rowTop, side, insetPct));
+    }
   });
+
+  // A couple of instances (large-tier preferred, for a clear "walking
+  // behind" silhouette) deliberately cross into the character's path
+  // instead of staying in the margin.
+  const largeCandidates = shuffle(
+    placed.filter((p) => p.tier === "large"),
+    random
+  );
+  const overlapCandidates = largeCandidates.length > 0 ? largeCandidates : shuffle(placed, random);
+  for (const candidate of overlapCandidates.slice(0, OVERLAP_TARGET_COUNT)) {
+    candidate.deco.insetPct = OVERLAP_MIN_INSET_PCT + random() * (OVERLAP_MAX_INSET_PCT - OVERLAP_MIN_INSET_PCT);
+  }
+
+  return placed.map((p) => p.deco);
 }
