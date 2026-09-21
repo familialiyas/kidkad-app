@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { PublicOrder, Rsvp } from "@/lib/types";
 import { getStoredRsvp, setStoredRsvp } from "@/lib/rsvp-storage";
 import { isPastDeadline, formatConversationalDate } from "@/lib/date";
@@ -10,6 +10,9 @@ import {
   CHARACTER_HEIGHT,
   CHARACTER_HEAD_Y_RATIO,
   REWARD_OFFSET_FROM_CHARACTER,
+  GAME_FRAME_MAX_WIDTH,
+  frameInset,
+  frameWidth,
   RewardPhase,
 } from "@/lib/game-constants";
 import GameWorld from "./GameWorld";
@@ -86,18 +89,18 @@ export default function GameClient({ order }: { order: PublicOrder }) {
       .catch(() => setMode("game"));
   }, [order.guest_link]);
 
+  const showWatermark = order.payment_status !== "paid";
+  const theme = getTheme(order.template);
+
+  let content: ReactNode;
   if (mode === "checking") {
-    return (
+    content = (
       <div className="flex min-h-screen items-center justify-center bg-green-700 text-white">
         Loading...
       </div>
     );
-  }
-
-  const showWatermark = order.payment_status !== "paid";
-
-  if (mode === "returnVisit" && returnRsvp) {
-    return (
+  } else if (mode === "returnVisit" && returnRsvp) {
+    content = (
       <>
         {showWatermark && <PreviewWatermark />}
         <ReturnVisitScreen
@@ -110,26 +113,43 @@ export default function GameClient({ order }: { order: PublicOrder }) {
         />
       </>
     );
+  } else {
+    // The moment a guest submits their RSVP, they land on the same
+    // ReturnVisitScreen a reopened link would show — that's the one place
+    // with the "You're in!" event details and the calendar/maps actions.
+    // Switching `mode` away from "game" unmounts <Game> entirely, so every
+    // fresh mount (initial play or a replay) starts with clean state for free.
+    content = (
+      <>
+        {showWatermark && <PreviewWatermark />}
+        <Game
+          order={order}
+          mode={gameMode}
+          onRsvpSuccess={(rsvp) => {
+            setReturnRsvp(rsvp);
+            setMode("returnVisit");
+          }}
+          onReplayDone={() => setMode("returnVisit")}
+        />
+      </>
+    );
   }
 
-  // The moment a guest submits their RSVP, they land on the same
-  // ReturnVisitScreen a reopened link would show — that's the one place
-  // with the "You're in!" event details and the calendar/maps actions.
-  // Switching `mode` away from "game" unmounts <Game> entirely, so every
-  // fresh mount (initial play or a replay) starts with clean state for free.
+  // The whole guest game renders inside a fixed-width, centered "phone
+  // frame" at every screen size (see GAME_FRAME_MAX_WIDTH) — an outer,
+  // full-viewport-width layer supplies the letterbox fill color on screens
+  // wider than the frame, and an inner, width-capped layer holds the actual
+  // game content in normal document flow (so window-level scroll and every
+  // `position: fixed` overlay inside it keep behaving exactly as before).
   return (
-    <>
-      {showWatermark && <PreviewWatermark />}
-      <Game
-        order={order}
-        mode={gameMode}
-        onRsvpSuccess={(rsvp) => {
-          setReturnRsvp(rsvp);
-          setMode("returnVisit");
-        }}
-        onReplayDone={() => setMode("returnVisit")}
-      />
-    </>
+    <div className="min-h-screen w-full" style={{ background: theme.uiColors.boxBg }}>
+      <div
+        className="relative mx-auto min-h-screen overflow-hidden"
+        style={{ maxWidth: GAME_FRAME_MAX_WIDTH }}
+      >
+        {content}
+      </div>
+    </div>
   );
 }
 
@@ -409,7 +429,8 @@ function Game({
             setScreen({ kind: "menu" });
           }}
           aria-label="Menu"
-          className="fixed top-16 right-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-xl leading-none text-white shadow-lg"
+          className="fixed top-16 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-xl leading-none text-white shadow-lg"
+          style={{ right: frameInset(16) }}
         >
           ☰
         </button>
@@ -610,8 +631,8 @@ function Game({
 
       {screen.kind === "menu" && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center px-6"
-          style={themeUiStyle(theme) as CSSProperties}
+          className="fixed top-0 bottom-0 z-50 flex items-center justify-center px-6"
+          style={{ left: frameInset(0), width: frameWidth(), ...themeUiStyle(theme) } as CSSProperties}
           onClick={() => setScreen({ kind: "none" })}
           role="button"
           tabIndex={0}

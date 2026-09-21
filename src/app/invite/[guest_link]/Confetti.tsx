@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { frameInset, frameWidth } from "@/lib/game-constants";
 
 const COLORS = ["#f59e0b", "#ef4444", "#22c55e", "#3b82f6", "#ec4899", "#eab308"];
 
@@ -19,7 +20,10 @@ export default function Confetti({ count = 40 }: { count?: number }) {
   );
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden">
+    <div
+      className="pointer-events-none fixed top-0 bottom-0 z-40 overflow-hidden"
+      style={{ left: frameInset(0), width: frameWidth() }}
+    >
       {pieces.map((p) => (
         <span
           key={p.id}

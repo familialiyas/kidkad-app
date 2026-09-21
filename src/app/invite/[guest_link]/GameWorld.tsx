@@ -7,6 +7,7 @@ import {
   CHARACTER_WIDTH,
   CHARACTER_HEIGHT,
   REWARD_SIZE,
+  frameInset,
   RewardPhase,
 } from "@/lib/game-constants";
 import { generateStars, STAR_PARALLAX_FACTOR } from "@/lib/starfield";
@@ -184,7 +185,8 @@ export default function GameWorld({
       {showGameplayChrome && (
         <div
           ref={hudRef}
-          className="fixed top-4 right-4 z-30 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-white shadow-lg"
+          className="fixed top-4 z-30 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-white shadow-lg"
+          style={{ right: frameInset(16) }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

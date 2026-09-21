@@ -34,6 +34,12 @@ const JITTER_FRACTION = 0.5;
 const FLOAT_DURATION_MIN_S = 3;
 const FLOAT_DURATION_MAX_S = 5;
 
+// Most decoration art (standing dinosaurs, characters facing a specific
+// way) has a clear grounded "right way up" — a full 0-360 spin reads as
+// broken for those, so every decoration instead gets a small, playful
+// left/right lean instead of a full rotation.
+const TILT_MAX_DEG = 15;
+
 // Every decoration asset is a standardized 512x512 transparent canvas
 // (content centered/scaled within the square regardless of native aspect
 // ratio) — rendered via object-fit: contain in a square container whose
@@ -95,8 +101,9 @@ export function generateDecorations(
       // Negative delay starts the loop partway through immediately, so
       // decorations desync from frame one instead of drifting apart slowly.
       floatDelayS: -random() * FLOAT_DURATION_MAX_S,
-      // Full range — nothing in this game has a "wrong way up".
-      baseRotationDeg: random() * 360,
+      // Constrained tilt, not a full spin — always right-side up, just a
+      // slight random lean left or right.
+      baseRotationDeg: (random() * 2 - 1) * TILT_MAX_DEG,
     };
   });
 }

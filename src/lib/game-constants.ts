@@ -1,3 +1,29 @@
+// The whole guest game renders inside a fixed-width "phone frame" at every
+// screen size (centered, letterboxed on wider viewports) instead of scaling
+// up to fill a desktop browser — matches max-w-md, already used elsewhere
+// for dialogue/form width (DialogueBox, StepShell, ReturnVisitScreen's card).
+export const GAME_FRAME_MAX_WIDTH = 448;
+
+// The game frame itself stays a normal in-flow, centered block (so its
+// `position: fixed` descendants — mute/menu buttons, HUD, dialogue overlays —
+// keep the viewport as their containing block and stay genuinely pinned
+// while the tall world scrolls underneath). That means a `fixed` element
+// anchored to e.g. `left-4` lands 16px from the actual *browser* edge, not
+// the frame's edge, once the viewport is wider than the frame. This computes
+// the equivalent inset from the frame's edge instead: on screens narrower
+// than the frame it reduces to plain `insetPx` (unchanged from before), and
+// on wider screens it lands at the frame's visible edge + insetPx.
+export function frameInset(insetPx: number): string {
+  return `calc(50% - min(${GAME_FRAME_MAX_WIDTH}px, 100vw) / 2 + ${insetPx}px)`;
+}
+
+// For a `position: fixed` full-bleed layer (a dim backdrop, a menu panel)
+// that should span the frame's width instead of `inset-0`'s actual viewport
+// width — pair with `left: frameInset(0)` and `top`/`bottom: 0`.
+export function frameWidth(): string {
+  return `min(${GAME_FRAME_MAX_WIDTH}px, 100vw)`;
+}
+
 // No dedicated "end zone" — the reward now appears right at the character's
 // position in the same scrollable space scene, so the world just needs a
 // little room past the last coin (2700) for that to happen.

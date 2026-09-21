@@ -4,6 +4,7 @@ import { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef, useState 
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment, segmentsFullLength, sliceSegments } from "@/lib/typewriter";
 import { themeUiStyle, type ThemeAssets } from "@/lib/theme-config";
+import { frameInset, frameWidth } from "@/lib/game-constants";
 
 const GAP = 20; // space between the character's head and the box (room for the tail)
 const BOTTOM_MARGIN = 12; // minimum distance from the bottom viewport edge
@@ -148,8 +149,8 @@ export default function DialogueBox({
 
   return (
     <div
-      className={`fixed inset-0 z-50 ${onTapDismiss ? "cursor-pointer" : ""}`}
-      style={themeUiStyle(theme) as CSSProperties}
+      className={`fixed top-0 bottom-0 z-50 ${onTapDismiss ? "cursor-pointer" : ""}`}
+      style={{ left: frameInset(0), width: frameWidth(), ...themeUiStyle(theme) } as CSSProperties}
       onClick={onTapDismiss ? handleTapDismiss : undefined}
       role={onTapDismiss ? "button" : undefined}
       tabIndex={onTapDismiss ? 0 : undefined}

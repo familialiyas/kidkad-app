@@ -4,7 +4,7 @@ Digital birthday invitation game. A parent customizes an invitation for their
 child's party; guests open a link, play a short scroll-driven mini-game to
 reveal party details, and RSVP. The parent gets a dashboard link to see
 responses and edit the invitation. Reference doc for orienting a fresh Claude
-session — last updated 2026-09-07.
+session — last updated 2026-09-21.
 
 ## Stack
 
@@ -96,6 +96,29 @@ leads to the existing post-claim screen (same `missionComplete` line again
 above the RSVP buttons — not merged into one box), then RSVP. Real art
 assets throughout (space theme), no emoji anywhere, no raster PNG icons for
 dialogue/party-detail icons either (see below).
+
+The whole game renders inside a fixed-width, centered "phone frame"
+(`GAME_FRAME_MAX_WIDTH` = 448px, `src/lib/game-constants.ts` — matches
+`max-w-md`, already used for dialogue/form width elsewhere) at every screen
+size, not just on narrow devices: on screens wider than the frame, the game
+stays mobile-width and centered, with the surrounding space filled by a
+solid `theme.uiColors.boxBg` letterbox instead of stretching to fill the
+browser. Decoration/star/coin placement is percentage-based against the
+game world's own (now consistently-capped) rendered width, so density
+already looks the same on mobile and desktop with no changes to that math —
+only the frame's ancestor chain needed capping. The handful of
+`position: fixed` overlays that must stay pinned to the screen during the
+tall scroll (mute/menu buttons, coin HUD, dialogue/menu backdrops,
+confetti) keep true viewport-relative `fixed` positioning (not a
+transform-scoped containing block, which would've broken scroll-pinning)
+and instead resolve their edge-anchored offsets against the frame's edges
+via the `frameInset()`/`frameWidth()` helpers in `game-constants.ts`.
+Scoped to `/invite/[guest_link]` only — `/create` and `/dashboard` are
+unaffected (their own existing `max-w-md`-capped content, not this frame
+system). Decoration rotation (`decorations.ts`) is a seeded, constrained
+±15° tilt (`TILT_MAX_DEG`), not the full 0-360° spin used previously — most
+decoration art (standing dinosaurs, a specific facing direction) has a
+clear "right way up" that a full spin broke.
 
 **Dialogue system** (`DialogueBox.tsx` + `src/lib/typewriter.ts`):
 character-by-character typewriter reveal (~24ms/char), tap-to-skip then

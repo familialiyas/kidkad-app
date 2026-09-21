@@ -2,6 +2,7 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { THEME_CONFIG } from "@/lib/theme-config";
+import { frameInset } from "@/lib/game-constants";
 
 const STORAGE_KEY = "kidkad_audio_muted";
 
@@ -68,7 +69,8 @@ const AudioToggle = forwardRef<AudioToggleHandle, { src: string }>(function Audi
         type="button"
         onClick={toggle}
         aria-label={muted ? "Unmute music" : "Mute music"}
-        className="fixed top-4 left-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 shadow-lg"
+        className="fixed top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 shadow-lg"
+        style={{ left: frameInset(16) }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

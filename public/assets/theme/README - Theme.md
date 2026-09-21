@@ -116,8 +116,12 @@ Every theme needs:
     guest_link) within the tier's range: **large/landmark ≈150–220px,
     small ≈60–120px** (`LANDMARK_SIZE_MIN/MAX`, `SMALL_SIZE_MIN/MAX` in
     `decorations.ts`).
-  - **Rotation** is a full random 0–360° per instance — nothing in this
-    game has a "wrong way up".
+  - **Rotation** is a seeded, constrained tilt — a random ±15°
+    (`TILT_MAX_DEG` in `decorations.ts`) per instance, always right-side up.
+    Not a full 0–360° spin (an earlier approach): most decoration art has a
+    clear grounded orientation (standing dinosaurs, a specific facing
+    direction), so a full spin read as broken rather than "everything
+    floats" as originally intended.
   - A theme needs at least a few of each tier to avoid maps looking sparse;
     density itself (how many instances of each key spawn) is controlled by
     shared, theme-agnostic constants (`LARGE_MIN_COUNT`/`MAX_COUNT`,
