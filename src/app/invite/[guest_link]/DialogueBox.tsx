@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CSSProperties, MouseEvent, ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment, segmentsFullLength, sliceSegments } from "@/lib/typewriter";
 import { themeUiStyle, type ThemeAssets } from "@/lib/theme-config";
@@ -25,6 +25,7 @@ export default function DialogueBox({
   icon,
   footer,
   onTapDismiss,
+  onClose,
   onTalkingChange,
   anchorY,
 }: {
@@ -42,6 +43,14 @@ export default function DialogueBox({
   footer?: ReactNode;
   /** For single-action "read this and continue" dialogues: the whole screen dismisses it, no button. */
   onTapDismiss?: () => void;
+  /** Shows a visible "×" close button (top-right of the card) wired to
+   * this when provided — an always-available, immediate way back to the
+   * game screen, independent of onTapDismiss's typing-aware two-step
+   * (first tap completes text, second dismisses). Clicking × always closes
+   * right away, regardless of typing state. Every real in-game dialogue
+   * passes this; omitted only by the static /create tone-preview usage,
+   * which has no game state to close back to. */
+  onClose?: () => void;
   /** Reports whether text is actively typing, so the character sprite can play a talking loop. */
   onTalkingChange?: (talking: boolean) => void;
   /** Viewport-relative Y coordinate of the character's head — the box floats just above this, tail pointing down at it. */
@@ -147,6 +156,14 @@ export default function DialogueBox({
     setTimeout(onTapDismiss, EXIT_DURATION_MS);
   }
 
+  function handleClose(e: MouseEvent) {
+    e.stopPropagation(); // don't also trigger the backdrop's onTapDismiss handling
+    if (!onClose || isExiting) return;
+    playSfx("dialogueClose");
+    setIsExiting(true);
+    setTimeout(onClose, EXIT_DURATION_MS);
+  }
+
   return (
     <div
       className={`fixed top-0 bottom-0 z-50 ${onTapDismiss ? "cursor-pointer" : ""}`}
@@ -190,6 +207,21 @@ export default function DialogueBox({
             className="dialogue-space-bg ui-border-accent-80 absolute bottom-0 left-1/2 z-0 h-5 w-5 translate-x-[-50%] translate-y-1/2 rotate-45 border-r-4 border-b-4"
             aria-hidden
           />
+
+          {/* Always-available close button — immediate, bypasses the typing-aware
+              tap-to-dismiss flow entirely, so it works the same regardless of
+              whether this dialogue also supports tap-anywhere or has footer buttons. */}
+          {onClose && (
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Close"
+              className="ui-text-accent-light absolute top-2 right-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-black/20 text-lg leading-none active:scale-95"
+            >
+              ×
+            </button>
+          )}
+
           <div className="font-display relative z-10">
             <div className="flex items-center gap-3">
               <div className="ui-border-accent-70 relative h-16 w-16 shrink-0 overflow-hidden rounded-full border-4 bg-slate-800">

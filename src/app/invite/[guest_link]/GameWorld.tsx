@@ -7,7 +7,6 @@ import {
   CHARACTER_WIDTH,
   CHARACTER_HEIGHT,
   REWARD_SIZE,
-  frameInset,
   RewardPhase,
 } from "@/lib/game-constants";
 import { generateStars, STAR_PARALLAX_FACTOR } from "@/lib/starfield";
@@ -186,12 +185,16 @@ export default function GameWorld({
         ))}
       </div>
 
-      {/* HUD */}
+      {/* HUD — centered in the top row (mute | coin count | menu). Centering
+          via left-1/2 + -translate-x-1/2 needs no frame-aware calc unlike
+          the edge-anchored buttons either side of it: the frame is itself
+          centered in the viewport (mx-auto), so the frame's midpoint and
+          the viewport's midpoint are the same point regardless of screen
+          width. */}
       {showGameplayChrome && (
         <div
           ref={hudRef}
-          className="fixed top-4 z-30 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-white shadow-lg"
-          style={{ right: frameInset(16) }}
+          className="fixed top-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-white shadow-lg"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

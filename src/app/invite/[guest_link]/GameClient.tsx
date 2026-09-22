@@ -268,6 +268,15 @@ function Game({
     [screen.kind, collectedCount, animatingCoinId]
   );
 
+  // Shared by the missionCompleteIntro dialogue's normal auto-advance (after
+  // its text finishes typing) and its close button (an immediate skip) —
+  // closing that screen can't just go back to "none" like every other
+  // dialogue's close does, since nothing else would ever spawn the reward.
+  function skipToReward() {
+    setRewardSpawned(true);
+    setScreen({ kind: "reward" });
+  }
+
   function dismissCoinDialogue() {
     if (collectedCount >= 3) {
       // No separate "end zone" to travel to — the reward appears right where
@@ -419,8 +428,8 @@ function Game({
     <div className="relative">
       <AudioToggle ref={audioToggleRef} src={THEME_CONFIG.backgroundMusicSrc} />
 
-      {/* Positioned below the coin-count HUD (also top-right, z-30) rather
-          than overlapping it — opposite the mute button, same size/style. */}
+      {/* Same top row as the mute button (left) and coin-count HUD
+          (centered): mute | coin count | menu, left to right. */}
       {screen.kind !== "title" && (
         <button
           type="button"
@@ -429,7 +438,7 @@ function Game({
             setScreen({ kind: "menu" });
           }}
           aria-label="Menu"
-          className="fixed top-16 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-xl leading-none text-white shadow-lg"
+          className="fixed top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-xl leading-none text-white shadow-lg"
           style={{ right: frameInset(16) }}
         >
           ☰
@@ -481,6 +490,7 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={() => setScreen({ kind: "none" })}
+          onClose={() => setScreen({ kind: "none" })}
           segments={openingSegments}
           onTalkingChange={setIsDialogueTyping}
         />
@@ -493,6 +503,7 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={dismissCoinDialogue}
+          onClose={dismissCoinDialogue}
           segments={coin1Segments}
           icon={ICONS.calendar}
           onTalkingChange={setIsDialogueTyping}
@@ -506,6 +517,7 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={dismissCoinDialogue}
+          onClose={dismissCoinDialogue}
           segments={coin2Segments}
           icon={ICONS.location}
           onTalkingChange={setIsDialogueTyping}
@@ -519,6 +531,7 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={dismissCoinDialogue}
+          onClose={dismissCoinDialogue}
           segments={coin3Segments}
           icon={ICONS.dresscode}
           onTalkingChange={setIsDialogueTyping}
@@ -534,15 +547,13 @@ function Game({
           segments={missionCompleteSegments}
           icon={ICONS.celebration}
           onTapDismiss={() => {}}
+          onClose={skipToReward}
           onTalkingChange={(typing) => {
             setIsDialogueTyping(typing);
             if (typing) return;
             // Typing just finished (naturally or via skip-tap either way) —
             // a short beat, then the gift spawns and takes over the screen.
-            setTimeout(() => {
-              setRewardSpawned(true);
-              setScreen({ kind: "reward" });
-            }, 500);
+            setTimeout(skipToReward, 500);
           }}
         />
       )}
@@ -555,6 +566,7 @@ function Game({
           anchorY={dialogueAnchorY}
           segments={missionCompleteSegments}
           icon={ICONS.celebration}
+          onClose={() => setScreen({ kind: "none" })}
           onTalkingChange={setIsDialogueTyping}
           footer={
             <>
@@ -601,6 +613,7 @@ function Game({
           photoUrl={order.child_photo_url}
           name={childName}
           anchorY={dialogueAnchorY}
+          onClose={() => setScreen({ kind: "none" })}
           footer={null}
         >
           <RsvpForm
@@ -620,6 +633,7 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           segments={rsvpNoSegments}
+          onClose={() => setScreen({ kind: "none" })}
           onTalkingChange={setIsDialogueTyping}
           footer={
             <DialogueButton theme="space" onClick={() => setScreen({ kind: "rsvpYes" })}>
@@ -684,6 +698,7 @@ function Game({
           name={childName}
           anchorY={dialogueAnchorY}
           onTapDismiss={() => setScreen({ kind: "none" })}
+          onClose={() => setScreen({ kind: "none" })}
         >
           {/* Static (no typewriter) — jumps straight to the info instead of
               replaying the coin-collection sequence, reusing the same
