@@ -1,5 +1,6 @@
 import type { Character } from "./types";
 import type { DialogueTone } from "./dialogue-tones";
+import type { ThemeName } from "./theme-config";
 import type { EventDetailsFields } from "@/app/create/EventDetailsStep";
 import type { ParentDetailsFields } from "@/app/create/ParentDetailsStep";
 
@@ -9,6 +10,11 @@ export interface CreateDraft {
   step: string;
   childName: string;
   childAge: string;
+  /** Absent (undefined) on any draft saved before the theme step existed —
+   * CreateOrderClient's restore logic treats that as "resume from the theme
+   * step" rather than trusting a `character` selection that predates theme
+   * ever being asked. */
+  theme?: ThemeName | null;
   character: Character | null;
   tone: DialogueTone | null;
   childPhotoUrl: string;

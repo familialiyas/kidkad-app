@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { generateOrderToken, generateGuestLink, generateAdminLink } from "@/lib/tokens";
 import type { Character, DialogueTone } from "@/lib/types";
+import type { ThemeName } from "@/lib/theme-config";
 
 interface CreateOrderBody {
+  theme?: ThemeName;
   character?: Character;
   dialogueTone?: DialogueTone;
   childName?: string;
@@ -21,6 +23,7 @@ interface CreateOrderBody {
 }
 
 const REQUIRED_FIELDS: (keyof CreateOrderBody)[] = [
+  "theme",
   "character",
   "dialogueTone",
   "childName",
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
         order_token: generateOrderToken(),
         guest_link: generateGuestLink(),
         admin_link: generateAdminLink(),
-        template: "space",
+        template: body.theme,
         payment_status: "draft",
         character: body.character,
         dialogue_tone: body.dialogueTone,

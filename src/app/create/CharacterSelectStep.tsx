@@ -1,29 +1,35 @@
 "use client";
 
-import { THEME_CONFIG } from "@/lib/theme-config";
+import { THEME_CONFIG, type ThemeName } from "@/lib/theme-config";
 import type { Character } from "@/lib/types";
 import { playSfx } from "@/lib/sfx";
 import StepShell from "./StepShell";
 
 export default function CharacterSelectStep({
+  theme,
   selected,
   onSelect,
   onBack,
   onContinue,
 }: {
+  /** The theme picked in the previous step — drives which sprite pair
+   * (and character names) render here, e.g. Astroboy/Astrogirl for space,
+   * Dinoboy/Dinogirl for dino. */
+  theme: ThemeName;
   selected: Character | null;
   onSelect: (character: Character) => void;
   onBack: () => void;
   onContinue: () => void;
 }) {
+  const themeAssets = THEME_CONFIG.themes[theme];
   const cards: { key: Character; label: string }[] = [
-    { key: "boy", label: "Astro Boy" },
-    { key: "girl", label: "Astro Girl" },
+    { key: "boy", label: themeAssets.characterNames.boy },
+    { key: "girl", label: themeAssets.characterNames.girl },
   ];
 
   return (
     <StepShell
-      stepLabel="Step 2 of 8"
+      stepLabel="Step 3 of 8"
       title="Pick Your Character"
       onBack={onBack}
       onContinue={onContinue}
@@ -33,7 +39,7 @@ export default function CharacterSelectStep({
       <div className="flex flex-col gap-3">
         {cards.map((card) => {
           const isSelected = selected === card.key;
-          const sprite = THEME_CONFIG.themes.space.characterSprites[card.key].idle;
+          const sprite = themeAssets.characterSprites[card.key].idle;
           return (
             <button
               key={card.key}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { THEME_CONFIG } from "@/lib/theme-config";
+import { THEME_CONFIG, type ThemeName } from "@/lib/theme-config";
 import type { Character } from "@/lib/types";
 import { DIALOGUE_TONES, TONE_LABELS, fillTemplate, DialogueTone } from "@/lib/dialogue-tones";
 import { playSfx } from "@/lib/sfx";
@@ -18,6 +18,7 @@ const MIN_ANCHOR_Y = 180;
 const TONE_ORDER: DialogueTone[] = ["excited", "sweet", "silly"];
 
 export default function ToneSelectStep({
+  theme,
   character,
   childName,
   childAge,
@@ -26,6 +27,9 @@ export default function ToneSelectStep({
   onBack,
   onContinue,
 }: {
+  /** The theme picked earlier in the flow — drives the preview's character
+   * sprite and DialogueBox styling, matching CharacterSelectStep. */
+  theme: ThemeName;
   character: Character;
   childName: string;
   childAge: string;
@@ -62,7 +66,8 @@ export default function ToneSelectStep({
     };
   }, []);
 
-  const sprite = THEME_CONFIG.themes.space.characterSprites[character].idle;
+  const themeAssets = THEME_CONFIG.themes[theme];
+  const sprite = themeAssets.characterSprites[character].idle;
   const previewTone = selected ?? "excited";
   const previewLine = fillTemplate(DIALOGUE_TONES[previewTone].opening, {
     name: childName,
@@ -86,7 +91,7 @@ export default function ToneSelectStep({
         key={previewTone}
         photoUrl={null}
         name={childName}
-        theme={THEME_CONFIG.themes.space}
+        theme={themeAssets}
         anchorY={anchorY}
         segments={[{ text: previewLine }]}
       />
@@ -96,7 +101,7 @@ export default function ToneSelectStep({
         className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t-4 border-cyan-400/40 bg-[#0a0e27] px-4 pt-4 pb-6 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
       >
         <p className="font-display text-center text-xs font-bold tracking-widest text-cyan-300/70 uppercase">
-          Step 3 of 8
+          Step 4 of 8
         </p>
         <h2 className="font-display mt-1 text-center text-lg font-bold text-white">
           Pick A Voice

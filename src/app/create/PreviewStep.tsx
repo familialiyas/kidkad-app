@@ -1,6 +1,6 @@
 "use client";
 
-import { THEME_CONFIG } from "@/lib/theme-config";
+import { THEME_CONFIG, type ThemeName } from "@/lib/theme-config";
 import type { Character } from "@/lib/types";
 import { TONE_LABELS, type DialogueTone } from "@/lib/dialogue-tones";
 import { playSfx } from "@/lib/sfx";
@@ -23,6 +23,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function PreviewStep({
+  theme,
   character,
   tone,
   childName,
@@ -40,6 +41,7 @@ export default function PreviewStep({
   paying,
   payError,
 }: {
+  theme: ThemeName;
   character: Character;
   tone: DialogueTone;
   childName: string;
@@ -58,7 +60,8 @@ export default function PreviewStep({
   paying: boolean;
   payError: string | null;
 }) {
-  const sprite = THEME_CONFIG.themes.space.characterSprites[character].idle;
+  const themeAssets = THEME_CONFIG.themes[theme];
+  const sprite = themeAssets.characterSprites[character].idle;
 
   return (
     <StepShell
@@ -84,7 +87,7 @@ export default function PreviewStep({
         <div className="w-full rounded-2xl border-2 border-cyan-400/30 bg-slate-900/50 px-4">
           <Row label="Child" value={`${childName}, turning ${childAge}`} />
           <Row label="Voice" value={TONE_LABELS[tone]} />
-          <Row label="Theme" value="Space Mission" />
+          <Row label="Theme" value={themeAssets.missionLabel} />
           <Row label="Party" value={`${event.partyDate} at ${event.partyTime}`} />
           <Row label="Venue" value={event.partyVenue} />
           <Row label="Dress code" value={event.dressCode} />

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/lib/types";
 import type { DialogueTone } from "@/lib/dialogue-tones";
+import type { ThemeName } from "@/lib/theme-config";
 import { formatTimeForStorage } from "@/lib/date";
 import WelcomeStep from "./WelcomeStep";
 import ChildInfoStep from "./ChildInfoStep";
@@ -19,9 +20,9 @@ import { getCreateDraft, setCreateDraft, clearCreateDraft } from "@/lib/create-d
 type Step =
   | "welcome"
   | "childInfo"
+  | "theme"
   | "character"
   | "tone"
-  | "theme"
   | "photo"
   | "eventDetails"
   | "parentDetails"
@@ -54,6 +55,7 @@ export default function CreateOrderClient() {
 
   const [childName, setChildName] = useState("");
   const [childAge, setChildAge] = useState("");
+  const [theme, setTheme] = useState<ThemeName | null>(null);
   const [character, setCharacter] = useState<Character | null>(null);
   const [tone, setTone] = useState<DialogueTone | null>(null);
   const [childPhotoUrl, setChildPhotoUrl] = useState("");
@@ -85,14 +87,25 @@ export default function CreateOrderClient() {
     Promise.resolve().then(() => {
       const draft = getCreateDraft();
       if (!draft) return;
-      setStep(draft.step as Step);
       setChildName(draft.childName);
       setChildAge(draft.childAge);
-      setCharacter(draft.character);
-      setTone(draft.tone);
       setChildPhotoUrl(draft.childPhotoUrl);
       setEvent(draft.event);
       setParent(draft.parent);
+      if (!draft.theme) {
+        // A draft saved before the theme step existed (i.e. every draft
+        // saved before this change) — its `character`/`step` were captured
+        // under the old character-before-theme ordering and can't be
+        // trusted now (e.g. a character chosen with no theme concept
+        // behind it yet). Simplest safe fix: resume fresh from the theme
+        // step rather than guessing a theme to pair with the old choice.
+        setStep("theme");
+        return;
+      }
+      setTheme(draft.theme);
+      setCharacter(draft.character);
+      setTone(draft.tone);
+      setStep(draft.step as Step);
     });
   }, []);
 
@@ -101,15 +114,25 @@ export default function CreateOrderClient() {
   useEffect(() => {
     if (order) return;
     const id = setTimeout(() => {
-      setCreateDraft({ step, childName, childAge, character, tone, childPhotoUrl, event, parent });
+      setCreateDraft({
+        step,
+        childName,
+        childAge,
+        theme,
+        character,
+        tone,
+        childPhotoUrl,
+        event,
+        parent,
+      });
     }, 500);
     return () => clearTimeout(id);
-  }, [step, childName, childAge, character, tone, childPhotoUrl, event, parent, order]);
+  }, [step, childName, childAge, theme, character, tone, childPhotoUrl, event, parent, order]);
 
   useEffect(() => {
     if (step !== "preview" || order || createError) return;
     if (orderRequestedRef.current) return;
-    if (!character || !tone) return;
+    if (!theme || !character || !tone) return;
     orderRequestedRef.current = true;
     (async () => {
       try {
@@ -117,6 +140,7 @@ export default function CreateOrderClient() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            theme,
             character,
             dialogueTone: tone,
             childName: childName.trim(),
@@ -179,40 +203,55 @@ export default function CreateOrderClient() {
             if (patch.childName !== undefined) setChildName(patch.childName);
             if (patch.childAge !== undefined) setChildAge(patch.childAge);
           }}
-          onContinue={() => setStep("character")}
-        />
-      );
-
-    case "character":
-      return (
-        <CharacterSelectStep
-          selected={character}
-          onSelect={setCharacter}
-          onBack={() => setStep("childInfo")}
-          onContinue={() => setStep("tone")}
-        />
-      );
-
-    case "tone":
-      if (!character) {
-        setStep("character");
-        return null;
-      }
-      return (
-        <ToneSelectStep
-          character={character}
-          childName={childName}
-          childAge={childAge}
-          selected={tone}
-          onSelect={setTone}
-          onBack={() => setStep("character")}
           onContinue={() => setStep("theme")}
         />
       );
 
     case "theme":
       return (
-        <ThemeSelectStep onBack={() => setStep("tone")} onContinue={() => setStep("photo")} />
+        <ThemeSelectStep
+          selected={theme}
+          onSelect={setTheme}
+          onBack={() => setStep("childInfo")}
+          onContinue={() => setStep("character")}
+        />
+      );
+
+    case "character":
+      if (!theme) {
+        setStep("theme");
+        return null;
+      }
+      return (
+        <CharacterSelectStep
+          theme={theme}
+          selected={character}
+          onSelect={setCharacter}
+          onBack={() => setStep("theme")}
+          onContinue={() => setStep("tone")}
+        />
+      );
+
+    case "tone":
+      if (!theme) {
+        setStep("theme");
+        return null;
+      }
+      if (!character) {
+        setStep("character");
+        return null;
+      }
+      return (
+        <ToneSelectStep
+          theme={theme}
+          character={character}
+          childName={childName}
+          childAge={childAge}
+          selected={tone}
+          onSelect={setTone}
+          onBack={() => setStep("character")}
+          onContinue={() => setStep("photo")}
+        />
       );
 
     case "photo":
@@ -220,7 +259,7 @@ export default function CreateOrderClient() {
         <PhotoUploadStep
           childPhotoUrl={childPhotoUrl}
           onChange={setChildPhotoUrl}
-          onBack={() => setStep("theme")}
+          onBack={() => setStep("tone")}
           onContinue={() => setStep("eventDetails")}
         />
       );
@@ -251,12 +290,21 @@ export default function CreateOrderClient() {
       );
 
     case "preview":
-      if (!character || !tone) {
+      if (!theme) {
+        setStep("theme");
+        return null;
+      }
+      if (!character) {
         setStep("character");
+        return null;
+      }
+      if (!tone) {
+        setStep("tone");
         return null;
       }
       return (
         <PreviewStep
+          theme={theme}
           character={character}
           tone={tone}
           childName={childName}
