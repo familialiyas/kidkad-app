@@ -181,23 +181,23 @@ export const THEME_CONFIG = {
         "alien-01": "/assets/theme/dino/decorations/baby-dino-01.png",
         "alien-02": "/assets/theme/dino/decorations/baby-dino-02.png",
         "alien-03": "/assets/theme/dino/decorations/baby-dino-03.png",
-        asteroid: "/assets/theme/dino/decorations/baby-dino-04.png",
+        asteroid: "/assets/theme/dino/decorations/rocks.png",
         comet: "/assets/theme/dino/decorations/bone.png",
-        "moon-01": "/assets/theme/dino/decorations/rocks.png",
-        "moon-crescent": "/assets/theme/dino/decorations/leaf.png",
-        "planet-01": "/assets/theme/dino/decorations/dino-00.png", // brontosaurus/longneck
-        "planet-02": "/assets/theme/dino/decorations/dino-01.png", // stegosaurus
-        "planet-03": "/assets/theme/dino/decorations/dino-02.png", // pterodactyl
-        "planet-04": "/assets/theme/dino/decorations/dino-03.png", // ankylosaurus
-        "planet-05": "/assets/theme/dino/decorations/dino-04.png", // raptor
-        "planet-06": "/assets/theme/dino/decorations/dino-05.png", // triceratops
-        "planet-07": "/assets/theme/dino/decorations/trees.png",
-        rocket: "/assets/theme/dino/decorations/volcano.png",
-        "star-cluster": "/assets/theme/dino/decorations/footprint.png",
-        star: "/assets/theme/dino/decorations/mushroom.png",
-        sun: "/assets/theme/dino/decorations/egg.png",
-        "ufo-01": "/assets/theme/dino/decorations/baby-dino-05.png",
-        "ufo-02": "/assets/theme/dino/decorations/baby-dino-06.png",
+        "moon-01": "/assets/theme/dino/decorations/egg.png",
+        "moon-crescent": "/assets/theme/dino/decorations/egg-cracked.png",
+        "planet-01": "/assets/theme/dino/decorations/dino-01.png",
+        "planet-02": "/assets/theme/dino/decorations/dino-02.png",
+        "planet-03": "/assets/theme/dino/decorations/dino-03.png",
+        "planet-04": "/assets/theme/dino/decorations/dino-04.png",
+        "planet-05": "/assets/theme/dino/decorations/dino-05.png",
+        "planet-06": "/assets/theme/dino/decorations/dino-06.png",
+        "planet-07": "/assets/theme/dino/decorations/dino-07.png",
+        rocket: "/assets/theme/dino/decorations/trees.png",
+        "star-cluster": "/assets/theme/dino/decorations/mushroom.png",
+        star: "/assets/theme/dino/decorations/footprint.png",
+        sun: "/assets/theme/dino/decorations/volcano.png",
+        "ufo-01": "/assets/theme/dino/decorations/dino-fly-01.png",
+        "ufo-02": "/assets/theme/dino/decorations/dino-fly-02.png",
       },
       // Warm "floating pollen" — same size/opacity feel as space's stars,
       // just recolored.
@@ -208,10 +208,12 @@ export const THEME_CONFIG = {
         opacityMin: 0.4,
         opacityMax: 1,
       },
-      // Consistently warm throughout the scroll (softened from an earlier
-      // pass that went full dark jungle-green at the bottom — that read as
-      // a jarring day-to-night shift rather than one warm daylight scene).
-      skyGradient: "linear-gradient(to top, #5c3a1e 0%, #b3702e 55%, #f4c15f 100%)",
+      // Darkened across the whole scroll (was a much lighter #5c3a1e →
+      // #f4c15f daylight gradient) to match space's dark-background
+      // contrast against decoration art — the bright top stop in
+      // particular was washing out light-colored assets the way space's
+      // deep navy never does.
+      skyGradient: "linear-gradient(to top, #201004 0%, #4a2810 55%, #6b3d16 100%)",
       uiColors: {
         accent: "#e8a33d", // warm amber/gold
         accentLight: "#f5d68a", // soft warm gold

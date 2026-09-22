@@ -4,7 +4,7 @@ Digital birthday invitation game. A parent customizes an invitation for their
 child's party; guests open a link, play a short scroll-driven mini-game to
 reveal party details, and RSVP. The parent gets a dashboard link to see
 responses and edit the invitation. Reference doc for orienting a fresh Claude
-session — last updated 2026-09-21.
+session — last updated 2026-09-22.
 
 ## Stack
 
@@ -188,7 +188,12 @@ in `src/app/invite/[guest_link]/PartyIcons.tsx`, colored via `currentColor`
 — deliberately not raster `<img>` PNGs, since those get auto-inverted/washed
 out by OS-level "force dark mode" on some devices; `DialogueBox`'s `icon`
 prop takes a `ReactNode`, not an image src. Character sprite plays a
-"talking" wiggle while text is typing.
+"talking" wiggle while text is typing. Every real in-game dialogue also
+renders an always-available "×" close button (top-right of the card,
+`onClose` prop) that immediately returns to the free-roam game screen,
+bypassing the typing-aware tap-to-dismiss flow entirely — the one exception
+is `/create`'s `ToneSelectStep.tsx` live tone-preview box, which has no game
+state to close back to and omits the prop.
 
 **Sound effects** (`src/lib/sfx.ts`): 7 SFX (coin collect, gift open, warp,
 dialogue open/close, button tap, RSVP success) plus background music, all
@@ -201,6 +206,15 @@ Mission button (`bg-white/10` + `backdrop-blur-sm` + the shared
 badge, with `SpeakerOnIcon`/`SpeakerOffIcon` (inline SVG in
 `PartyIcons.tsx`, plain white) replacing the old flat-colored
 `icon-sound-on/off.png` assets, which are now unused on disk.
+
+**Top HUD row** (`GameWorld.tsx` + `GameClient.tsx`, gameplay screens only):
+mute toggle (left), coin-count pill (centered — `left-1/2` +
+`-translate-x-1/2`, which needs no frame-aware offset math since the game
+frame is itself viewport-centered), and the menu burger button (right), all
+pinned `top-4` in one row via `position: fixed`. The edge-anchored buttons
+still resolve their offsets against the frame's edges via
+`frameInset()`/`frameWidth()` (`game-constants.ts`); the centered coin pill
+doesn't need those helpers.
 
 **Dialogue tone system** (`src/lib/dialogue-tones.ts`): three tone template
 sets (Excited & Bubbly / Sweet & Gentle / Silly & Funny) with `{token}`
@@ -255,14 +269,20 @@ that manually if needed.
   (`getTheme()` in `src/lib/theme-config.ts`, defaulting to "space" for
   null/unrecognized values): character sprites, decorations, the ambient
   particle layer, and sky gradient are all theme-driven. A second theme,
-  `dino`, is fully built and confirmed rendering correctly this way. What's
-  still missing is any customer-facing way to *choose* a theme — `/create`'s
-  steps (character/tone/preview previews, `ThemeSelectStep.tsx`) and
-  dashboard edit's character/tone selects all still hardcode "space", so a
-  dino invite today only happens by setting an existing order's `template`
-  directly (e.g. via Supabase). Asset inventory, the standardized-canvas
-  decoration system, and what's left to build theme-selection UI are
-  documented in `public/assets/theme/README - Theme.md`.
+  `dino`, is fully built and confirmed rendering correctly this way (its
+  20-slot decoration asset mapping and its warm sky gradient were each
+  revised once after initial build — see the matching table in
+  `public/assets/theme/README - Theme.md` and `theme-config.ts`'s
+  `themes.dino.skyGradient`, darkened from a light daylight gradient to a
+  dark brown one so decoration art reads with the same contrast as space's
+  dark navy background). What's still missing is any customer-facing way to
+  *choose* a theme — `/create`'s steps (character/tone/preview previews,
+  `ThemeSelectStep.tsx`) and dashboard edit's character/tone selects all
+  still hardcode "space", so a dino invite today only happens by setting an
+  existing order's `template` directly (e.g. via Supabase). Asset
+  inventory, the standardized-canvas decoration system, and what's left to
+  build theme-selection UI are documented in
+  `public/assets/theme/README - Theme.md`.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
 - Brand identity not finalized — the "KidKad" text on the `/create` welcome

@@ -275,25 +275,25 @@ source of truth):
 
 | Space slot | Dino asset | Space slot | Dino asset |
 |---|---|---|---|
-| alien-01 (small) | `baby-dino-01.png` | planet-01 (landmark) | `dino-00.png` (brontosaurus) |
-| alien-02 (small) | `baby-dino-02.png` | planet-02 (small) | `dino-01.png` (stegosaurus) |
-| alien-03 (small) | `baby-dino-03.png` | planet-03 (small) | `dino-02.png` (pterodactyl) |
-| asteroid (small) | `baby-dino-04.png` | planet-04 (landmark) | `dino-03.png` (ankylosaurus) |
-| comet (small) | `bone.png` | planet-05 (landmark) | `dino-04.png` (raptor) |
-| moon-01 (small) | `rocks.png` | planet-06 (small) | `dino-05.png` (triceratops) |
-| moon-crescent (small) | `leaf.png` | planet-07 (small) | `trees.png` |
-| rocket (landmark) | `volcano.png` | star-cluster (small) | `footprint.png` |
-| star (small) | `mushroom.png` | ufo-01 (small) | `baby-dino-05.png` |
-| sun (landmark) | `egg.png` | ufo-02 (small) | `baby-dino-06.png` |
+| alien-01 (small) | `baby-dino-01.png` | planet-01 (landmark) | `dino-01.png` |
+| alien-02 (small) | `baby-dino-02.png` | planet-02 (small) | `dino-02.png` |
+| alien-03 (small) | `baby-dino-03.png` | planet-03 (small) | `dino-03.png` |
+| asteroid (small) | `rocks.png` | planet-04 (landmark) | `dino-04.png` |
+| comet (small) | `bone.png` | planet-05 (landmark) | `dino-05.png` |
+| moon-01 (small) | `egg.png` | planet-06 (small) | `dino-06.png` |
+| moon-crescent (small) | `egg-cracked.png` | planet-07 (small) | `dino-07.png` |
+| rocket (landmark) | `trees.png` | star-cluster (small) | `mushroom.png` |
+| star (small) | `footprint.png` | ufo-01 (small) | `dino-fly-01.png` |
+| sun (landmark) | `volcano.png` | ufo-02 (small) | `dino-fly-02.png` |
 
-Note this table doesn't preserve space's landmark/small tiering by
-role — e.g. `planet-02`/`planet-03` (space's small tier) map to dino's
-stegosaurus/pterodactyl, while `planet-06` (also small) maps to the
-triceratops. The 5 large/landmark slots (`rocket`, `sun`, `planet-01`,
-`planet-04`, `planet-05`) still get 1–2 instances each at ~150–220px
-regardless of which dino asset fills them, per `DECORATION_SLOTS` — a
-slot's tier/size/frequency is fixed by the slot itself, not by whichever
-asset currently occupies it.
+This table replaces an earlier mapping (which reused `baby-dino-04/05/06.png`,
+`dino-00.png`, `leaf.png` for several slots) — those files were swapped out
+for a fuller asset set (`dino-01` through `dino-07`, `dino-fly-01/02`,
+`egg-cracked.png`) and the mapping was redone accordingly. The 5
+large/landmark slots (`rocket`, `sun`, `planet-01`, `planet-04`, `planet-05`)
+still get 1–2 instances each at ~150–220px regardless of which dino asset
+fills them, per `DECORATION_SLOTS` — a slot's tier/size/frequency is fixed by
+the slot itself, not by whichever asset currently occupies it.
 
 **Particles:** warm "floating pollen", `#ffe9b3`, same size/opacity range as
 space's stars (1–3px, 0.4–1 opacity) — just recolored.
