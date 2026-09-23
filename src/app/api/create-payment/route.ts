@@ -4,13 +4,10 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 const CREATE_BILL_URL = "https://toyyibpay.com/index.php/api/createBill";
 // toyyibPay callbacks/returns can't reach localhost, so this is pinned to
 // the deployed production URL rather than derived from the request host.
-// TEMPORARY: pinned back to koolkad.vercel.app — birthday.koolkad.com was
-// meant to become primary here, but its DNS record isn't resolving yet
-// (confirmed NXDOMAIN via two independent resolvers as of this change), so
-// pointing toyyibPay's callback at it would silently break payment
-// confirmation for real customers. Switch back to
-// "https://birthday.koolkad.com" once that record actually resolves.
-const SITE_URL = "https://koolkad.vercel.app";
+// koolkad.vercel.app and kidkad.vercel.app remain active as secondary
+// domains for old links, but this must point at the primary domain so
+// toyyibPay's callback lands somewhere real customers actually use.
+const SITE_URL = "https://birthday.koolkad.com";
 const BILL_AMOUNT_CENTS = 1990; // RM19.90
 
 // billName/billDescription are restricted to alphanumeric, space and
