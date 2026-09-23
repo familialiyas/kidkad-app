@@ -167,7 +167,7 @@ export default function EventDetailsStep({
               className={darkInputClass}
               value={fields.dressCode}
               onChange={(e) => onChange({ dressCode: e.target.value })}
-              placeholder="e.g. Casual, Black & White, Space"
+              placeholder="e.g. Casual, Bright Colors, Something Comfy"
             />
           </label>
           <FieldError message={errors.dressCode} />
