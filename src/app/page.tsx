@@ -79,8 +79,8 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative mx-auto max-w-3xl px-4 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
-        <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] sm:text-7xl">
-          Kool<span className="text-wizard-accent">Kad</span>
+        <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(249,115,22,0.6)] sm:text-7xl">
+          <span className="text-wizard-accent">Kool</span>Kad
         </h1>
         <p className="font-display text-wizard-accent-light mt-4 text-xl font-bold sm:text-2xl">
           Your Birthday Invite, Leveled Up.

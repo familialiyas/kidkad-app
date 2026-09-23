@@ -14,8 +14,8 @@ export default function WelcomeStep({ onStart }: { onStart: () => void }) {
             navy/cyan palette this comment used to also flag as pending is
             resolved now: wizard chrome is the fixed warm-neutral palette
             below). */}
-        <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(255,255,255,0.6)]">
-          Kool<span className="text-wizard-accent">Kad</span>
+        <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(249,115,22,0.6)]">
+          <span className="text-wizard-accent">Kool</span>Kad
         </h1>
         <p className="font-display text-wizard-accent-light mt-4 max-w-xs text-lg font-bold">
           give your birthday invite main character energy

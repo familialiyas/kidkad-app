@@ -37,28 +37,26 @@
 }
 
 @theme {
-  /* /create wizard chrome — a fixed neutral-charcoal + white/off-white
-     palette for the customization form's own UI (page/panel backgrounds,
-     buttons, input borders, step indicators, headings, pill styling).
-     Deliberately NOT the --ui-* theme colors above: those are per-order
-     (space/dino/...) and drive the actual product preview (DialogueBox,
-     character art); this palette is the wizard's own fixed chrome and
-     must never vary by theme, the same way the previous cyan/navy,
-     warm-amber, and purple brand palettes didn't. Went monochrome after
-     purple didn't land right; pure white carries the primary emphasis
-     (buttons, selected borders, headings) while accent-light is a
-     slightly dimmer gray-white for secondary/muted UI (outline button
-     text, small print), mirroring how "light" was a softer tint in the
-     earlier hued palettes. Used via Tailwind utilities generated from
-     these tokens (bg-wizard-bg, text-wizard-accent, border-wizard-border/40,
-     etc.) — see /create, /create/success. */
+  /* /create wizard chrome — a fixed neutral-charcoal + orange palette for
+     the customization form's own UI (page/panel backgrounds, buttons,
+     input borders, step indicators, headings, pill styling). Deliberately
+     NOT the --ui-* theme colors above: those are per-order (space/dino/...)
+     and drive the actual product preview (DialogueBox, character art);
+     this palette is the wizard's own fixed chrome and must never vary by
+     theme, the same way the previous cyan/navy, warm-amber, purple, and
+     monochrome-white brand palettes didn't. Back to a hued accent after
+     white didn't land right — orange-500/300/100 (accent/accent-light/
+     accent-pale), the same lighter-tint-for-secondary-UI pattern the
+     amber and purple palettes used. Used via Tailwind utilities generated
+     from these tokens (bg-wizard-bg, text-wizard-accent,
+     border-wizard-border/40, etc.) — see /create, /create/success. */
   --color-wizard-bg: #18181b;
   --color-wizard-panel: #232326;
   --color-wizard-panel-deep: #1c1c1f;
   --color-wizard-border: #3f3f46;
-  --color-wizard-accent: #ffffff;
-  --color-wizard-accent-light: #e4e4e7;
-  --color-wizard-accent-pale: #f4f4f5;
+  --color-wizard-accent: #f97316;
+  --color-wizard-accent-light: #fdba74;
+  --color-wizard-accent-pale: #ffedd5;
   --color-wizard-text: #f4f4f5;
   --color-wizard-text-muted: #a1a1aa;
   --color-wizard-locked: #3f3f46;
