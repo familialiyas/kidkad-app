@@ -28,21 +28,47 @@ session — last updated 2026-09-23.
 
 ## Routes
 
-- `/` — scaffold default, not customized yet
+- `/` — the real marketing landing page (v2, dark charcoal + orange wizard
+  chrome). Hero fits one viewport with no scroll: wordmark, a headline word
+  that rotates through Leveled Up/Gamified/More Fun/Entertaining on a fade
+  (`landing/RotatingWord.tsx`), and a phone-mockup frame crossfading through
+  5 real screenshots captured from the live app
+  (`landing/PhoneMockupCarousel.tsx`, assets in `public/assets/landing/hero/`
+  — title screen, a coin dialogue, the gift-open moment, the RSVP form, the
+  dashboard), plus a single glowing "Create Yours Now" CTA. Below the fold:
+  a theme-showcase grid (space/dino/ocean cards tinted with each theme's own
+  `uiColors.accentRgb` so they visually pop against the charcoal, plus a
+  desaturated locked "more worlds coming soon" 4th card) and a 5-step "How
+  It Works" list with icon badges (`landing/LandingIcons.tsx`, same inline-
+  SVG language as the game's `PartyIcons.tsx`). See "Wizard chrome palette"
+  below for the color system this and `/create` share.
 - `/create` — the customization form (parent-facing, pre-payment). Nine
-  steps: Welcome → Meet Your Star (name+age) → Pick Your Character → Pick A
-  Voice (tone) → Pick A Theme → Add A Photo (with crop) → Share Your Party
-  Details → Share Your Details (parent info) → Review/submit. Dark
-  space-themed throughout, no plain-white steps.
+  steps: Welcome (KoolKad wordmark — "Kool" in accent orange, "Kad" in
+  white — plus a secondary tagline) → Meet Your Star (name+age) → Pick A
+  Theme → Pick Your Character → Pick A Voice (tone) → Add A Photo (with
+  crop) → Share Your Party Details → Share Your Details (parent info) →
+  Review/submit. Theme selection now happens right after name/age, before
+  character/tone (see "Multi-theme support" below for why). Dark
+  wizard-chrome throughout, no plain-white steps. Party date and RSVP
+  deadline inputs both reject past dates (`min` set to today's local date,
+  plus matching validation on submit).
 - `/create/success/[order_token]` — post-submit landing page. Leads with
-  copyable guest/admin links ("Your invitation is ready!"), full field dump
-  collapsed below for verification. Payment isn't wired up, so this link is
-  live immediately — framed honestly as such in the copy.
+  copyable guest/admin links ("Your invitation is ready!"), each with both
+  an "Open link" and a "Copy link" button, full field dump collapsed below
+  for verification. Payment is fully wired up (see "Payment integration"
+  below) — this page shows the links once `payment_status` is `"paid"`, and
+  a polling "waiting on payment" panel otherwise.
 - `/invite/[guest_link]` — the guest-facing game (title → opening dialogue
   → 3 coin dialogues → mission-complete ceremony → reward gift → RSVP →
   "You're in!" return-visit screen). Renders whichever of the three themes
   (space/dino/ocean) the order's `template` column names — see "Multi-theme
-  support" below.
+  support" below. The opening dialogue shows a one-time "scroll down to
+  explore and collect coins!" hint (a muted pill badge with a bouncing
+  chevron, visually subordinate to the primary "Tap anywhere to continue"
+  line) so first-time players know scrolling, not tapping, moves the world.
+  Each theme plays its own background music track (`ThemeAssets.
+  backgroundMusicSrc`, `public/assets/theme/<name>/audio/<name>-bgm.mp3`),
+  not one shared track.
 - `/dashboard/[admin_link]` — RSVP list + CSV export, plus a collapsible
   "Edit invitation details" section covering every editable order field.
   Locked (UI + server-side) once today's date is past `party_date`.
@@ -226,22 +252,25 @@ lines — fully wired into the guest game for opening + mission-complete
 (the coin dialogues themselves still use their own hardcoded phrasing, not
 these per-tone templates — a known inconsistency, not yet asked to be
 changed), plus 3 sample personal-message strings per tone used by the
-`/create` form's shuffle-suggestion button.
+`/create` form's shuffle-suggestion button — written in a genuine young
+child's voice (e.g. "I can't wait to see you at my party, it's going to be
+SO fun!!"), not the adult wry/meme-style phrasing an earlier pass used.
 
-**Customization form** (`/create`, 9-step version): Welcome (placeholder
-text wordmark — see Known gaps) → child name/age → character select
-(stacked rows with headshot crops of the sprites + a locked "more coming
-soon" slot) → tone select (live `DialogueBox` preview using the real
-child's name/age) → theme picker (stacked cards, space live + 1 locked) →
-photo upload (round crop via `react-easy-crop` before upload — the cropped
-square is what actually gets stored, matching the circular frame used
-throughout the game) → event details (venue/date/time/dress-code/RSVP
-deadline/personal message, full inline validation) → parent details
-(name/email with on-blur validation/WhatsApp) → review/submit. Submits to
-`/api/orders`, which generates `order_token`/`guest_link`/`admin_link`
-(`src/lib/tokens.ts`, crypto-random, no external package) and inserts the
-draft row. Photo upload goes through `/api/upload` to the `child-photos`
-Storage bucket.
+**Customization form** (`/create`, 9-step version): Welcome (styled text
+wordmark — see Known gaps) → child name/age → theme picker (stacked cards,
+all three of space/dino/ocean live and selectable, no locked entries) →
+character select (stacked rows with headshot crops of the selected theme's
+sprites + a locked "more coming soon" slot) → tone select (live
+`DialogueBox` preview using the real child's name/age, themed to the
+selected theme) → photo upload (round crop via `react-easy-crop` before
+upload — the cropped square is what actually gets stored, matching the
+circular frame used throughout the game) → event details (venue/date/
+time/dress-code/RSVP deadline/personal message, full inline validation,
+backdating blocked) → parent details (name/email with on-blur
+validation/WhatsApp) → review/submit. Submits to `/api/orders`, which
+generates `order_token`/`guest_link`/`admin_link` (`src/lib/tokens.ts`,
+crypto-random, no external package) and inserts the draft row. Photo
+upload goes through `/api/upload` to the `child-photos` Storage bucket.
 
 **Dashboard** (`/dashboard/[admin_link]`): RSVP table + CSV export (plain,
 practical styling — Nunito, light background, intentionally not
@@ -255,11 +284,52 @@ has passed — checked server-side, not just hidden in the UI. No
 notify-guests-on-edit system exists or was requested; the host handles
 that manually if needed.
 
+**Payment integration** (ToyyibPay, `src/app/api/create-payment/route.ts` +
+`src/app/api/toyyibpay-callback/route.ts`): fully wired up and confirmed
+working end-to-end with a real payment. `POST /api/create-payment` (called
+from `/create`'s review step, and from the in-game menu for an
+already-created-but-unpaid order) creates a bill via ToyyibPay's API and
+returns a `billCode`; the client redirects to `https://toyyibpay.com/
+{billCode}`. `billReturnUrl` (where the payer lands after paying) and
+`billCallbackUrl` (the server-to-server webhook that actually flips
+`payment_status`) are both built from a single hardcoded `SITE_URL`
+constant — pinned to the deployed production URL, not derived from the
+request host, since ToyyibPay can't reach localhost. The callback route
+verifies ToyyibPay's MD5 hash before trusting the payload, writes
+`payment_status` to `"paid"`/`"failed"` accordingly (a `"2"` pending status
+gets no write — the order stays `"draft"` until a final callback arrives),
+and always returns 200 so ToyyibPay doesn't retry forever against an
+already-broken write. `billName` is `"KoolKad Invitation"`.
+
+**Domain**: production is `https://birthday.koolkad.com` (Vercel domain,
+DNS delegated to Cloudflare for `koolkad.com`). `koolkad.vercel.app` and
+`kidkad.vercel.app` remain active as secondary domains at the Vercel
+dashboard level (the latter 307-redirects to the former) so old links keep
+working — `SITE_URL` above only ever points at the one primary domain,
+never a secondary one, since ToyyibPay's callback needs a single stable
+target.
+
+**Rebrand**: the product is "KoolKad", not "KidKad" — renamed everywhere
+that matters: user-visible copy (wordmark, watermark, WhatsApp share text,
+ToyyibPay bill name), `package.json`'s name, localStorage keys (audio mute,
+create-draft, RSVP cache), ICS calendar branding, server log prefixes, and
+docs. The GitHub repo itself is still `familialiyas/kidkad-app` (not
+renamed) and `koolkad.vercel.app`/`kidkad.vercel.app` secondary-domain
+references were deliberately left alone since those are real, still-active
+infrastructure, not stale branding text.
+
+**Wizard chrome palette** (`globals.css`'s `--color-wizard-*` tokens,
+`@theme` block): a fixed neutral-charcoal base (`#18181b` bg, `#232326`
+panel) that both `/create` and `/` share, independent of any order's own
+theme colors. The accent color has been revised several times — cyan/navy
+→ warm amber (dropped for sitting too close to the dino theme's own
+palette) → violet-magenta → purple → monochrome white → **orange
+(`#f97316`/`#fdba74`/`#ffedd5`)**, the current and (for now) final choice.
+Applies to buttons, selected-state borders, headings, and the active step
+label across every `/create` step and `/`.
+
 ## Known gaps / not yet built
 
-- Payment flow (Toyyibpay integration) — `payment_status` column exists,
-  nothing sets it to `"paid"` yet. The `/create/success` page's copy is
-  written to be honest about this (no false promise of a payment step).
 - Any email sending (Resend was mentioned as a placeholder in
   `src/app/api/rsvp/route.ts`'s RSVP-notification `console.log` — not
   wired up for real). Spec for the eventual post-payment email: guest link
@@ -288,13 +358,26 @@ that manually if needed.
   documented in `public/assets/theme/README - Theme.md`.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
-- Brand name finalized as "KoolKad" (rebranded from KidKad); the `/create`
-  welcome screen still uses a placeholder text wordmark (no logo asset yet).
+- No real logo asset — the wordmark on `/create`'s welcome screen and on
+  `/` is still styled text ("Kool" in accent orange + "Kad" in white), not
+  an image/SVG logo.
 - Coin dialogues (date/time, venue, dress code) still use their own
   hardcoded phrasing rather than the `DIALOGUE_TONES` per-tone templates —
   only the opening and mission-complete lines are tone-driven so far.
 - Custom date/time picker — the `/create` and dashboard-edit date/time
-  fields use plain native `<input type="date"/"time">`. A request to add
+  fields use plain native `<input type="date"/"time">` (`min` now set to
+  today's date to block backdating, see "Routes" above). A request to add
   an in-popup "OK" confirm button was scoped down to the minimum fallback
   (native pickers already auto-close on selection) since a real custom
   picker component was out of scope for that pass.
+- `/`'s hero phone-mockup screenshots (`public/assets/landing/hero/
+  screenshot-{1..5}.png`) are static images captured once from a live dev
+  session, not live-rendered — if the game's UI, wizard-chrome palette, or
+  wordmark changes again, these will silently go stale and need re-
+  capturing manually (see the landing-page-v2 commit for the capture
+  script and the guest_link/admin_link test orders used). Two of the three
+  sample orders used were draft/unpaid test orders; capturing them without
+  the "KoolKad Preview" watermark required temporarily hardcoding
+  `GameClient.tsx`'s `showWatermark`/`isPreview` to `false` for that one
+  local session, then fully reverting before committing — worth knowing if
+  a future re-capture needs the same trick.
