@@ -37,28 +37,28 @@
 }
 
 @theme {
-  /* /create wizard chrome — a fixed warm-neutral palette for the
-     customization form's own UI (page/panel backgrounds, buttons, input
-     borders, step indicators, headings, pill styling). Deliberately NOT
-     the --ui-* theme colors above: those are per-order (space/dino/...)
-     and drive the actual product preview (DialogueBox, character art);
-     this palette is the wizard's own fixed chrome and must never vary by
-     theme, the same way the previous cyan/navy brand palette didn't.
-     Replaces that cyan/navy palette because cyan reads oddly next to a
-     warm-toned theme preview (e.g. dino) sitting right next to it now
-     that theme selection happens up front in the flow. Used via Tailwind
+  /* /create wizard chrome — a fixed neutral-charcoal + purple palette
+     for the customization form's own UI (page/panel backgrounds,
+     buttons, input borders, step indicators, headings, pill styling).
+     Deliberately NOT the --ui-* theme colors above: those are per-order
+     (space/dino/...) and drive the actual product preview (DialogueBox,
+     character art); this palette is the wizard's own fixed chrome and
+     must never vary by theme, the same way the previous cyan/navy and
+     warm-amber brand palettes didn't. Replaces the warm-amber palette
+     because amber sat too close to the dino theme's own palette when
+     shown side-by-side in the theme-picker step. Used via Tailwind
      utilities generated from these tokens (bg-wizard-bg, text-wizard-accent,
      border-wizard-border/40, etc.) — see /create, /create/success. */
-  --color-wizard-bg: #1a1614;
-  --color-wizard-panel: #242019;
-  --color-wizard-panel-deep: #1e1a16;
-  --color-wizard-border: #3d342c;
-  --color-wizard-accent: #e0a83e;
-  --color-wizard-accent-light: #f0c674;
-  --color-wizard-accent-pale: #faedd1;
-  --color-wizard-text: #f5f0ea;
-  --color-wizard-text-muted: #a89a8c;
-  --color-wizard-locked: #4a423a;
+  --color-wizard-bg: #18181b;
+  --color-wizard-panel: #232326;
+  --color-wizard-panel-deep: #1c1c1f;
+  --color-wizard-border: #3f3f46;
+  --color-wizard-accent: #9333ea;
+  --color-wizard-accent-light: #c084fc;
+  --color-wizard-accent-pale: #e9d5ff;
+  --color-wizard-text: #f4f4f5;
+  --color-wizard-text-muted: #a1a1aa;
+  --color-wizard-locked: #3f3f46;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -64,7 +64,7 @@ export default function ThemeSelectStep({
               }}
               className={`flex items-center gap-4 rounded-2xl border-4 p-4 text-left transition-all duration-200 ${
                 isSelected
-                  ? "border-wizard-accent bg-wizard-accent/10 shadow-[0_0_24px_4px_rgba(224,168,62,0.35)]"
+                  ? "border-wizard-accent bg-wizard-accent/10 shadow-[0_0_24px_4px_rgba(147,51,234,0.35)]"
                   : "border-wizard-border bg-wizard-panel/40"
               }`}
             >

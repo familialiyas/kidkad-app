@@ -9,9 +9,9 @@ import { generateStars, type ParticleConfig } from "@/lib/starfield";
 // /create had no theme-picker UI and space was the only real option; now
 // that theme selection is a real step in the flow, tying the wizard's own
 // background to one specific theme no longer makes sense.
-const WIZARD_BG = "#1a1614";
+const WIZARD_BG = "#18181b";
 const NEUTRAL_PARTICLES: ParticleConfig = {
-  color: "#a89a8c",
+  color: "#a1a1aa",
   sizeMin: 1,
   sizeMax: 3,
   opacityMin: 0.2,
