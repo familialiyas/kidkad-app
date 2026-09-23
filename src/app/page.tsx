@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { THEME_CONFIG, type ThemeName } from "@/lib/theme-config";
 import StarfieldBackground from "./create/StarfieldBackground";
+import RotatingWord from "./landing/RotatingWord";
+import PhoneMockupCarousel from "./landing/PhoneMockupCarousel";
+import { GlobeIcon, EditIcon, SendIcon, CompassIcon, ChartIcon } from "./landing/LandingIcons";
 
-const ctaButtonClass =
+const heroCtaClass =
+  "font-display bg-wizard-accent text-wizard-bg hover:bg-wizard-accent-light inline-block rounded-full px-10 py-4 text-lg font-bold shadow-[0_0_45px_rgba(249,115,22,0.65)] transition active:scale-95 sm:px-12 sm:py-5 sm:text-xl";
+const ctaClass =
   "font-display bg-wizard-accent text-wizard-bg hover:bg-wizard-accent-light inline-block rounded-full px-10 py-4 text-lg font-bold shadow-lg transition active:scale-95";
 
 // Same copy as ThemeSelectStep.tsx's theme-picker cards — kept in sync
@@ -50,23 +55,28 @@ const THEME_SHOWCASE: {
 
 const HOW_IT_WORKS = [
   {
+    Icon: GlobeIcon,
     title: "Pick your world",
     description: "Space, dino, or ocean — you choose the vibe.",
   },
   {
+    Icon: EditIcon,
     title: "Make it yours",
     description: "Add the birthday deets, pick a voice, upload a pic. Done in minutes.",
   },
   {
+    Icon: SendIcon,
     title: "Send the mission",
     description: "One link. Drop it in the group chat and let the countdown begin.",
   },
   {
+    Icon: CompassIcon,
     title: "Guests go on an adventure",
     description:
       "They scroll, collect coins, and unlock your party details like it's a mini game — not just another boring invite.",
   },
   {
+    Icon: ChartIcon,
     title: "Watch the RSVPs roll in",
     description: "Track who's coming, right from your own dashboard.",
   },
@@ -74,24 +84,27 @@ const HOW_IT_WORKS = [
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen">
+    <div className="relative">
       <StarfieldBackground seed="koolkad-landing" />
 
-      {/* HERO */}
-      <section className="relative mx-auto max-w-3xl px-4 pt-16 pb-12 text-center sm:pt-24 sm:pb-16">
-        <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(249,115,22,0.6)] sm:text-7xl">
+      {/* HERO — fits one viewport, no scroll needed */}
+      <section className="relative flex h-screen flex-col items-center justify-center gap-3 overflow-hidden px-4 text-center sm:gap-5">
+        <h1 className="font-display text-wizard-text text-3xl font-bold tracking-wide drop-shadow-[0_0_16px_rgba(249,115,22,0.5)] sm:text-5xl">
           <span className="text-wizard-accent">Kool</span>Kad
         </h1>
-        <p className="font-display text-wizard-accent-light mt-4 text-xl font-bold sm:text-2xl">
-          Your Birthday Invite, Leveled Up.
-        </p>
-        <Link href="/create" className={`${ctaButtonClass} mt-8`}>
-          Create Yours
+        <h2 className="font-display text-wizard-text max-w-xs text-xl font-bold sm:max-w-xl sm:text-3xl">
+          Your Birthday Invite, <RotatingWord />.
+        </h2>
+
+        <PhoneMockupCarousel />
+
+        <Link href="/create" className={heroCtaClass}>
+          Create Yours Now
         </Link>
       </section>
 
       {/* THEME SHOWCASE */}
-      <section className="relative mx-auto max-w-5xl px-4 py-12 sm:py-16">
+      <section className="relative mx-auto max-w-5xl px-4 py-16 sm:py-20">
         <h2 className="font-display text-wizard-text text-center text-2xl font-bold sm:text-3xl">
           Pick Your World
         </h2>
@@ -99,44 +112,52 @@ export default function Home() {
           Every invitation is a mini adventure, themed your way.
         </p>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {THEME_SHOWCASE.map((t) => (
-            <div
-              key={t.key}
-              className="border-wizard-border bg-wizard-panel/40 flex flex-col rounded-2xl border-4 p-4"
-            >
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {THEME_SHOWCASE.map((t) => {
+            const rgb = THEME_CONFIG.themes[t.key].uiColors.accentRgb;
+            return (
               <div
-                className="relative flex h-40 items-end justify-center overflow-hidden rounded-xl"
-                style={{ background: THEME_CONFIG.themes[t.key].skyGradient }}
+                key={t.key}
+                className="relative flex flex-col overflow-hidden rounded-3xl border-2 p-5"
+                style={{
+                  borderColor: `rgb(${rgb} / 0.35)`,
+                  background: `linear-gradient(160deg, rgb(${rgb} / 0.18), var(--color-wizard-panel) 65%)`,
+                  boxShadow: `0 16px 44px -18px rgb(${rgb} / 0.6)`,
+                }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={t.decorations[0]}
-                  alt=""
-                  className="absolute top-3 left-3 h-10 w-10 object-contain opacity-90"
-                  draggable={false}
-                />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={t.decorations[1]}
-                  alt=""
-                  className="absolute top-4 right-3 h-9 w-9 object-contain opacity-90"
-                  draggable={false}
-                />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={t.character}
-                  alt=""
-                  className="relative h-32 w-32 object-contain object-bottom"
-                  draggable={false}
-                />
+                <div
+                  className="relative flex h-44 items-end justify-center overflow-hidden rounded-2xl"
+                  style={{ background: THEME_CONFIG.themes[t.key].skyGradient }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={t.decorations[0]}
+                    alt=""
+                    className="absolute top-3 left-3 h-11 w-11 object-contain opacity-90"
+                    draggable={false}
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={t.decorations[1]}
+                    alt=""
+                    className="absolute top-4 right-3 h-10 w-10 object-contain opacity-90"
+                    draggable={false}
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={t.character}
+                    alt=""
+                    className="relative h-36 w-36 object-contain object-bottom"
+                    draggable={false}
+                  />
+                </div>
+                <p className="font-display text-wizard-text mt-4 text-lg font-bold">{t.label}</p>
+                <p className="font-body text-wizard-text-muted text-sm">{t.subtitle}</p>
               </div>
-              <p className="font-display text-wizard-text mt-3 text-base font-bold">{t.label}</p>
-              <p className="font-body text-wizard-text-muted text-xs">{t.subtitle}</p>
-            </div>
-          ))}
+            );
+          })}
 
-          <div className="border-wizard-locked bg-wizard-locked/20 flex flex-col items-center justify-center gap-2 rounded-2xl border-4 p-4 text-center opacity-60">
+          <div className="border-wizard-locked bg-wizard-locked/20 flex flex-col items-center justify-center gap-2 rounded-3xl border-2 p-5 text-center opacity-60 grayscale">
             <span className="bg-wizard-locked h-16 w-16 shrink-0 rounded-full" aria-hidden />
             <p className="font-display text-wizard-text-muted text-base font-bold">
               More worlds coming soon
@@ -149,23 +170,23 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="relative mx-auto max-w-2xl px-4 py-12 sm:py-16">
+      <section className="relative mx-auto max-w-2xl px-4 py-16 sm:py-20">
         <h2 className="font-display text-wizard-text text-center text-2xl font-bold sm:text-3xl">
           How It Works
         </h2>
 
-        <ol className="mt-8 flex flex-col gap-4">
-          {HOW_IT_WORKS.map((step, i) => (
+        <ol className="mt-10 flex flex-col gap-5">
+          {HOW_IT_WORKS.map((step) => (
             <li
               key={step.title}
-              className="border-wizard-border bg-wizard-panel/40 flex gap-4 rounded-2xl border-4 p-4"
+              className="border-wizard-border bg-wizard-panel/60 flex items-start gap-4 rounded-3xl border-2 p-6 shadow-[0_10px_35px_-15px_rgba(0,0,0,0.7)]"
             >
-              <span className="font-display bg-wizard-accent text-wizard-bg flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-base font-bold">
-                {i + 1}
+              <span className="bg-wizard-accent/15 text-wizard-accent flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl">
+                <step.Icon className="h-6 w-6" />
               </span>
               <div>
-                <p className="font-display text-wizard-text text-base font-bold">{step.title}</p>
-                <p className="font-body text-wizard-text-muted mt-1 text-sm">
+                <p className="font-display text-wizard-text text-lg font-bold">{step.title}</p>
+                <p className="font-body text-wizard-text-muted mt-1 text-sm leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -179,8 +200,8 @@ export default function Home() {
         <h2 className="font-display text-wizard-text text-2xl font-bold sm:text-3xl">
           Ready to level up your invite?
         </h2>
-        <Link href="/create" className={`${ctaButtonClass} mt-6`}>
-          Create Yours
+        <Link href="/create" className={`${ctaClass} mt-6`}>
+          Create Yours Now
         </Link>
       </section>
     </div>
