@@ -1,27 +1,36 @@
 "use client";
 
 import { useMemo } from "react";
-import { generateStars } from "@/lib/starfield";
-import { THEME_CONFIG } from "@/lib/theme-config";
+import { generateStars, type ParticleConfig } from "@/lib/starfield";
+
+// Wizard-chrome page background — fixed, not theme-derived (see the
+// "wizard chrome" palette block in globals.css). Previously this hardcoded
+// THEME_CONFIG.themes.space's sky gradient and particle color, back when
+// /create had no theme-picker UI and space was the only real option; now
+// that theme selection is a real step in the flow, tying the wizard's own
+// background to one specific theme no longer makes sense.
+const WIZARD_BG = "#1a1614";
+const NEUTRAL_PARTICLES: ParticleConfig = {
+  color: "#a89a8c",
+  sizeMin: 1,
+  sizeMax: 3,
+  opacityMin: 0.2,
+  opacityMax: 0.5,
+};
 
 /**
- * A static (non-scrolling) version of the game's parallax star field, for
- * full-viewport steps in the customization form that have no guest_link yet
- * to seed against — a fixed seed is fine here since the pattern doesn't need
- * to vary per order the way the guest-facing game's does.
- *
- * Hardcoded to the "space" theme, sourced from THEME_CONFIG rather than a
- * separate literal gradient/color — /create has no theme-picker UI yet, so
- * this has nothing else to read from.
+ * A static (non-scrolling) ambient dot field for full-viewport steps in the
+ * customization form that have no guest_link yet to seed against — a fixed
+ * seed is fine here since the pattern doesn't need to vary per order the
+ * way the guest-facing game's does.
  */
 export default function StarfieldBackground({ seed = "kidkad-create-form" }: { seed?: string }) {
-  const { particles, skyGradient } = THEME_CONFIG.themes.space;
-  const stars = useMemo(() => generateStars(seed, 900, particles), [seed, particles]);
+  const stars = useMemo(() => generateStars(seed, 900, NEUTRAL_PARTICLES), [seed]);
 
   return (
     <div
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
-      style={{ background: skyGradient }}
+      style={{ background: WIZARD_BG }}
       aria-hidden
     >
       {stars.map((star) => (
@@ -34,7 +43,7 @@ export default function StarfieldBackground({ seed = "kidkad-create-form" }: { s
             width: star.size,
             height: star.size,
             opacity: star.opacity,
-            backgroundColor: particles.color,
+            backgroundColor: NEUTRAL_PARTICLES.color,
           }}
         />
       ))}

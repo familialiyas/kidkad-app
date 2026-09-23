@@ -9,13 +9,15 @@ export default function WelcomeStep({ onStart }: { onStart: () => void }) {
       <StarfieldBackground />
 
       <div>
-        {/* Placeholder text wordmark until a real logo asset exists. The
-            navy/cyan palette isn't finalized either — both are known
-            pending items, tracked in PROJECT_STATUS.md. */}
-        <h1 className="font-display text-5xl font-bold tracking-wide text-white drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]">
-          Kid<span className="text-cyan-400">Kad</span>
+        {/* Placeholder text wordmark until a real logo asset exists — still
+            a known pending item, tracked in PROJECT_STATUS.md (the
+            navy/cyan palette this comment used to also flag as pending is
+            resolved now: wizard chrome is the fixed warm-neutral palette
+            below). */}
+        <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(224,168,62,0.6)]">
+          Kid<span className="text-wizard-accent">Kad</span>
         </h1>
-        <p className="font-display mt-4 max-w-xs text-lg font-bold text-cyan-300">
+        <p className="font-display text-wizard-accent-light mt-4 max-w-xs text-lg font-bold">
           give your birthday invite main character energy
         </p>
       </div>

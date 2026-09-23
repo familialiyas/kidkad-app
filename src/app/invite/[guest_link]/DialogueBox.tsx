@@ -5,6 +5,7 @@ import { playSfx } from "@/lib/sfx";
 import { DialogueSegment, segmentsFullLength, sliceSegments } from "@/lib/typewriter";
 import { themeUiStyle, type ThemeAssets } from "@/lib/theme-config";
 import { frameInset, frameWidth } from "@/lib/game-constants";
+import { ChevronDownIcon } from "./PartyIcons";
 
 const GAP = 20; // space between the character's head and the box (room for the tail)
 const BOTTOM_MARGIN = 12; // minimum distance from the bottom viewport edge
@@ -28,6 +29,7 @@ export default function DialogueBox({
   onClose,
   onTalkingChange,
   anchorY,
+  scrollHint = false,
 }: {
   photoUrl: string | null;
   name: string;
@@ -55,6 +57,13 @@ export default function DialogueBox({
   onTalkingChange?: (talking: boolean) => void;
   /** Viewport-relative Y coordinate of the character's head — the box floats just above this, tail pointing down at it. */
   anchorY: number;
+  /** Adds a bouncing-chevron "scroll down to explore" cue below "Tap
+   * anywhere to continue" — a one-time game-mechanic hint (confirmed
+   * real-world confusion: a first-time player didn't realize scrolling,
+   * not tapping, is how you move) for the opening dialogue only, not
+   * theme-specific content. Ignored when onTapDismiss isn't set, since
+   * there's no "tap anywhere to continue" line for it to sit under. */
+  scrollHint?: boolean;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [boxHeight, setBoxHeight] = useState<number | null>(null);
@@ -256,9 +265,26 @@ export default function DialogueBox({
               )}
             </div>
             {onTapDismiss ? (
-              <p className="ui-text-accent-light-70 mt-4 animate-pulse text-center text-xs">
-                Tap anywhere to continue
-              </p>
+              <>
+                <p className="ui-text-accent-light-70 mt-4 animate-pulse text-center text-xs">
+                  Tap anywhere to continue
+                </p>
+                {scrollHint && (
+                  <div className="mt-2 flex justify-center">
+                    {/* A visually lighter "tip" chip, not a second instruction
+                        competing with "Tap anywhere to continue" above —
+                        smaller text, muted color, and its own pill
+                        background so the chevron+text read as one
+                        supplementary hint rather than two loose pieces. */}
+                    <div className="ui-bg-accent-12 inline-flex items-center gap-1 rounded-full px-2.5 py-1">
+                      <ChevronDownIcon className="scroll-hint-bounce ui-text-accent-light-70 h-3 w-3 shrink-0" />
+                      <p className="ui-text-accent-light-70 font-body text-center text-[10px] leading-none">
+                        Scroll down to explore and collect coins!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="mt-4 flex flex-col gap-2">{footer}</div>
             )}

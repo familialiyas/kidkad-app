@@ -2,21 +2,22 @@
 
 Assets split into two locations:
 
-- **`public/assets/shared/`** — coin, reward gift, and audio (music + SFX).
-  Identical across every theme by product decision, so there's exactly one
-  copy, used by all themes. Also holds the now-unused mute icon PNGs (see
-  "Icons" below).
-- **`public/assets/theme/<name>/`** — character sprites and decorations.
-  These differ per theme, one folder per `orders.template` value.
-  **`space` and `dino` both actually render** — `/invite/[guest_link]` reads
-  an order's `template` and loads the matching theme (`getTheme()` in
-  `theme-config.ts`, defaulting to `space` for null/unrecognized values).
-  What's *not* built yet is any UI to pick a theme: `/create`'s steps
-  (`CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, `PreviewStep.tsx`) still
-  hardcode `themes.space`, and `ThemeSelectStep.tsx` only offers "Space
-  Mission" — so a dino invite currently only happens by setting an existing
-  order's `template` column to `"dino"` directly. See "Making a theme
-  selectable in `/create`" below for what's left.
+- **`public/assets/shared/`** — coin, reward gift, and the one remaining
+  file-backed SFX (`sfx-gift-open.mp3`). Identical across every theme by
+  product decision, so there's exactly one copy, used by all themes. Also
+  holds the now-unused mute icon PNGs and retired SFX files (see "Icons"
+  and "Audio" below).
+- **`public/assets/theme/<name>/`** — character sprites, decorations, and
+  background music. These differ per theme, one folder per `orders.template`
+  value.
+  **`space`, `dino`, and `ocean` all actually render and are all
+  customer-selectable** — `/invite/[guest_link]` reads an order's `template`
+  and loads the matching theme (`getTheme()` in `theme-config.ts`,
+  defaulting to `space` for null/unrecognized values), and `/create`'s
+  `ThemeSelectStep.tsx` (now the second step, before character/tone — see
+  "Making a theme selectable in `/create`" below) lets a customer pick any
+  of the three; `CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, and
+  `PreviewStep.tsx` all read that selection instead of hardcoding a theme.
 
 **Source of truth:** `src/lib/theme-config.ts` is what the app actually
 reads — every path, tier, and color here is wired through that one file. If
@@ -71,34 +72,48 @@ devices, inline SVG via `currentColor` doesn't (see
 either category, follow the SVG pattern instead.
 
 ### Audio — `audio/`
-| File | Duration | Size |
-|---|---|---|
-| `bgm-space.mp3` | 34.4s (loops) | 1.34 MB |
-| `sfx-coin-collect.mp3` | 1.91s | 30 KB |
-| `sfx-gift-open.mp3` | 2.19s | 34 KB |
-| `sfx-warp.mp3` | 1.04s | 16 KB |
-| `sfx-dialogue-open.mp3` | 0.26s | 4 KB |
-| `sfx-dialogue-close.mp3` | 0.13s | 2 KB |
-| `sfx-button-tap.mp3` | 1.04s | 16 KB |
-| `sfx-rsvp-success.mp3` | 1.28s | 20 KB |
+| File | Duration | Size | Status |
+|---|---|---|---|
+| `sfx-gift-open.mp3` | 2.19s | 34 KB | Live — decoded into an `AudioBuffer`, same as before |
+| `bgm-space.mp3` | 34.4s (loops) | 1.34 MB | **Unused** — background music is now per-theme, see below |
+| `sfx-coin-collect.mp3` | 1.91s | 30 KB | **Unused** — replaced by real-time synthesis |
+| `sfx-warp.mp3` | 1.04s | 16 KB | **Unused** — replaced by real-time synthesis |
+| `sfx-dialogue-open.mp3` | 0.26s | 4 KB | **Unused** — replaced by real-time synthesis |
+| `sfx-dialogue-close.mp3` | 0.13s | 2 KB | **Unused** — replaced by real-time synthesis |
+| `sfx-button-tap.mp3` | 1.04s | 16 KB | **Unused** — replaced by real-time synthesis |
+| `sfx-rsvp-success.mp3` | 1.28s | 20 KB | **Unused** — replaced by real-time synthesis |
 
-One looping background track, plus 7 one-shot SFX (`src/lib/sfx.ts`). SFX are
-decoded into `AudioBuffer`s at load, so keep new ones short (well under a
-couple of seconds) — decode cost scales with duration, and these are meant
-to feel instant on tap. Despite the filename, `bgm-space.mp3` is the shared
-track for every theme, not space-specific — a rename would need a matching
-path update in `theme-config.ts`.
+One real recorded one-shot SFX (`sfx-gift-open.mp3` — a convincing
+rustle/unwrap isn't a good synthesis candidate, decoded into an
+`AudioBuffer` at load same as before), and 6 one-shot SFX generated in real
+time via Web Audio oscillator/gain-envelope nodes instead of recorded files
+(`src/lib/sfx.ts`) — exact pitch/timing control without needing a waveform
+editor, and no decode cost at all since there's nothing to fetch. Background
+music used to live here too (`bgm-space.mp3`, despite the filename actually
+shared across every theme) — it's now a per-theme `backgroundMusicSrc` under
+each theme's own `audio/` folder instead (see below), so this whole
+directory's `bgm-space.mp3` is orphaned. All the unused files above are
+still on disk but no longer referenced from code, same as the unused
+mute-icon PNGs further up this doc — safe to delete next time this
+directory gets cleaned up.
 
 ## Per-theme assets — `public/assets/theme/<name>/`
 
 ```
 public/assets/theme/<name>/
+  audio/
   characters/
   decorations/
 ```
 
 Every theme needs:
 
+- **`audio/`** — one looping background music track,
+  `<name>-bgm.mp3` (e.g. `space/audio/space-bgm.mp3`). Read as
+  `backgroundMusicSrc` on that theme's `THEME_CONFIG` entry and played by
+  `AudioToggle.tsx` in `GameClient.tsx` — unlike coin/reward/SFX, this is
+  NOT shared: each theme has its own track and its own file, since a
+  desert-dry space drone wouldn't fit an ocean or dino scene.
 - **`characters/`** — 2 characters (boy/girl) × 2 states (idle/victory) = 4
   transparent PNGs, portrait 2:3, named `<charactername>-idle.png` /
   `<charactername>-yay.png`. Display size comes from `CHARACTER_WIDTH` /
@@ -187,6 +202,9 @@ Every theme needs:
   `themes.dino.decorations` for the live source of truth.
 
 Also per-theme:
+- **`backgroundMusicSrc`** — path to that theme's own looping bgm track
+  under its `audio/` folder (see above) — the only per-theme audio; every
+  other sound (coin/reward SFX, `sfx-gift-open.mp3`) is shared.
 - **`particles`** — the ambient dot layer (`src/lib/starfield.ts`); space
   uses small white "stars", a theme can recolor/resize via
   `{ color, sizeMin, sizeMax, opacityMin, opacityMax }`.
@@ -209,6 +227,7 @@ Also per-theme:
 ### `space` (live)
 
 **`missionLabel`:** "Space Mission".
+**Music:** `audio/space-bgm.mp3`.
 
 **Characters:** (`characterNames`: Astro Boy / Astro Girl)
 | File | Native size | Displayed size |
@@ -259,6 +278,7 @@ tier alongside the moons/stars, closer to them in visual weight.
 ### `dino` (live)
 
 **`missionLabel`:** "Dino Mission".
+**Music:** `audio/dino-bgm.mp3`.
 
 **Characters:** (`characterNames`: Dinoboy / Dinogirl)
 | File | Native size | Displayed size |
@@ -305,44 +325,93 @@ from an earlier version that went full dark jungle-green at the bottom
 **UI colors:** warm amber/gold — `accent` #e8a33d, `accentLight` #f5d68a
 (soft warm gold), `boxBg` #2b2410 (deep warm brown-olive).
 
-### `ocean` (empty scaffold)
-Folder exists (`public/assets/theme/ocean/`) but has no assets yet — nothing
-wired into `THEME_CONFIG`.
+### `ocean` (live)
+
+**`missionLabel`:** "Ocean Mission".
+**Music:** `audio/ocean-bgm.mp3`.
+
+**Characters:** (`characterNames`: Aquaboy / Aquagirl)
+| File | Native size | Displayed size |
+|---|---|---|
+| `aquaboy-idle.png` | 300×450 (2:3) | 110×165 |
+| `aquaboy-yay.png` | 300×450 | 110×165 |
+| `aquagirl-idle.png` | 300×450 | 110×165 |
+| `aquagirl-yay.png` | 300×450 | 110×165 |
+
+**Decorations — ocean's 20 assets mapped onto space's 20 slots**, by an
+explicit mapping table provided directly (same approach as dino's — see
+`theme-config.ts`'s `themes.ocean.decorations` for the live source of
+truth):
+
+| Space slot | Ocean asset | Space slot | Ocean asset |
+|---|---|---|---|
+| alien-01 (small) | `baby-sea-01.png` | planet-01 (landmark) | `animal-01.png` |
+| alien-02 (small) | `baby-sea-02.png` | planet-02 (small) | `animal-02.png` |
+| alien-03 (small) | `baby-sea-03.png` | planet-03 (small) | `animal-03.png` |
+| asteroid (small) | `rock-reef.png` | planet-04 (landmark) | `animal-04.png` |
+| comet (small) | `bubbles.png` | planet-05 (landmark) | `animal-05.png` |
+| moon-01 (small) | `pearl-close.png` | planet-06 (small) | `animal-06.png` |
+| moon-crescent (small) | `pearl-open.png` | planet-07 (small) | `animal-07.png` |
+| rocket (landmark) | `shipwreck.png` | star-cluster (small) | `coral.png` |
+| star (small) | `starfish.png` | ufo-01 (small) | `mantaray-01.png` |
+| sun (landmark) | `nemo.png` | ufo-02 (small) | `mantaray-02.png` |
+
+The mapping table this was built from named the baby-animal assets
+`baby-animal-01/02/03` — the actual files delivered on disk are
+`baby-sea-01/02/03.png` (matched by role, same kind of naming drift dino's
+`ufo`/`planet-03` files had). The 5 large/landmark slots (`rocket`, `sun`,
+`planet-01`, `planet-04`, `planet-05`) still get 1–2 instances each at
+~150–220px regardless of which ocean asset fills them, per
+`DECORATION_SLOTS`.
+
+**Particles:** pale aquamarine "bubbles", `#cdf3f7`, same size/opacity range
+as space's stars and dino's pollen (1–3px, 0.4–1 opacity) — just recolored.
+**Sky:** `linear-gradient(to top, #041820 0%, #0a3446 55%, #135870 100%)` —
+deep water dark-teal, kept dark throughout (not a bright sunlit-shallows
+blue) for the same decoration-contrast reason dino's gradient was darkened.
+**UI colors:** teal — `accent` #2dd4bf (teal-400), `accentLight` #5eead4
+(teal-300), `boxBg` #0d2b36 (deep teal-navy) — chosen to read clearly
+distinct from both space's cyan and dino's amber.
 
 ## Making a theme selectable in `/create`
 
-`/invite/[guest_link]` already resolves and renders whichever theme an
-order's `template` column names — that part is done for both `space` and
-`dino`. What's still missing is any way for a customer to actually *choose*
-`dino` while creating an invite:
+Done, as of `space`/`dino`/`ocean` — `ThemeSelectStep.tsx` is now the
+second step in the `/create` flow (before character/tone), lists every
+`THEME_CONFIG` theme that has a `THEME_CARDS` entry as a real, selectable
+card, and threads the choice through `CreateOrderClient.tsx` into the
+`theme` field `POST /api/orders` accepts (written to `orders.template`).
+`CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, and `PreviewStep.tsx` all
+read that selected theme (`THEME_CONFIG.themes[theme]`) instead of
+hardcoding one, so a new theme's card sprite/mission-label preview appears
+automatically everywhere in the form once it's added.
 
-1. Add a card for it in `ThemeSelectStep.tsx` (currently hardcodes "Space
-   Mission" as selected and a single locked placeholder card) and thread
-   the choice through `CreateOrderClient.tsx` into the `template` field
-   `/api/orders` already accepts.
-2. `CharacterSelectStep.tsx`, `ToneSelectStep.tsx`, and `PreviewStep.tsx`
-   (the /create steps that preview a character sprite while building a new
-   order) still hardcode `THEME_CONFIG.themes.space` — once there's a
-   selected theme to read instead, swap those to use it (and pull the
-   card/button label from that theme's `characterNames` instead of the
-   hardcoded "Astro Boy"/"Astro Girl" strings).
-3. Until then, the only way to see a `dino` invite is setting an existing
-   order's `template` column to `"dino"` directly (e.g. via Supabase).
+To make a newly-added `THEME_CONFIG` theme selectable, add one entry to
+`THEME_CARDS` in `ThemeSelectStep.tsx` — `{ key, label, subtitle,
+previewSrc }`, where `previewSrc` is one iconic, instantly-recognizable
+asset from that theme's `decorations/` (not derived from `DECORATION_SLOTS`
+— pick whichever single image reads clearly as "this theme" at 64px, e.g.
+the rocket for space, a dinosaur for dino, the clownfish for ocean). No
+other file needs to change — `ThemeSelectStep`'s "Locked"/"coming soon" card
+markup was removed once there were no more not-yet-built themes to show
+there; re-add a similar static card by hand if a future theme's assets
+aren't ready yet but you want to tease it.
 
 ## Adding a new theme from scratch
 
-1. Create `public/assets/theme/<name>/` with `characters/` and
-   `decorations/` — **not** `audio/`, `coin/`, `icons/`, or `reward/`; those
-   are shared and already exist under `public/assets/shared/`.
-2. Provide 4 character PNGs (2:3, matching space/dino's spec) and **exactly
-   20 decoration PNGs** (512×512 transparent-canvas, content
-   centered/scaled within the square, no cropping — don't specify
-   width/height, the shared slot system handles sizing).
+1. Create `public/assets/theme/<name>/` with `characters/`, `decorations/`,
+   and `audio/` — **not** `coin/`, `icons/`, or `reward/`; those are shared
+   and already exist under `public/assets/shared/`.
+2. Provide 4 character PNGs (2:3, matching space/dino's spec), **exactly 20
+   decoration PNGs** (512×512 transparent-canvas, content centered/scaled
+   within the square, no cropping — don't specify width/height, the shared
+   slot system handles sizing), and one looping bgm track,
+   `audio/<name>-bgm.mp3`.
 3. Add a `themes.<name>` entry to `THEME_CONFIG` in `src/lib/theme-config.ts`
-   (`characterSprites`, `characterNames`, `missionLabel`, `decorations`,
-   `particles`, `skyGradient`, `uiColors` — same shape as `dino`;
-   TypeScript's `satisfies` check will flag anything missing).
-   `backgroundMusicSrc`, `coinSprites`, and `rewardSprites` need no changes.
+   (`characterSprites`, `characterNames`, `missionLabel`,
+   `backgroundMusicSrc`, `decorations`, `particles`, `skyGradient`,
+   `uiColors` — same shape as `dino`; TypeScript's `satisfies` check will
+   flag anything missing). `coinSprites` and `rewardSprites` need no
+   changes — those stay shared across every theme.
    - `decorations` is `Record<SlotName, string>` — one image path for each
      of the 20 fixed slot names from `DECORATION_SLOTS` in
      `decorations.ts` (`rocket`, `sun`, `planet-01`, `planet-04`,
@@ -362,6 +431,8 @@ order's `template` column names — that part is done for both `space` and
      wanted — that's the whole point of the slot system: it's inherited
      from `DECORATION_SLOTS`, identical for every theme.
 4. Fill in that theme's section in this doc.
-5. Follow "Making a theme selectable in `/create`" above to actually expose
-   it as a customer-facing choice — `/invite/[guest_link]` will already
-   render it correctly for any order whose `template` names it.
+5. Add one `THEME_CARDS` entry in `ThemeSelectStep.tsx` (see "Making a theme
+   selectable in `/create`" above) to expose it as a customer-facing choice
+   — `/invite/[guest_link]` and the rest of `/create` will already render it
+   correctly for any order whose `template` names it, no other changes
+   needed.

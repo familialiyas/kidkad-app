@@ -28,20 +28,22 @@ export default function PaymentPendingPanel() {
   }, [pollCount, router]);
 
   return (
-    <div className="mt-6 rounded-2xl border-2 border-cyan-400/30 bg-slate-900/50 p-6 text-center">
+    <div className="border-wizard-border bg-wizard-panel/50 mt-6 rounded-2xl border-2 p-6 text-center">
       <div
-        className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-cyan-400/30 border-t-cyan-400"
+        className="border-wizard-border/30 border-t-wizard-accent mx-auto h-8 w-8 animate-spin rounded-full border-4"
         aria-hidden
       />
-      <p className="font-display mt-4 text-base font-bold text-white">Confirming your payment…</p>
-      <p className="font-body mt-2 text-sm text-cyan-100/70">
+      <p className="font-display text-wizard-text mt-4 text-base font-bold">
+        Confirming your payment…
+      </p>
+      <p className="font-body text-wizard-text-muted mt-2 text-sm">
         This usually takes just a few seconds — this page will update on its own once it&apos;s
         through.
       </p>
       <button
         type="button"
         onClick={() => router.refresh()}
-        className="font-display mt-4 rounded-xl border-2 border-cyan-400/40 px-5 py-2.5 text-sm font-bold text-cyan-300"
+        className="font-display border-wizard-border text-wizard-accent-light mt-4 rounded-xl border-2 px-5 py-2.5 text-sm font-bold"
       >
         Refresh now
       </button>

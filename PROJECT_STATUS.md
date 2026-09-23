@@ -4,7 +4,7 @@ Digital birthday invitation game. A parent customizes an invitation for their
 child's party; guests open a link, play a short scroll-driven mini-game to
 reveal party details, and RSVP. The parent gets a dashboard link to see
 responses and edit the invitation. Reference doc for orienting a fresh Claude
-session — last updated 2026-09-22.
+session — last updated 2026-09-23.
 
 ## Stack
 
@@ -40,8 +40,9 @@ session — last updated 2026-09-22.
   live immediately — framed honestly as such in the copy.
 - `/invite/[guest_link]` — the guest-facing game (title → opening dialogue
   → 3 coin dialogues → mission-complete ceremony → reward gift → RSVP →
-  "You're in!" return-visit screen). Space theme only; `template` column
-  exists on `orders` but nothing switches on it yet.
+  "You're in!" return-visit screen). Renders whichever of the three themes
+  (space/dino/ocean) the order's `template` column names — see "Multi-theme
+  support" below.
 - `/dashboard/[admin_link]` — RSVP list + CSV export, plus a collapsible
   "Edit invitation details" section covering every editable order field.
   Locked (UI + server-side) once today's date is past `party_date`.
@@ -96,8 +97,9 @@ via skip-tap) — not simultaneously with the dialogue. Tapping the gift
 leads to the existing post-claim screen (same `missionComplete` line again
 + a separate "[child] says" box with `personal_message` verbatim, sitting
 above the RSVP buttons — not merged into one box), then RSVP. Real art
-assets throughout (space theme), no emoji anywhere, no raster PNG icons for
-dialogue/party-detail icons either (see below).
+assets throughout (theme-driven — space/dino/ocean, see "Multi-theme
+support" below), no emoji anywhere, no raster PNG icons for dialogue/party-
+detail icons either (see below).
 
 The whole game renders inside a fixed-width, centered "phone frame"
 (`GAME_FRAME_MAX_WIDTH` = 448px, `src/lib/game-constants.ts` — matches
@@ -264,25 +266,26 @@ that manually if needed.
   + "your dashboard link is ready — check back anytime to see who's
   RSVP'd", explicitly no receipt mention (Toyyibpay's separate concern) and
   no digest/cron system — single automatic send on payment confirmation.
-- Multi-theme support, partially wired — `/invite/[guest_link]` now reads
-  an order's `template` column and renders the matching theme
-  (`getTheme()` in `src/lib/theme-config.ts`, defaulting to "space" for
-  null/unrecognized values): character sprites, decorations, the ambient
-  particle layer, and sky gradient are all theme-driven. A second theme,
-  `dino`, is fully built and confirmed rendering correctly this way (its
-  20-slot decoration asset mapping and its warm sky gradient were each
-  revised once after initial build — see the matching table in
-  `public/assets/theme/README - Theme.md` and `theme-config.ts`'s
-  `themes.dino.skyGradient`, darkened from a light daylight gradient to a
-  dark brown one so decoration art reads with the same contrast as space's
-  dark navy background). What's still missing is any customer-facing way to
-  *choose* a theme — `/create`'s steps (character/tone/preview previews,
-  `ThemeSelectStep.tsx`) and dashboard edit's character/tone selects all
-  still hardcode "space", so a dino invite today only happens by setting an
-  existing order's `template` directly (e.g. via Supabase). Asset
-  inventory, the standardized-canvas decoration system, and what's left to
-  build theme-selection UI are documented in
-  `public/assets/theme/README - Theme.md`.
+- Multi-theme support — fully wired for new orders, three real themes.
+  `/invite/[guest_link]` reads an order's `template` column and renders the
+  matching theme (`getTheme()` in `src/lib/theme-config.ts`, defaulting to
+  "space" for null/unrecognized values): character sprites, decorations,
+  the ambient particle layer, and sky gradient are all theme-driven.
+  `space`, `dino`, and `ocean` are all fully built and confirmed rendering
+  correctly (dino's 20-slot decoration mapping and sky gradient were each
+  revised once after initial build; ocean was added complete in one pass
+  using the same 20-slot mapping convention — see
+  `public/assets/theme/README - Theme.md` for each theme's asset table).
+  `/create`'s `ThemeSelectStep.tsx` is now step 2 of the flow (before
+  character/tone) and offers all three as real, selectable cards — a
+  customer picks their theme up front, and `CharacterSelectStep.tsx`,
+  `ToneSelectStep.tsx`, and `PreviewStep.tsx` all read that selection
+  instead of hardcoding "space". What's still missing: dashboard edit
+  (`EditInvitationSection.tsx`) has no theme field at all — an
+  already-created order's `template` can only be changed directly via
+  Supabase, not from the dashboard UI. Asset inventory, the
+  standardized-canvas decoration system, and how to add a future theme are
+  documented in `public/assets/theme/README - Theme.md`.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
 - Brand identity not finalized — the "KidKad" text on the `/create` welcome

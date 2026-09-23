@@ -91,7 +91,7 @@ export default function ParentDetailsStep({
               onBlur={handleEmailBlur}
             />
           </label>
-          <p className="font-body mt-1 text-xs text-cyan-100/60">
+          <p className="font-body text-wizard-text-muted mt-1 text-xs">
             We&apos;ll send your guest link and admin link here.
           </p>
           <FieldError message={errors.parentEmail} />
@@ -108,7 +108,7 @@ export default function ParentDetailsStep({
               inputMode="tel"
             />
           </label>
-          <p className="font-body mt-1 text-xs text-cyan-100/60">
+          <p className="font-body text-wizard-text-muted mt-1 text-xs">
             Shown to guests so they can reach you directly — not used for any automated
             notifications.
           </p>

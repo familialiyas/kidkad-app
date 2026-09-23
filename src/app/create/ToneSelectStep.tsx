@@ -98,12 +98,12 @@ export default function ToneSelectStep({
 
       <div
         ref={sheetRef}
-        className="fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t-4 border-cyan-400/40 bg-[#0a0e27] px-4 pt-4 pb-6 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
+        className="border-wizard-border bg-wizard-panel fixed inset-x-0 bottom-0 z-[60] rounded-t-3xl border-t-4 px-4 pt-4 pb-6 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
       >
-        <p className="font-display text-center text-xs font-bold tracking-widest text-cyan-300/70 uppercase">
+        <p className="font-display text-wizard-accent/70 text-center text-xs font-bold tracking-widest uppercase">
           Step 4 of 8
         </p>
-        <h2 className="font-display mt-1 text-center text-lg font-bold text-white">
+        <h2 className="font-display text-wizard-accent mt-1 text-center text-lg font-bold">
           Pick A Voice
         </h2>
 
@@ -120,8 +120,8 @@ export default function ToneSelectStep({
                 }}
                 className={`font-display rounded-xl border-2 px-4 py-3.5 text-left text-sm font-bold transition ${
                   isSelected
-                    ? "border-cyan-400 bg-cyan-400/15 text-cyan-300"
-                    : "border-cyan-400/25 text-white/80"
+                    ? "border-wizard-accent bg-wizard-accent/15 text-wizard-accent-light"
+                    : "border-wizard-border text-wizard-text/80"
                 }`}
               >
                 {TONE_LABELS[tone]}
@@ -137,7 +137,7 @@ export default function ToneSelectStep({
               playSfx("buttonTap");
               onBack();
             }}
-            className="font-display rounded-xl border-2 border-cyan-400/40 px-5 py-3 text-sm font-bold text-cyan-300"
+            className="font-display border-wizard-border text-wizard-accent-light rounded-xl border-2 px-5 py-3 text-sm font-bold"
           >
             Back
           </button>
@@ -148,7 +148,7 @@ export default function ToneSelectStep({
               playSfx("buttonTap");
               onContinue();
             }}
-            className="font-display flex-1 rounded-xl bg-cyan-400 px-6 py-3 text-sm font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-30 disabled:active:scale-100"
+            className="font-display bg-wizard-accent text-wizard-bg flex-1 rounded-xl px-6 py-3 text-sm font-bold shadow transition active:scale-95 disabled:opacity-30 disabled:active:scale-100"
           >
             Continue
           </button>

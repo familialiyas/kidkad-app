@@ -66,6 +66,14 @@ export function SpeakerOffIcon({ className }: IconProps) {
   );
 }
 
+export function ChevronDownIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={className} aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 8.25 7.5 7.5 7.5-7.5" />
+    </svg>
+  );
+}
+
 export function CelebrationIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className={className} aria-hidden>

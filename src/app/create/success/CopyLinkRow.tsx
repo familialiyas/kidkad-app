@@ -18,13 +18,13 @@ export default function CopyLinkRow({ label, url }: { label: string; url: string
   }
 
   return (
-    <div className="w-full rounded-xl border-2 border-cyan-400/30 bg-slate-900/50 p-4">
-      <p className="font-body text-xs font-bold text-cyan-300/60">{label}</p>
-      <p className="font-body mt-1 text-sm break-all text-white">{url}</p>
+    <div className="border-wizard-border bg-wizard-panel/50 w-full rounded-xl border-2 p-4">
+      <p className="font-body text-wizard-accent-light/60 text-xs font-bold">{label}</p>
+      <p className="font-body text-wizard-text mt-1 text-sm break-all">{url}</p>
       <button
         type="button"
         onClick={handleCopy}
-        className="font-display mt-3 rounded-lg bg-cyan-400 px-4 py-2 text-xs font-bold text-slate-900 active:scale-95"
+        className="font-display bg-wizard-accent text-wizard-bg mt-3 rounded-lg px-4 py-2 text-xs font-bold active:scale-95"
       >
         {copied ? "Copied!" : "Copy link"}
       </button>

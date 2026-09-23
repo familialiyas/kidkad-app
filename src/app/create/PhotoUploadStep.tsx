@@ -74,19 +74,19 @@ export default function PhotoUploadStep({
       starSeed="kidkad-create-form-photo"
     >
       <div className="flex flex-col items-center gap-4">
-        <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-cyan-400/40 bg-slate-900/60">
+        <div className="border-wizard-border bg-wizard-panel-deep flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4">
           {photoPreview ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photoPreview} alt="" className="h-full w-full object-cover" />
           ) : (
-            <span className="font-body text-xs text-cyan-100/50">No photo yet</span>
+            <span className="font-body text-wizard-text-muted text-xs">No photo yet</span>
           )}
         </div>
 
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="font-display rounded-xl border-2 border-cyan-400/40 bg-white/5 px-5 py-2.5 text-sm font-bold text-cyan-300 active:scale-95"
+          className="font-display border-wizard-border bg-wizard-panel/40 text-wizard-accent-light rounded-xl border-2 px-5 py-2.5 text-sm font-bold active:scale-95"
         >
           {uploading ? "Uploading..." : photoPreview ? "Change photo" : "Choose photo"}
         </button>
@@ -98,7 +98,7 @@ export default function PhotoUploadStep({
           onChange={handlePhotoChange}
         />
 
-        <p className="font-body max-w-xs text-center text-xs text-cyan-100/60">
+        <p className="font-body text-wizard-text-muted max-w-xs text-center text-xs">
           Only people with your invite link can see this photo — it&apos;s never indexed or
           searchable.
         </p>

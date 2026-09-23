@@ -39,20 +39,26 @@ export function fillTemplate(template: string, vars: Record<string, string>): st
   return template.replace(/\{(\w+)\}/g, (match, key) => vars[key] ?? match);
 }
 
+// Kid-voiced on purpose, including "silly" — this is attributed directly to
+// the child (e.g. "{name} says...") at mission-complete in the guest game,
+// so even the joke register has to stay inside a genuine kid's sense of
+// humor (mock-mild threats, silliness) rather than adult sarcasm about
+// topics a 3-8 year-old wouldn't actually reference (supervision, dance
+// floors as a wry aside, etc).
 export const PERSONAL_MESSAGE_SAMPLES = {
   excited: [
-    "Come celebrate with me, it's going to be the BEST day ever!",
-    "I've been waiting for this all year, please come!",
-    "Get ready for cake, games, and so much fun!",
+    "I can't wait to see you at my party, it's going to be SO fun!!",
+    "There's going to be games, cake, and YOU! Please come!",
+    "I've been counting the days until my party — see you there!",
   ],
   sweet: [
-    "It would mean so much to me if you could come celebrate this day with us.",
-    "I'm so grateful to have you in my life, please join me on my special day.",
-    "Come make some sweet memories with me.",
+    "It would make me so happy if you could come to my party.",
+    "I hope you can come celebrate with me, it means a lot.",
+    "You're one of my favorite people, I really hope you can make it!",
   ],
   silly: [
-    "Warning: cake will be consumed in dangerous quantities.",
-    "There will be balloons, snacks, and zero adult supervision on the dance floor.",
-    "Come for the cake, stay for my dance moves.",
+    "Warning: there will be lots of cake and even more giggles!",
+    "Come to my party or I'll be sad (just kidding, but please come)!",
+    "There will be balloons, snacks, and probably some silly dancing!",
   ],
 } as const;

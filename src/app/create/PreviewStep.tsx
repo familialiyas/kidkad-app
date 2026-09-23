@@ -15,9 +15,9 @@ export interface DraftOrder {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-0.5 border-b border-white/10 py-2.5 last:border-0">
-      <span className="font-body text-xs font-bold text-cyan-300/60">{label}</span>
-      <span className="font-body text-sm text-white">{value}</span>
+    <div className="border-wizard-border flex flex-col gap-0.5 border-b py-2.5 last:border-0">
+      <span className="font-body text-wizard-accent-light/60 text-xs font-bold">{label}</span>
+      <span className="font-body text-wizard-text text-sm">{value}</span>
     </div>
   );
 }
@@ -79,12 +79,12 @@ export default function PreviewStep({
             <img
               src={childPhotoUrl}
               alt=""
-              className="h-20 w-20 rounded-full border-2 border-cyan-400/40 object-cover"
+              className="border-wizard-border h-20 w-20 rounded-full border-2 object-cover"
             />
           )}
         </div>
 
-        <div className="w-full rounded-2xl border-2 border-cyan-400/30 bg-slate-900/50 px-4">
+        <div className="border-wizard-border bg-wizard-panel/50 w-full rounded-2xl border-2 px-4">
           <Row label="Child" value={`${childName}, turning ${childAge}`} />
           <Row label="Voice" value={TONE_LABELS[tone]} />
           <Row label="Theme" value={themeAssets.missionLabel} />
@@ -99,7 +99,7 @@ export default function PreviewStep({
         </div>
 
         {creatingOrder && (
-          <p className="font-body text-sm text-cyan-100/70">Setting up your invitation…</p>
+          <p className="font-body text-wizard-text-muted text-sm">Setting up your invitation…</p>
         )}
 
         {createError && (
@@ -108,7 +108,7 @@ export default function PreviewStep({
             <button
               type="button"
               onClick={onRetryCreate}
-              className="font-display mt-2 text-sm font-bold text-cyan-300 underline"
+              className="font-display text-wizard-accent-light mt-2 text-sm font-bold underline"
             >
               Try again
             </button>
@@ -130,7 +130,7 @@ export default function PreviewStep({
                 playSfx("buttonTap");
                 onPay();
               }}
-              className="font-display w-full rounded-xl bg-cyan-400 px-6 py-3.5 text-base font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+              className="font-display bg-wizard-accent text-wizard-bg w-full rounded-xl px-6 py-3.5 text-base font-bold shadow transition active:scale-95 disabled:opacity-50 disabled:active:scale-100"
             >
               {paying ? "Redirecting to payment…" : "Create e-card — RM19.90"}
             </button>
@@ -141,7 +141,7 @@ export default function PreviewStep({
                 playSfx("buttonTap");
                 onPreview();
               }}
-              className="font-display w-full rounded-xl border-2 border-cyan-400/40 px-6 py-3 text-sm font-bold text-cyan-300 active:scale-95 disabled:opacity-50"
+              className="font-display border-wizard-border text-wizard-accent-light w-full rounded-xl border-2 px-6 py-3 text-sm font-bold active:scale-95 disabled:opacity-50"
             >
               Preview e-card
             </button>

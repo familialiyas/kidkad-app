@@ -19,6 +19,19 @@ export interface EventDetailsFields {
 type FieldKey = keyof Omit<EventDetailsFields, "rsvpDeadlineTouched">;
 type Errors = Partial<Record<FieldKey, string>>;
 
+// Local-time (not UTC-anchored, unlike computeDefaultDeadline's math below)
+// — this gates the native date picker's `min` and the past-date checks in
+// validate(), both of which should match what the user sees as "today" on
+// their own device's calendar widget, not a UTC instant that could still
+// read as "yesterday" or "tomorrow" for them.
+function todayDateString(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function computeDefaultDeadline(partyDate: string): string {
   if (!partyDate) return "";
   // UTC-anchored throughout — parsing/formatting through local time here
@@ -27,16 +40,24 @@ function computeDefaultDeadline(partyDate: string): string {
   if (!y || !m || !d) return "";
   const utc = new Date(Date.UTC(y, m - 1, d));
   utc.setUTCDate(utc.getUTCDate() - 3);
-  return utc.toISOString().slice(0, 10);
+  const computed = utc.toISOString().slice(0, 10);
+  // A party date within the next 3 days would otherwise default to a
+  // deadline already in the past — clamp to today instead of suggesting
+  // something the user would immediately have to notice and fix.
+  const today = todayDateString();
+  return computed < today ? today : computed;
 }
 
 function validate(fields: EventDetailsFields): Errors {
   const errors: Errors = {};
+  const today = todayDateString();
   if (!fields.partyDate) errors.partyDate = "Pick the party date";
+  else if (fields.partyDate < today) errors.partyDate = "Party date can't be in the past";
   if (!fields.partyTime) errors.partyTime = "Pick the party time";
   if (!fields.partyVenue.trim()) errors.partyVenue = "Enter the venue location";
   if (!fields.dressCode.trim()) errors.dressCode = "Enter a dress code";
   if (!fields.rsvpDeadline) errors.rsvpDeadline = "Pick an RSVP deadline";
+  else if (fields.rsvpDeadline < today) errors.rsvpDeadline = "RSVP deadline can't be in the past";
   else if (fields.partyDate && fields.rsvpDeadline > fields.partyDate)
     errors.rsvpDeadline = "RSVP deadline can't be after the party date";
   if (!fields.personalMessage.trim()) errors.personalMessage = "Write a personal message";
@@ -106,6 +127,7 @@ export default function EventDetailsStep({
               type="date"
               className={darkInputClass}
               value={fields.partyDate}
+              min={todayDateString()}
               onChange={(e) => handlePartyDateChange(e.target.value)}
             />
           </label>
@@ -158,11 +180,12 @@ export default function EventDetailsStep({
               type="date"
               className={darkInputClass}
               value={fields.rsvpDeadline}
+              min={todayDateString()}
               max={fields.partyDate || undefined}
               onChange={(e) => onChange({ rsvpDeadline: e.target.value, rsvpDeadlineTouched: true })}
             />
           </label>
-          <p className="font-body mt-1 text-xs text-cyan-100/60">
+          <p className="font-body text-wizard-text-muted mt-1 text-xs">
             Defaults to 3 days before the party — edit if you want a different buffer.
           </p>
           <FieldError message={errors.rsvpDeadline} />
@@ -176,12 +199,12 @@ export default function EventDetailsStep({
             <button
               type="button"
               onClick={handleShuffle}
-              className="font-display rounded-full bg-cyan-400 px-3 py-1 text-xs font-bold text-slate-900 active:scale-95"
+              className="font-display bg-wizard-accent text-wizard-bg rounded-full px-3 py-1 text-xs font-bold active:scale-95"
             >
               Shuffle suggestion
             </button>
           </div>
-          <p className="font-body mt-1 text-xs text-cyan-100/60">
+          <p className="font-body text-wizard-text-muted mt-1 text-xs">
             This shows up as a personal note in the game — write it like you&apos;re talking
             directly to whoever&apos;s coming.
           </p>

@@ -24,7 +24,7 @@ import RsvpForm, { RsvpFormValues } from "./RsvpForm";
 import ReturnVisitScreen from "./ReturnVisitScreen";
 import TitleScreen from "./TitleScreen";
 import AudioToggle, { AudioToggleHandle } from "./AudioToggle";
-import { THEME_CONFIG, getTheme, themeUiStyle } from "@/lib/theme-config";
+import { getTheme, themeUiStyle } from "@/lib/theme-config";
 import { playSfx } from "@/lib/sfx";
 import { DialogueSegment } from "@/lib/typewriter";
 import { DIALOGUE_TONES, fillTemplate } from "@/lib/dialogue-tones";
@@ -426,7 +426,7 @@ function Game({
 
   return (
     <div className="relative">
-      <AudioToggle ref={audioToggleRef} src={THEME_CONFIG.backgroundMusicSrc} />
+      <AudioToggle ref={audioToggleRef} src={theme.backgroundMusicSrc} />
 
       {/* Same top row as the mute button (left) and coin-count HUD
           (centered): mute | coin count | menu, left to right. */}
@@ -493,6 +493,7 @@ function Game({
           onClose={() => setScreen({ kind: "none" })}
           segments={openingSegments}
           onTalkingChange={setIsDialogueTyping}
+          scrollHint
         />
       )}
 

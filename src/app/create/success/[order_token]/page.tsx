@@ -58,10 +58,10 @@ export default async function CreateSuccessPage({
     <div className="relative min-h-screen px-4 py-10">
       <StarfieldBackground seed={`kidkad-success-${order.order_token}`} />
       <div className="mx-auto max-w-md text-center">
-        <h1 className="font-display text-2xl font-bold text-white drop-shadow-[0_0_14px_rgba(147,197,253,0.6)]">
+        <h1 className="font-display text-wizard-accent text-2xl font-bold drop-shadow-[0_0_14px_rgba(224,168,62,0.6)]">
           {isPaid ? "Your invitation is ready!" : "Almost there!"}
         </h1>
-        <p className="font-body mt-2 text-sm text-cyan-100/70">
+        <p className="font-body text-wizard-text-muted mt-2 text-sm">
           {isPaid
             ? "Share these links with your guests whenever you're ready."
             : "We're just waiting on payment confirmation before showing your links."}
@@ -75,18 +75,18 @@ export default async function CreateSuccessPage({
               <CopyLinkRow label="Your dashboard link (see RSVPs)" url={adminUrl} />
             </div>
 
-            <details className="font-body mt-8 text-left text-xs text-cyan-100/60">
-              <summary className="cursor-pointer font-bold text-cyan-300/70">
+            <details className="font-body text-wizard-text-muted mt-8 text-left text-xs">
+              <summary className="text-wizard-accent-light/70 cursor-pointer font-bold">
                 Full order details (verification)
               </summary>
-              <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-slate-900/50">
+              <div className="border-wizard-border bg-wizard-panel/50 mt-3 overflow-hidden rounded-xl border">
                 {rows.map(([key, value]) => (
                   <div
                     key={key}
-                    className="flex flex-col gap-0.5 border-b border-white/10 px-4 py-2.5 last:border-0"
+                    className="border-wizard-border flex flex-col gap-0.5 border-b px-4 py-2.5 last:border-0"
                   >
-                    <span className="font-bold text-cyan-300/50">{key}</span>
-                    <span className="text-white/80 break-all">
+                    <span className="text-wizard-accent-light/50 font-bold">{key}</span>
+                    <span className="text-wizard-text/80 break-all">
                       {value === null || value === "" ? (
                         <span className="text-red-400">— empty —</span>
                       ) : (

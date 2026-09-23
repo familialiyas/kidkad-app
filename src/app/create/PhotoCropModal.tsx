@@ -39,8 +39,8 @@ export default function PhotoCropModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[70] flex flex-col bg-[#0a0e27]">
-      <p className="font-body px-4 pt-4 pb-2 text-center text-xs text-cyan-100/70">
+    <div className="bg-wizard-bg fixed inset-0 z-[70] flex flex-col">
+      <p className="font-body text-wizard-text-muted px-4 pt-4 pb-2 text-center text-xs">
         Drag to reposition, pinch or use the slider to zoom — this is exactly how it&apos;ll look
         in the game.
       </p>
@@ -60,7 +60,7 @@ export default function PhotoCropModal({
       </div>
 
       <div className="flex flex-col gap-3 px-4 pt-4 pb-6">
-        <label className="font-body flex items-center gap-3 text-xs text-cyan-100/70">
+        <label className="font-body text-wizard-text-muted flex items-center gap-3 text-xs">
           Zoom
           <input
             type="range"
@@ -69,7 +69,7 @@ export default function PhotoCropModal({
             step={0.01}
             value={zoom}
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="flex-1 accent-cyan-400"
+            className="accent-wizard-accent flex-1"
           />
         </label>
 
@@ -82,7 +82,7 @@ export default function PhotoCropModal({
               playSfx("buttonTap");
               onCancel();
             }}
-            className="font-display rounded-xl border-2 border-cyan-400/40 px-5 py-3 text-sm font-bold text-cyan-300"
+            className="font-display border-wizard-border text-wizard-accent-light rounded-xl border-2 px-5 py-3 text-sm font-bold"
           >
             Cancel
           </button>
@@ -90,7 +90,7 @@ export default function PhotoCropModal({
             type="button"
             disabled={processing || !croppedAreaPixels}
             onClick={handleConfirm}
-            className="font-display flex-1 rounded-xl bg-cyan-400 px-6 py-3 text-sm font-bold text-slate-900 shadow transition active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+            className="font-display bg-wizard-accent text-wizard-bg flex-1 rounded-xl px-6 py-3 text-sm font-bold shadow transition active:scale-95 disabled:opacity-50 disabled:active:scale-100"
           >
             {processing ? "Saving..." : "Use this photo"}
           </button>

@@ -27,14 +27,14 @@ export default function ShareReminderBanner({
   }
 
   return (
-    <div className="mt-4 rounded-xl border-2 border-cyan-400/30 bg-slate-900/50 p-4 text-left">
-      <p className="font-body text-sm text-cyan-100/80">
+    <div className="border-wizard-border bg-wizard-panel/50 mt-4 rounded-xl border-2 p-4 text-left">
+      <p className="font-body text-wizard-text-muted text-sm">
         Save this page — send these links to yourself on WhatsApp so you don&apos;t lose them.
       </p>
       <button
         type="button"
         onClick={handleShare}
-        className="font-display mt-3 w-full rounded-lg bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-900 active:scale-95"
+        className="font-display bg-wizard-accent text-wizard-bg mt-3 w-full rounded-lg px-4 py-2.5 text-sm font-bold active:scale-95"
       >
         Share to WhatsApp
       </button>

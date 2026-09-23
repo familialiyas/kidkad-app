@@ -50,14 +50,14 @@ export default function CharacterSelectStep({
               }}
               className={`flex items-center gap-4 rounded-2xl border-4 p-4 text-left transition-all duration-200 ${
                 isSelected
-                  ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_24px_4px_rgba(34,211,238,0.35)]"
-                  : "border-white/10 bg-white/5"
+                  ? "border-wizard-accent bg-wizard-accent/10 shadow-[0_0_24px_4px_rgba(224,168,62,0.35)]"
+                  : "border-wizard-border bg-wizard-panel/40"
               }`}
             >
               {/* Headshot crop of the full-body sprite — scales better as a
                   list than the previous large full-body cards, especially
                   once more characters are added. */}
-              <span className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-slate-800">
+              <span className="bg-wizard-panel-deep h-16 w-16 shrink-0 overflow-hidden rounded-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={sprite}
@@ -66,14 +66,14 @@ export default function CharacterSelectStep({
                   draggable={false}
                 />
               </span>
-              <span className="font-display flex-1 text-base font-bold text-white">
+              <span className="font-display text-wizard-text flex-1 text-base font-bold">
                 {card.label}
               </span>
               <span
                 className={`font-display shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
                   isSelected
-                    ? "bg-cyan-400 text-slate-900"
-                    : "border-2 border-white/20 text-white/50"
+                    ? "bg-wizard-accent text-wizard-bg"
+                    : "border-wizard-border text-wizard-text-muted border-2"
                 }`}
               >
                 {isSelected ? "Selected" : "Select"}
@@ -82,12 +82,12 @@ export default function CharacterSelectStep({
           );
         })}
 
-        <div className="flex items-center gap-4 rounded-2xl border-4 border-white/10 bg-white/5 p-4 opacity-60">
-          <span className="h-16 w-16 shrink-0 rounded-full bg-white/10" aria-hidden />
-          <span className="font-display flex-1 text-base font-bold text-white/70">
+        <div className="border-wizard-locked bg-wizard-locked/20 flex items-center gap-4 rounded-2xl border-4 p-4 opacity-60">
+          <span className="bg-wizard-locked h-16 w-16 shrink-0 rounded-full" aria-hidden />
+          <span className="font-display text-wizard-text-muted flex-1 text-base font-bold">
             More coming soon
           </span>
-          <span className="font-display shrink-0 rounded-full border-2 border-white/20 px-3 py-1 text-xs font-bold text-white/50">
+          <span className="font-display border-wizard-locked text-wizard-text-muted rounded-full border-2 px-3 py-1 text-xs font-bold">
             Locked
           </span>
         </div>

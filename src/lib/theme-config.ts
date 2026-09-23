@@ -54,6 +54,11 @@ export interface ThemeAssets {
   /** e.g. "{name}'s Space Mission" on the title screen — TitleScreen.tsx
    * reads this instead of hardcoding "Space Mission". */
   missionLabel: string;
+  /** Looping background music (AudioToggle in GameClient.tsx) — each theme
+   * has its own track under its own `audio/` folder, unlike coin/reward/SFX
+   * which are identical across every theme and live under
+   * public/assets/shared/ instead. */
+  backgroundMusicSrc: string;
   decorations: ThemeDecorationAssets;
   /** Ambient dot layer (src/lib/starfield.ts) — space uses white "stars",
    * other themes can recolor/resize via this instead of a hardcoded look. */
@@ -63,19 +68,14 @@ export interface ThemeAssets {
   uiColors: UiColors;
 }
 
-// Centralized theme assets. Everything that plays backgroundMusicSrc
-// (AudioToggle) reads from here.
+// Centralized theme assets.
 //
-// coin/reward/audio are identical across every theme by product decision,
-// so they live under public/assets/shared/ instead of being duplicated per
-// theme. characterSprites/decorations/particles/skyGradient differ per
-// theme, keyed under `themes` by the orders.template value — resolved via
-// getTheme() below. Only /invite/[guest_link] actually reads an order's
-// template today; /create's steps (CharacterSelectStep, ToneSelectStep,
-// PreviewStep) still hardcode themes.space since there's no theme-picker UI
-// yet (see "Making a theme selectable" in the assets doc).
+// coin/reward/SFX are identical across every theme by product decision, so
+// they live under public/assets/shared/ instead of being duplicated per
+// theme. characterSprites/decorations/particles/skyGradient/
+// backgroundMusicSrc all differ per theme, keyed under `themes` by the
+// orders.template value — resolved via getTheme() below.
 export const THEME_CONFIG = {
-  backgroundMusicSrc: "/assets/shared/audio/bgm-space.mp3",
   coinSprites: {
     glow: "/assets/shared/coin/coin-glow.png",
     burst: "/assets/shared/coin/coin-burst.png",
@@ -101,6 +101,7 @@ export const THEME_CONFIG = {
         girl: "Astro Girl",
       },
       missionLabel: "Space Mission",
+      backgroundMusicSrc: "/assets/theme/space/audio/space-bgm.mp3",
       // Standardized 512x512 canvas, same as dino — display size/rotation
       // are randomized per placement instance (decorations.ts), not fixed
       // per-asset.
@@ -173,6 +174,7 @@ export const THEME_CONFIG = {
         girl: "Dinogirl",
       },
       missionLabel: "Dino Mission",
+      backgroundMusicSrc: "/assets/theme/dino/audio/dino-bgm.mp3",
       // Standardized 512x512 canvas — see space's decorations above and its
       // "CONVENTION" note. dino's 20 assets slot into space's 20 named
       // slots per an explicit mapping table provided directly (not derived
@@ -222,9 +224,80 @@ export const THEME_CONFIG = {
         boxBg: "#2b2410", // deep warm brown-olive
       },
     },
+    // Not selectable anywhere in the app yet (ThemeSelectStep.tsx's card
+    // still shows it as "coming soon"/locked), but fully wired into
+    // THEME_CONFIG and read by /invite/[guest_link] once orders.template is
+    // set to "ocean" — see public/assets/theme/README - Theme.md.
+    ocean: {
+      characterSprites: {
+        boy: {
+          idle: "/assets/theme/ocean/characters/aquaboy-idle.png",
+          yay: "/assets/theme/ocean/characters/aquaboy-yay.png",
+        },
+        girl: {
+          idle: "/assets/theme/ocean/characters/aquagirl-idle.png",
+          yay: "/assets/theme/ocean/characters/aquagirl-yay.png",
+        },
+      },
+      characterNames: {
+        boy: "Aquaboy",
+        girl: "Aquagirl",
+      },
+      missionLabel: "Ocean Mission",
+      backgroundMusicSrc: "/assets/theme/ocean/audio/ocean-bgm.mp3",
+      // Standardized 512x512 canvas — see space's decorations above and its
+      // "CONVENTION" note. ocean's 20 assets slot into space's 20 named
+      // slots per an explicit mapping table provided directly, same as
+      // dino's. Note baby-animal-01/02/03 in that table are the actual
+      // on-disk files baby-sea-01/02/03.png — matched by role, not literal
+      // filename (same kind of asset-naming drift dino's mapping had with
+      // ufo-01/planet-03).
+      decorations: {
+        "alien-01": "/assets/theme/ocean/decorations/baby-sea-01.png",
+        "alien-02": "/assets/theme/ocean/decorations/baby-sea-02.png",
+        "alien-03": "/assets/theme/ocean/decorations/baby-sea-03.png",
+        asteroid: "/assets/theme/ocean/decorations/rock-reef.png",
+        comet: "/assets/theme/ocean/decorations/bubbles.png",
+        "moon-01": "/assets/theme/ocean/decorations/pearl-close.png",
+        "moon-crescent": "/assets/theme/ocean/decorations/pearl-open.png",
+        "planet-01": "/assets/theme/ocean/decorations/animal-01.png",
+        "planet-02": "/assets/theme/ocean/decorations/animal-02.png",
+        "planet-03": "/assets/theme/ocean/decorations/animal-03.png",
+        "planet-04": "/assets/theme/ocean/decorations/animal-04.png",
+        "planet-05": "/assets/theme/ocean/decorations/animal-05.png",
+        "planet-06": "/assets/theme/ocean/decorations/animal-06.png",
+        "planet-07": "/assets/theme/ocean/decorations/animal-07.png",
+        rocket: "/assets/theme/ocean/decorations/shipwreck.png",
+        "star-cluster": "/assets/theme/ocean/decorations/coral.png",
+        star: "/assets/theme/ocean/decorations/starfish.png",
+        sun: "/assets/theme/ocean/decorations/nemo.png",
+        "ufo-01": "/assets/theme/ocean/decorations/mantaray-01.png",
+        "ufo-02": "/assets/theme/ocean/decorations/mantaray-02.png",
+      },
+      // Pale aquamarine "bubbles" — same size/opacity feel as space's stars
+      // and dino's pollen, just recolored.
+      particles: {
+        color: "#cdf3f7",
+        sizeMin: 1,
+        sizeMax: 3,
+        opacityMin: 0.4,
+        opacityMax: 1,
+      },
+      // Deep-water dark-to-teal gradient, kept dark throughout (not a
+      // bright sunlit-shallows blue) for the same reason dino's was
+      // darkened — light decoration art needs a dark background behind it
+      // for contrast, the way space's navy already provides.
+      skyGradient: "linear-gradient(to top, #041820 0%, #0a3446 55%, #135870 100%)",
+      uiColors: {
+        accent: "#2dd4bf", // teal-400 — distinct from space's cyan and dino's amber
+        accentLight: "#5eead4", // teal-300
+        accentRgb: "45 212 191",
+        accentLightRgb: "94 234 212",
+        boxBg: "#0d2b36", // deep teal-navy
+      },
+    },
   },
 } satisfies {
-  backgroundMusicSrc: string;
   coinSprites: { glow: string; burst: string };
   rewardSprites: { closed: string; opened: string };
   themes: Record<string, ThemeAssets>;
