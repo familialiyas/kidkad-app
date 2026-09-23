@@ -76,7 +76,7 @@ export default function ToneSelectStep({
 
   return (
     <div className="relative min-h-screen">
-      <StarfieldBackground seed="kidkad-create-form-tone" />
+      <StarfieldBackground seed="koolkad-create-form-tone" />
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

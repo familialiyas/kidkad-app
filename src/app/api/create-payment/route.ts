@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment is not configured" }, { status: 500 });
   }
 
-  const billName = sanitizeForBill("KidKad Invitation", 30) || "KidKad Invitation";
+  const billName = sanitizeForBill("KoolKad Invitation", 30) || "KoolKad Invitation";
   const billDescription =
     sanitizeForBill(`Digital birthday invitation for ${order.child_name ?? "your child"}`, 100) ||
     "Digital birthday invitation";

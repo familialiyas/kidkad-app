@@ -65,7 +65,7 @@ export default function ParentDetailsStep({
       subtitle="This is how guests can reach you, and how we'll send your links."
       onBack={onBack}
       onContinue={handleContinue}
-      starSeed="kidkad-create-form-parent"
+      starSeed="koolkad-create-form-parent"
     >
       <div className="flex flex-col gap-5">
         <div data-field="parentName">

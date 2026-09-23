@@ -71,7 +71,7 @@ export default function PhotoUploadStep({
       onBack={onBack}
       onContinue={handleContinue}
       continueDisabled={uploading}
-      starSeed="kidkad-create-form-photo"
+      starSeed="koolkad-create-form-photo"
     >
       <div className="flex flex-col items-center gap-4">
         <div className="border-wizard-border bg-wizard-panel-deep flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4">

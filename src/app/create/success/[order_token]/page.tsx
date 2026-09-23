@@ -56,7 +56,7 @@ export default async function CreateSuccessPage({
 
   return (
     <div className="relative min-h-screen px-4 py-10">
-      <StarfieldBackground seed={`kidkad-success-${order.order_token}`} />
+      <StarfieldBackground seed={`koolkad-success-${order.order_token}`} />
       <div className="mx-auto max-w-md text-center">
         <h1 className="font-display text-wizard-accent text-2xl font-bold drop-shadow-[0_0_14px_rgba(224,168,62,0.6)]">
           {isPaid ? "Your invitation is ready!" : "Almost there!"}

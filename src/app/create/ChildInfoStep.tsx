@@ -31,7 +31,7 @@ export default function ChildInfoStep({
       title="Meet Your Star"
       subtitle="We'll use this to personalize everything from here on."
       onContinue={handleContinue}
-      starSeed="kidkad-create-form"
+      starSeed="koolkad-create-form"
     >
       <div className="flex flex-col gap-5">
         <div>

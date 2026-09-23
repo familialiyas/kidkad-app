@@ -5,7 +5,7 @@ interface StoredRsvp {
 }
 
 function key(guestLink: string): string {
-  return `kidkad_rsvp_${guestLink}`;
+  return `koolkad_rsvp_${guestLink}`;
 }
 
 export function getStoredRsvp(guestLink: string): StoredRsvp | null {

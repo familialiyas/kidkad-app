@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { isPastDeadline } from "@/lib/date";
 
-const PARENT_NOTIFICATION_EMAIL = "parent-placeholder@kidkad.app";
+const PARENT_NOTIFICATION_EMAIL = "parent-placeholder@koolkad.app";
 
 async function getOrderByGuestLink(guestLink: string) {
   const { data, error } = await supabaseAdmin
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  console.log("[KidKad] RSVP notification email (placeholder, Resend not yet wired up):", {
+  console.log("[KoolKad] RSVP notification email (placeholder, Resend not yet wired up):", {
     to: PARENT_NOTIFICATION_EMAIL,
     subject: `New RSVP for ${order.child_name}'s party`,
     guestName,

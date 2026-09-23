@@ -188,12 +188,12 @@ export default function ReturnVisitScreen({
             <div className="mt-3">{eventDetails}</div>
 
             <a
-              href="https://kidkad.my"
+              href="https://birthday.koolkad.com"
               target="_blank"
               rel="noopener noreferrer"
               className="ui-text-accent-light-50 ui-decoration-accent-light-30 ui-hover-text-accent-light-80 mt-4 block text-center text-[11px] underline underline-offset-2"
             >
-              Loved this? Make your own invitation at kidkad.my
+              Loved this? Make your own invitation at birthday.koolkad.com
             </a>
 
             {mode === "view" && (

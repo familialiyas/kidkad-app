@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (error) {
       // Still acknowledge receipt below — returning non-200 would just make
       // toyyibPay retry forever against the same broken write.
-      console.error("[KidKad] Failed to update payment_status from callback:", error.message);
+      console.error("[KoolKad] Failed to update payment_status from callback:", error.message);
     }
   }
 

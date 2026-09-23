@@ -4,7 +4,7 @@ import type { ThemeName } from "./theme-config";
 import type { EventDetailsFields } from "@/app/create/EventDetailsStep";
 import type { ParentDetailsFields } from "@/app/create/ParentDetailsStep";
 
-const STORAGE_KEY = "kidkad_create_draft";
+const STORAGE_KEY = "koolkad_create_draft";
 
 export interface CreateDraft {
   step: string;

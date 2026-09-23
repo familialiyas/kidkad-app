@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "re
 import { frameInset } from "@/lib/game-constants";
 import { SpeakerOnIcon, SpeakerOffIcon } from "./PartyIcons";
 
-const STORAGE_KEY = "kidkad_audio_muted";
+const STORAGE_KEY = "koolkad_audio_muted";
 
 export interface AudioToggleHandle {
   /** Attempts playback from a real user gesture (e.g. the "Start Mission"

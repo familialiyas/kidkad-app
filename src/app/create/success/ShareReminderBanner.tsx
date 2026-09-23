@@ -10,7 +10,7 @@ export default function ShareReminderBanner({
   guestUrl: string;
   adminUrl: string;
 }) {
-  const message = `Save these KidKad links so you don't lose them!\n\nGuest game link: ${guestUrl}\nMy dashboard link (see RSVPs): ${adminUrl}`;
+  const message = `Save these KoolKad links so you don't lose them!\n\nGuest game link: ${guestUrl}\nMy dashboard link (see RSVPs): ${adminUrl}`;
 
   function handleShare() {
     playSfx("buttonTap");

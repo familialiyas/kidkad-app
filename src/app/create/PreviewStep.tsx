@@ -68,7 +68,7 @@ export default function PreviewStep({
       stepLabel="Step 8 of 8"
       title="Review your invitation"
       onBack={onBack}
-      starSeed="kidkad-create-form-preview"
+      starSeed="koolkad-create-form-preview"
     >
       <div className="flex flex-col items-center gap-4">
         <div className="flex items-center gap-4">

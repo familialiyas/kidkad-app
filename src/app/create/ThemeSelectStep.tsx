@@ -49,7 +49,7 @@ export default function ThemeSelectStep({
       onBack={onBack}
       onContinue={onContinue}
       continueDisabled={!selected}
-      starSeed="kidkad-create-form-theme"
+      starSeed="koolkad-create-form-theme"
     >
       <div className="flex flex-col gap-3">
         {THEME_CARDS.map((card) => {

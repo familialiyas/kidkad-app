@@ -24,7 +24,7 @@ const NEUTRAL_PARTICLES: ParticleConfig = {
  * seed is fine here since the pattern doesn't need to vary per order the
  * way the guest-facing game's does.
  */
-export default function StarfieldBackground({ seed = "kidkad-create-form" }: { seed?: string }) {
+export default function StarfieldBackground({ seed = "koolkad-create-form" }: { seed?: string }) {
   const stars = useMemo(() => generateStars(seed, 900, NEUTRAL_PARTICLES), [seed]);
 
   return (

@@ -117,7 +117,7 @@ export default function EventDetailsStep({
       title="Share Your Party Details"
       onBack={onBack}
       onContinue={handleContinue}
-      starSeed="kidkad-create-form-event"
+      starSeed="koolkad-create-form-event"
     >
       <div className="flex flex-col gap-5">
         <div data-field="partyDate">

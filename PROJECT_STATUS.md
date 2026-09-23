@@ -1,4 +1,4 @@
-# KidKad — Project Status
+# KoolKad — Project Status
 
 Digital birthday invitation game. A parent customizes an invitation for their
 child's party; guests open a link, play a short scroll-driven mini-game to
@@ -200,7 +200,7 @@ state to close back to and omits the prop.
 **Sound effects** (`src/lib/sfx.ts`): 7 SFX (coin collect, gift open, warp,
 dialogue open/close, button tap, RSVP success) plus background music, all
 respecting one shared mute toggle persisted to `localStorage`
-(`kidkad_audio_muted`). Per-sound volume multipliers applied after a
+(`koolkad_audio_muted`). Per-sound volume multipliers applied after a
 relative-loudness pass. The mute toggle button (`AudioToggle.tsx`) uses a
 semi-transparent "glass" treatment matching the title screen's Start
 Mission button (`bg-white/10` + `backdrop-blur-sm` + the shared
@@ -288,9 +288,8 @@ that manually if needed.
   documented in `public/assets/theme/README - Theme.md`.
 - Migration/schema-as-code — no `supabase/` directory or migration files;
   all schema changes so far were manual SQL run by the user on request.
-- Brand identity not finalized — the "KidKad" text on the `/create` welcome
-  screen is a placeholder wordmark (no logo asset yet), and the navy/cyan
-  palette used throughout is not confirmed as final brand colors.
+- Brand name finalized as "KoolKad" (rebranded from KidKad); the `/create`
+  welcome screen still uses a placeholder text wordmark (no logo asset yet).
 - Coin dialogues (date/time, venue, dress code) still use their own
   hardcoded phrasing rather than the `DIALOGUE_TONES` per-tone templates —
   only the opening and mission-complete lines are tone-driven so far.

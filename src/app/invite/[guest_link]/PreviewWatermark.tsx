@@ -22,7 +22,7 @@ export default function PreviewWatermark() {
             key={i}
             className="font-display whitespace-nowrap text-xs font-bold tracking-wider text-white/15 uppercase sm:text-sm"
           >
-            KidKad Preview
+            KoolKad Preview
           </span>
         ))}
       </div>

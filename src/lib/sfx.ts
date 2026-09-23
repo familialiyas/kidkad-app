@@ -3,7 +3,7 @@
 // One-shot sound effects. Reads the same localStorage flag AudioToggle
 // writes for the background music, so the single mute control silences
 // both without any React wiring between them.
-const AUDIO_MUTED_KEY = "kidkad_audio_muted";
+const AUDIO_MUTED_KEY = "koolkad_audio_muted";
 
 export type SfxName =
   | "coinCollect"

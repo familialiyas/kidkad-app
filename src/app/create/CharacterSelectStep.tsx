@@ -34,7 +34,7 @@ export default function CharacterSelectStep({
       onBack={onBack}
       onContinue={onContinue}
       continueDisabled={!selected}
-      starSeed="kidkad-create-form"
+      starSeed="koolkad-create-form"
     >
       <div className="flex flex-col gap-3">
         {cards.map((card) => {

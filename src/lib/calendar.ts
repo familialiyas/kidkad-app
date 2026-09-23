@@ -41,9 +41,9 @@ export function buildIcsContent(params: {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//KidKad//Birthday Invitation//EN",
+    "PRODID:-//KoolKad//Birthday Invitation//EN",
     "BEGIN:VEVENT",
-    `UID:${stamp}-${Math.random().toString(36).slice(2)}@kidkad`,
+    `UID:${stamp}-${Math.random().toString(36).slice(2)}@koolkad`,
     `DTSTAMP:${stamp}`,
     `DTSTART:${toCalendarStamp(start)}`,
     `DTEND:${toCalendarStamp(end)}`,
