@@ -19,8 +19,17 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "KidKad",
-  description: "A playable birthday invitation for kids.",
+  title: "KoolKad",
+  description: "Your invite, leveled up.",
+  openGraph: {
+    title: "KoolKad",
+    description: "Your invite, leveled up.",
+  },
+  twitter: {
+    card: "summary",
+    title: "KoolKad",
+    description: "Your invite, leveled up.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

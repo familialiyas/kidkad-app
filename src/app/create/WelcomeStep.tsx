@@ -15,10 +15,13 @@ export default function WelcomeStep({ onStart }: { onStart: () => void }) {
             resolved now: wizard chrome is the fixed warm-neutral palette
             below). */}
         <h1 className="font-display text-wizard-text text-5xl font-bold tracking-wide drop-shadow-[0_0_20px_rgba(224,168,62,0.6)]">
-          Kid<span className="text-wizard-accent">Kad</span>
+          Kool<span className="text-wizard-accent">Kad</span>
         </h1>
         <p className="font-display text-wizard-accent-light mt-4 max-w-xs text-lg font-bold">
           give your birthday invite main character energy
+        </p>
+        <p className="font-body text-wizard-text-muted mt-1.5 max-w-xs text-sm">
+          Your invite, leveled up.
         </p>
       </div>
 
